@@ -1,0 +1,342 @@
+# =============================================================================
+# NOTIFY-STACK - Main Configuration
+# =============================================================================
+# Configuración principal del sistema de notificaciones
+# Este archivo puede subirse a control de versiones (no contiene secretos)
+
+# =============================================================================
+# APPLICATION SETTINGS
+# =============================================================================
+app:
+  name: "notify-api"
+  version: "1.0.0"
+  description: "Sistema ligero de notificaciones por correo"
+  environment: "development"  # development, staging, production
+  debug: true
+  
+  # URLs del sistema
+  base_url: "http://localhost:8000"
+  docs_url: "/docs"
+  health_endpoint: "/api/healthz"
+
+# =============================================================================
+# SERVER CONFIGURATION
+# =============================================================================
+server:
+  host: "0.0.0.0"
+  port: 8000
+  workers: 1
+  reload: true  # Solo para desarrollo
+  access_log: true
+  
+  # CORS settings
+  cors:
+    allow_origins: ["*"]
+    allow_methods: ["GET", "POST", "DELETE"]
+    allow_headers: ["*"]
+    allow_credentials: true
+
+# =============================================================================
+# LOGGING CONFIGURATION
+# =============================================================================
+logging:
+  level: "INFO"  # DEBUG, INFO, WARNING, ERROR, CRITICAL
+  format: "json"  # json, standard
+  
+  # Logging específico por módulo
+  modules:
+    uvicorn.access: "WARNING"
+    httpx: "WARNING"
+    redis: "WARNING"
+    celery: "INFO"
+    
+  # Archivos de log (opcional)
+  file_logging:
+    enabled: false
+    path: "/app/logs"
+    max_size: "10MB"
+    backup_count: 5
+
+# =============================================================================
+# REDIS CONFIGURATION
+# =============================================================================
+redis:
+  url: "redis://bkn_redis:6379/0"
+  
+  # TTL por defecto en segundos
+  ttl:
+    default: 3600        # 1 hora
+    idempotency: 86400   # 24 horas
+    task_logs: 604800    # 7 días
+    
+  # Configuración de conexión
+  connection:
+    socket_timeout: 5
+    socket_keepalive: true
+    health_check_interval: 30
+    max_connections: 10
+
+# =============================================================================
+# CELERY CONFIGURATION
+# =============================================================================
+celery:
+  broker_url: "redis://bkn_redis:6379/0"
+  result_backend: "redis://bkn_redis:6379/0"
+  
+  # Configuración de tareas
+  task:
+    serializer: "json"
+    result_serializer: "json"
+    time_limit: 300      # 5 minutos
+    soft_time_limit: 270 # 4.5 minutos
+    acks_late: true
+    reject_on_worker_lost: true
+    
+  # Configuración de workers
+  worker:
+    prefetch_multiplier: 1
+    max_tasks_per_child: 1000
+    
+  # Configuración de colas
+  queues:
+    notifications: "notifications"
+    test: "test"
+    maintenance: "maintenance"
+    monitoring: "monitoring"
+    
+  # Retry policy
+  retry:
+    max_retries: 3
+    default_delay: 60
+    backoff: 2
+    backoff_max: 600
+    jitter: true
+
+# =============================================================================
+# EMAIL SYSTEM CONFIGURATION
+# =============================================================================
+email:
+  # Configuración por defecto
+  defaults:
+    from_name: "Notify System"
+    reply_to: "noreply@notify-system.local"
+    charset: "utf-8"
+    
+  # Límites del sistema
+  limits:
+    max_recipients: 100
+    max_cc: 50
+    max_bcc: 50
+    max_total_recipients: 150
+    max_attachments: 10
+    max_attachment_size: 5242880  # 5MB
+    max_subject_length: 998
+    max_body_length: 1048576      # 1MB
+    
+  # Timeouts
+  timeouts:
+    smtp: 30
+    api: 30
+    
+  # Características
+  features:
+    html_support: true
+    attachments: true
+    custom_headers: true
+    template_rendering: true
+    idempotency: true
+
+# =============================================================================
+# TEMPLATE SYSTEM
+# =============================================================================
+templates:
+  # Directorio de templates
+  directory: "/app/templates"
+  
+  # Configuración de Jinja2
+  jinja2:
+    autoescape: true
+    trim_blocks: true
+    lstrip_blocks: true
+    undefined: "strict"
+    
+  # Variables globales disponibles en todos los templates
+  global_vars:
+    system_name: "Notify API"
+    support_email: "support@notify-system.local"
+    company_name: "Your Company"
+    current_year: 2024
+    
+  # Cache de templates compilados
+  cache:
+    enabled: true
+    max_entries: 100
+    ttl: 3600
+
+# =============================================================================
+# VALIDATION & SECURITY
+# =============================================================================
+validation:
+  # Validación de emails
+  email:
+    format_check: true
+    deliverability_check: false
+    mx_lookup: false
+    disposable_check: true
+    role_based_check: true
+    
+  # Validación de contenido
+  content:
+    check_dangerous_tags: true
+    max_urls_in_html: 50
+    blocked_file_extensions: [".exe", ".bat", ".sh", ".cmd"]
+    
+  # Validación estricta (desarrollo vs producción)
+  strict_mode: true
+
+# =============================================================================
+# MONITORING & HEALTH CHECKS
+# =============================================================================
+monitoring:
+  # Health checks
+  health:
+    redis_check: true
+    provider_check: true
+    disk_space_check: false
+    memory_check: false
+    
+  # Métricas básicas
+  metrics:
+    enabled: true
+    endpoint: "/metrics"
+    collect_detailed: false
+    
+  # Alertas (placeholder para futuro)
+  alerts:
+    enabled: false
+    webhook_url: ""
+    error_threshold: 10
+    success_rate_threshold: 95.0
+
+# =============================================================================
+# DEVELOPMENT & TESTING
+# =============================================================================
+development:
+  # Configuración específica para desarrollo
+  reload_templates: true
+  log_email_content: false
+  skip_email_sending: false
+  
+  # Testing
+  test:
+    default_recipients: ["test@example.com"]
+    allow_test_endpoints: true
+    mock_providers: false
+    
+  # Debug
+  debug:
+    log_sql_queries: false
+    profile_requests: false
+    enable_debug_toolbar: false
+
+# =============================================================================
+# FEATURE FLAGS
+# =============================================================================
+features:
+  # Características principales
+  email_validation: true
+  template_rendering: true
+  attachment_support: true
+  bulk_sending: true
+  
+  # Características avanzadas
+  rate_limiting: false
+  analytics: false
+  webhooks: false
+  
+  # Integraciones
+  sentry_integration: false
+  prometheus_integration: false
+  
+  # Experimental
+  ai_content_analysis: false
+  spam_detection: false
+
+# =============================================================================
+# CLEANUP & MAINTENANCE
+# =============================================================================
+maintenance:
+  # Limpieza automática
+  cleanup:
+    enabled: true
+    schedule: "0 2 * * *"  # Diario a las 2 AM
+    
+  # Retención de datos
+  retention:
+    task_logs: 7          # días
+    failed_tasks: 30      # días
+    success_tasks: 7      # días
+    metrics_data: 90      # días
+    
+  # Optimización
+  optimization:
+    compress_old_logs: true
+    vacuum_redis: false
+    
+# =============================================================================
+# URLS & LINKS
+# =============================================================================
+urls:
+  # URLs para templates de email
+  website: "https://yourcompany.com"
+  unsubscribe: "https://yourcompany.com/unsubscribe"
+  support: "https://yourcompany.com/support"
+  privacy: "https://yourcompany.com/privacy"
+  terms: "https://yourcompany.com/terms"
+  
+  # URLs internas
+  api_docs: "http://localhost:8000/docs"
+  health_check: "http://localhost:8000/api/healthz"
+
+# =============================================================================
+# LOCALIZATION
+# =============================================================================
+localization:
+  default_locale: "en"
+  supported_locales: ["en", "es"]
+  timezone: "UTC"
+  date_format: "ISO"
+  
+  # Mensajes del sistema
+  messages:
+    en:
+      test_subject: "Test Email - Notify API"
+      test_body: "This is a test email from the Notify API system."
+    es:
+      test_subject: "Email de Prueba - Notify API"
+      test_body: "Este es un email de prueba del sistema Notify API."
+
+# =============================================================================
+# PERFORMANCE
+# =============================================================================
+performance:
+  # Cache settings
+  cache:
+    config_ttl: 300      # 5 minutos
+    template_ttl: 3600   # 1 hora
+    provider_ttl: 1800   # 30 minutos
+    
+  # Connection pooling
+  connection_pool:
+    max_size: 10
+    min_size: 2
+    
+  # Batch processing
+  batch:
+    max_batch_size: 100
+    batch_timeout: 30
+    
+  # Rate limiting (si está habilitado)
+  rate_limit:
+    requests_per_hour: 1000
+    burst_limit: 50

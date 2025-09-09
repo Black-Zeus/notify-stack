@@ -1,0 +1,6 @@
+Estimado,
+
+El host {{ host }} se encuentra en estado {{ estado }} desde las {{ hora }}.
+
+Atentamente,
+Sistema de Notificaciones

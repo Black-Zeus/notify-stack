@@ -1,0 +1,478 @@
+# =============================================================================
+# NOTIFY-STACK - Email Providers Configuration
+# =============================================================================
+# Configuración de proveedores de email (SMTP y API)
+# Las credenciales sensibles se obtienen de variables de entorno
+
+# =============================================================================
+# SMTP PROVIDERS
+# =============================================================================
+
+# Proveedor SMTP principal (Gmail)
+smtp_primary:
+  type: "smtp"
+  name: "Gmail SMTP Primary"
+  description: "Proveedor principal para emails transaccionales"
+  
+  # Configuración de conexión
+  host: "${SMTP_GMAIL_HOST}"
+  port: "${SMTP_GMAIL_PORT}"
+  username: "${SMTP_GMAIL_USERNAME}"
+  password: "${SMTP_GMAIL_PASSWORD}"
+  
+  # Configuración de seguridad
+  use_tls: true
+  use_ssl: false
+  verify_certificate: true
+  
+  # Configuración de headers
+  from_email: "${SMTP_GMAIL_USERNAME}"
+  from_name: "${SMTP_GMAIL_FROM_NAME}"
+  reply_to: "${SMTP_GMAIL_USERNAME}"
+  return_path: "${SMTP_GMAIL_USERNAME}"
+  
+  # Límites y timeouts
+  timeout: 30
+  max_recipients_per_message: 100
+  max_messages_per_hour: 500
+  max_attachment_size: 25165824  # 24MB (Gmail limit)
+  
+  # Configuración operacional
+  priority: "high"
+  category: "transactional"
+  enabled: true
+  
+  # Características soportadas
+  features:
+    html_support: true
+    attachments: true
+    tracking: false
+    analytics: false
+    templates: false
+    
+  # Configuración de reintentos
+  retry:
+    max_attempts: 3
+    backoff_factor: 2
+    initial_delay: 60
+
+# Proveedor SMTP secundario (Outlook)
+smtp_secondary:
+  type: "smtp"
+  name: "Outlook SMTP Secondary"
+  description: "Proveedor de respaldo para failover"
+  
+  host: "${SMTP_OUTLOOK_HOST}"
+  port: "${SMTP_OUTLOOK_PORT}"
+  username: "${SMTP_OUTLOOK_USERNAME}"
+  password: "${SMTP_OUTLOOK_PASSWORD}"
+  
+  use_tls: true
+  use_ssl: false
+  
+  from_email: "${SMTP_OUTLOOK_USERNAME}"
+  from_name: "Notify System Backup"
+  
+  timeout: 30
+  max_recipients_per_message: 50
+  max_messages_per_hour: 300
+  
+  priority: "medium"
+  category: "backup"
+  enabled: true
+  
+  features:
+    html_support: true
+    attachments: true
+    tracking: false
+
+# Proveedor SMTP para bulk/marketing
+smtp_bulk:
+  type: "smtp"
+  name: "Custom SMTP Bulk"
+  description: "Proveedor optimizado para envíos masivos"
+  
+  host: "${SMTP_CUSTOM_HOST}"
+  port: "${SMTP_CUSTOM_PORT}"
+  username: "${SMTP_CUSTOM_USERNAME}"
+  password: "${SMTP_CUSTOM_PASSWORD}"
+  
+  use_tls: true
+  use_ssl: false
+  
+  from_email: "${SMTP_CUSTOM_USERNAME}"
+  from_name: "Newsletter System"
+  
+  timeout: 45
+  max_recipients_per_message: 500
+  max_messages_per_hour: 2000
+  
+  priority: "medium"
+  category: "bulk"
+  enabled: true
+  
+  features:
+    html_support: true
+    attachments: false  # No attachments en bulk
+    tracking: false
+
+# Proveedor SMTP para testing
+smtp_test:
+  type: "smtp"
+  name: "Test SMTP Provider"
+  description: "Proveedor exclusivo para testing y desarrollo"
+  
+  host: "smtp.mailtrap.io"  # Servicio de testing
+  port: 587
+  username: "${SMTP_TEST_USERNAME}"
+  password: "${SMTP_TEST_PASSWORD}"
+  
+  use_tls: true
+  use_ssl: false
+  
+  from_email: "test@notify-system.local"
+  from_name: "Notify Test System"
+  
+  timeout: 15
+  max_recipients_per_message: 10
+  max_messages_per_hour: 100
+  
+  priority: "low"
+  category: "testing"
+  enabled: true
+  
+  features:
+    html_support: true
+    attachments: true
+    tracking: true    # Mailtrap soporta tracking
+
+# =============================================================================
+# API PROVIDERS
+# =============================================================================
+
+# SendGrid API
+api_sendgrid:
+  type: "api"
+  provider_type: "sendgrid"
+  name: "SendGrid API"
+  description: "Proveedor API premium con tracking avanzado"
+  
+  # Configuración de API
+  endpoint: "https://api.sendgrid.com"
+  api_key: "${SENDGRID_API_KEY}"
+  
+  # Configuración de headers
+  from_email: "${SENDGRID_FROM_EMAIL}"
+  from_name: "${SENDGRID_FROM_NAME}"
+  reply_to: "${SENDGRID_FROM_EMAIL}"
+  
+  # Límites API
+  timeout: 30
+  max_recipients_per_message: 1000
+  max_messages_per_hour: 10000
+  max_attachment_size: 10485760  # 10MB
+  
+  # Configuración operacional
+  priority: "high"
+  category: "premium"
+  enabled: true
+  
+  # Características avanzadas
+  features:
+    html_support: true
+    attachments: true
+    tracking: true
+    analytics: true
+    templates: true
+    webhooks: true
+    
+  # Configuración específica de SendGrid
+  sendgrid:
+    # Tracking settings
+    tracking:
+      click_tracking: true
+      open_tracking: true
+      subscription_tracking: false
+      
+    # Configuración de templates
+    template_engine: true
+    dynamic_templates: true
+    
+    # Configuración de IP
+    ip_pool_name: "default"
+    
+  retry:
+    max_attempts: 3
+    backoff_factor: 1.5
+    initial_delay: 30
+
+# Amazon SES API
+api_ses:
+  type: "api"
+  provider_type: "ses"
+  name: "Amazon SES"
+  description: "Proveedor AWS altamente escalable"
+  
+  endpoint: "https://email.${AWS_SES_REGION}.amazonaws.com"
+  api_key: "${AWS_SES_ACCESS_KEY_ID}"
+  secret_key: "${AWS_SES_SECRET_ACCESS_KEY}"
+  region: "${AWS_SES_REGION}"
+  
+  from_email: "${AWS_SES_FROM_EMAIL}"
+  from_name: "AWS Notifications"
+  
+  timeout: 30
+  max_recipients_per_message: 50
+  max_messages_per_hour: 14000  # SES limit in sandbox
+  
+  priority: "high"
+  category: "scalable"
+  enabled: false  # Disabled by default
+  
+  features:
+    html_support: true
+    attachments: true
+    tracking: true
+    analytics: true
+    templates: true
+    
+  # Configuración específica de SES
+  ses:
+    configuration_set: "default"
+    
+  retry:
+    max_attempts: 3
+    backoff_factor: 2
+    initial_delay: 45
+
+# Mailgun API
+api_mailgun:
+  type: "api"
+  provider_type: "mailgun"
+  name: "Mailgun API"
+  description: "Proveedor API con excelente deliverability"
+  
+  endpoint: "https://api.mailgun.net/v3/${MAILGUN_DOMAIN}"
+  api_key: "${MAILGUN_API_KEY}"
+  domain: "${MAILGUN_DOMAIN}"
+  
+  from_email: "${MAILGUN_FROM_EMAIL}"
+  from_name: "Mailgun Notifications"
+  
+  timeout: 30
+  max_recipients_per_message: 1000
+  max_messages_per_hour: 5000
+  
+  priority: "medium"
+  category: "marketing"
+  enabled: false
+  
+  features:
+    html_support: true
+    attachments: true
+    tracking: true
+    analytics: true
+    
+  retry:
+    max_attempts: 3
+    backoff_factor: 2
+    initial_delay: 30
+
+# Proveedor API genérico (para futuras integraciones)
+api_generic:
+  type: "api"
+  provider_type: "generic"
+  name: "Generic API Provider"
+  description: "Proveedor API genérico configurable"
+  
+  endpoint: "${GENERIC_API_ENDPOINT}"
+  api_key: "${GENERIC_API_KEY}"
+  
+  from_email: "${GENERIC_FROM_EMAIL}"
+  from_name: "Generic Provider"
+  
+  timeout: 30
+  max_recipients_per_message: 100
+  max_messages_per_hour: 1000
+  
+  priority: "low"
+  category: "experimental"
+  enabled: false
+  
+  # Headers personalizados
+  headers:
+    "User-Agent": "NotifyAPI/1.0"
+    "X-Custom-Header": "notify-stack"
+    
+  features:
+    html_support: true
+    attachments: false
+    
+  retry:
+    max_attempts: 2
+    backoff_factor: 1
+    initial_delay: 60
+
+# =============================================================================
+# PROVIDER GROUPS & LOAD BALANCING
+# =============================================================================
+
+# Grupos de proveedores para load balancing
+provider_groups:
+  # Grupo principal para emails transaccionales
+  transactional:
+    providers:
+      - name: "smtp_primary"
+        weight: 70
+      - name: "api_sendgrid"
+        weight: 30
+    load_balancing: "weighted_round_robin"
+    health_check: true
+    
+  # Grupo para envíos masivos
+  bulk:
+    providers:
+      - name: "smtp_bulk"
+        weight: 60
+      - name: "api_mailgun"
+        weight: 40
+    load_balancing: "round_robin"
+    health_check: true
+    
+  # Grupo de backup/failover
+  backup:
+    providers:
+      - name: "smtp_secondary"
+        weight: 50
+      - name: "api_ses"
+        weight: 50
+    load_balancing: "failover"
+    health_check: true
+
+# =============================================================================
+# HEALTH MONITORING
+# =============================================================================
+
+# Configuración de monitoreo de salud
+health_monitoring:
+  # Intervalos de verificación
+  check_intervals:
+    fast_check: 60      # segundos
+    full_check: 300     # segundos
+    
+  # Criterios de salud
+  health_criteria:
+    max_response_time: 5.0      # segundos
+    max_error_rate: 5.0         # porcentaje
+    min_success_rate: 95.0      # porcentaje
+    
+  # Acciones automáticas
+  auto_actions:
+    disable_unhealthy: true
+    alert_on_failure: true
+    
+  # Configuración de alertas
+  alerts:
+    webhook_url: "${ALERT_WEBHOOK_URL}"
+    email_alerts: ["admin@yourcompany.com"]
+
+# =============================================================================
+# COST OPTIMIZATION
+# =============================================================================
+
+# Configuración de optimización de costos
+cost_optimization:
+  # Routing por costo
+  cost_aware_routing: true
+  
+  # Costos relativos por proveedor (1-10, 1=más barato)
+  provider_costs:
+    smtp_primary: 2
+    smtp_secondary: 2
+    smtp_bulk: 1
+    api_sendgrid: 4
+    api_ses: 3
+    api_mailgun: 4
+    
+  # Límites de costo
+  cost_limits:
+    max_daily_cost: 100.0       # USD
+    alert_threshold: 80.0       # USD
+    
+  # Optimizaciones automáticas
+  auto_optimizations:
+    prefer_cheaper_for_bulk: true
+    route_off_hours_to_cheaper: true
+
+# =============================================================================
+# COMPLIANCE & REGION SETTINGS
+# =============================================================================
+
+# Configuración por región geográfica
+regional_settings:
+  # Estados Unidos
+  us:
+    preferred_providers: ["api_sendgrid", "smtp_primary"]
+    compliance_requirements: ["can_spam"]
+    
+  # Unión Europea  
+  eu:
+    preferred_providers: ["api_mailgun", "smtp_secondary"]
+    compliance_requirements: ["gdpr"]
+    data_residency: "eu"
+    
+  # Asia-Pacífico
+  apac:
+    preferred_providers: ["api_ses", "smtp_primary"]
+    compliance_requirements: ["local_privacy_laws"]
+
+# =============================================================================
+# DEVELOPMENT & TESTING
+# =============================================================================
+
+# Configuración para desarrollo
+development:
+  # Proveedor por defecto en desarrollo
+  default_provider: "smtp_test"
+  
+  # Interceptar emails en desarrollo
+  email_interception:
+    enabled: true
+    redirect_to: ["dev@yourcompany.com"]
+    
+  # Simulación de fallos para testing
+  failure_simulation:
+    enabled: false
+    failure_rate: 0.1  # 10% de fallos simulados
+    
+  # Logging detallado
+  debug_logging: true
+
+# =============================================================================
+# PROVIDER STATISTICS
+# =============================================================================
+
+# Métricas y estadísticas
+statistics:
+  # Métricas a trackear
+  tracked_metrics:
+    - "messages_sent"
+    - "messages_failed"
+    - "response_time"
+    - "cost_per_message"
+    - "delivery_rate"
+    
+  # Retención de métricas
+  retention:
+    hourly_data: 48     # horas
+    daily_data: 90      # días
+    monthly_data: 24    # meses
+    
+  # Alertas basadas en métricas
+  metric_alerts:
+    high_failure_rate:
+      threshold: 10.0   # porcentaje
+      window: 300       # segundos
+    slow_response:
+      threshold: 10.0   # segundos
+      window: 600       # segundos

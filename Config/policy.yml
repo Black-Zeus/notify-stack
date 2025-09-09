@@ -1,0 +1,479 @@
+# =============================================================================
+# NOTIFY-STACK - Policies Configuration
+# =============================================================================
+# Políticas de seguridad, validación y routing del sistema
+# Define reglas de negocio y restricciones operacionales
+
+# =============================================================================
+# WHITELIST CONFIGURATION
+# =============================================================================
+whitelist:
+  # Habilitar/deshabilitar whitelist de dominios
+  enabled: false
+  
+  # Dominios permitidos para envío de emails
+  domains:
+    - "yourcompany.com"
+    - "example.com"
+    - "partner-company.com"
+    - "gmail.com"        # Para testing
+    - "outlook.com"      # Para testing
+    
+  # Configuración avanzada de whitelist
+  settings:
+    # Permitir subdominios automáticamente
+    allow_subdomains: true
+    
+    # Dominios de testing siempre permitidos (desarrollo)
+    testing_domains:
+      - "test.com"
+      - "example.org"
+      - "localhost"
+      
+    # Bypass whitelist para ciertos proveedores/contextos
+    bypass_conditions:
+      - provider: "test_provider"
+      - template_pattern: "^test-.*"
+      - routing_hint: "test"
+
+# =============================================================================
+# RATE LIMITING
+# =============================================================================
+rate_limit:
+  # Habilitar rate limiting
+  enabled: false
+  
+  # Límites globales del sistema
+  global:
+    requests_per_minute: 1000
+    requests_per_hour: 10000
+    requests_per_day: 100000
+    
+  # Límites por API key
+  per_api_key:
+    requests_per_minute: 100
+    requests_per_hour: 1000
+    requests_per_day: 10000
+    
+  # Límites por IP (si no hay API key)
+  per_ip:
+    requests_per_minute: 10
+    requests_per_hour: 100
+    requests_per_day: 500
+    
+  # Límites por tipo de operación
+  by_operation:
+    send_email:
+      requests_per_minute: 50
+      burst_allowance: 20
+    bulk_send:
+      requests_per_minute: 5
+      max_recipients_per_request: 1000
+    test_endpoints:
+      requests_per_minute: 20
+      
+  # Configuración de penalties
+  penalties:
+    # Bloqueo temporal por exceso
+    temporary_block:
+      enabled: true
+      duration_minutes: 15
+      trigger_threshold: 150  # % del límite
+      
+    # Slow down progresivo
+    progressive_slowdown:
+      enabled: true
+      start_threshold: 80     # % del límite
+      max_delay_seconds: 5
+
+# =============================================================================
+# EMAIL CONTENT LIMITS
+# =============================================================================
+limits:
+  # Límites de destinatarios
+  recipients:
+    max_to: 100
+    max_cc: 50
+    max_bcc: 50
+    max_total: 150
+    
+  # Límites de contenido
+  content:
+    max_subject_length: 998      # RFC 2822 limit
+    max_body_text_length: 1048576   # 1MB
+    max_body_html_length: 1048576   # 1MB
+    
+  # Límites de attachments
+  attachments:
+    max_count: 10
+    max_size_each: 5242880       # 5MB
+    max_total_size: 26214400     # 25MB
+    
+    # Extensiones bloqueadas
+    blocked_extensions:
+      - ".exe"
+      - ".bat"
+      - ".sh"
+      - ".cmd"
+      - ".scr"
+      - ".com"
+      - ".pif"
+      - ".vbs"
+      - ".js"
+      
+    # Tipos MIME bloqueados
+    blocked_mime_types:
+      - "application/x-executable"
+      - "application/x-msdownload"
+      - "text/javascript"
+      
+  # Límites de templates
+  templates:
+    max_variables: 100
+    max_variable_name_length: 50
+    max_variable_value_length: 10000
+    
+  # Límites de requests
+  request:
+    max_payload_size: 10485760   # 10MB
+    max_headers: 50
+    max_header_value_length: 1000
+
+# =============================================================================
+# CONTENT VALIDATION RULES
+# =============================================================================
+content_validation:
+  # Validación de subject
+  subject:
+    # Caracteres prohibidos
+    forbidden_chars: ["\x00", "\r", "\n"]
+    
+    # Patrones sospechosos
+    suspicious_patterns:
+      - "\\$\\$\\$"              # Múltiples signos de dinero
+      - "URGENT.*URGENT"         # Múltiples URGENT
+      - "WIN.*NOW"               # Win now patterns
+      - "CLICK.*HERE.*NOW"       # Aggressive CTAs
+      
+    # Límite de mayúsculas consecutivas
+    max_consecutive_caps: 10
+    
+  # Validación de body
+  body:
+    # Tags HTML peligrosos
+    dangerous_html_tags:
+      - "script"
+      - "iframe"
+      - "object"
+      - "embed"
+      - "form"
+      - "input"
+      - "meta"
+      
+    # Atributos HTML prohibidos
+    forbidden_attributes:
+      - "onload"
+      - "onclick"
+      - "onerror"
+      - "onmouseover"
+      - "javascript:"
+      
+    # Límites de URLs
+    max_urls: 20
+    max_url_length: 2000
+    
+    # Patrones de spam
+    spam_patterns:
+      - "click.*here.*immediately"
+      - "limited.*time.*offer"
+      - "act.*now.*expires"
+      - "congratulations.*you.*won"
+      
+  # Validación de URLs
+  url_validation:
+    # Verificar URLs válidas
+    validate_urls: true
+    
+    # Dominios bloqueados
+    blocked_domains:
+      - "malicious-site.com"
+      - "spam-domain.net"
+      
+    # Requerir HTTPS para ciertos dominios
+    require_https:
+      - "bank-domain.com"
+      - "secure-site.com"
+
+# =============================================================================
+# ROUTING RULES
+# =============================================================================
+routing:
+  # Proveedor por defecto
+  default_provider: "smtp_primary"
+  
+  # Reglas de routing automático
+  rules:
+    # Routing por volumen
+    - name: "bulk_emails"
+      description: "Envíos masivos a proveedor de bulk"
+      condition:
+        recipient_count: ">= 50"
+      provider: "smtp_bulk"
+      priority: 10
+      
+    # Routing por dominio administrativo
+    - name: "admin_emails"
+      description: "Emails administrativos a proveedor seguro"
+      condition:
+        recipient_domain: "admin.yourcompany.com"
+      provider: "smtp_secure"
+      priority: 20
+      
+    # Routing por template crítico
+    - name: "critical_notifications"
+      description: "Notificaciones críticas a proveedor premium"
+      condition:
+        template_pattern: "^critical-.*"
+      provider: "api_premium"
+      priority: 30
+      
+    # Routing por horario
+    - name: "off_hours"
+      description: "Fuera de horario a proveedor secundario"
+      condition:
+        time_range: "22:00-06:00"
+      provider: "smtp_secondary"
+      priority: 5
+      
+    # Routing por ubicación geográfica
+    - name: "international_emails"
+      description: "Emails internacionales a proveedor global"
+      condition:
+        recipient_pattern: ".*\\.(uk|eu|asia|jp)$"
+      provider: "api_global"
+      priority: 15
+      
+  # Mapping de routing hints
+  hint_mapping:
+    high_priority: "api_premium"
+    bulk: "smtp_bulk"
+    transactional: "smtp_primary"
+    marketing: "api_marketing"
+    test: "smtp_test"
+    urgent: "api_premium"
+    low_priority: "smtp_secondary"
+    newsletter: "api_marketing"
+    
+  # Failover automático
+  failover:
+    enabled: true
+    max_retries_per_provider: 2
+    
+    # Cascade de proveedores
+    cascade:
+      - primary: "smtp_primary"
+        fallback: ["smtp_secondary", "api_backup"]
+      - primary: "api_premium"
+        fallback: ["smtp_primary", "api_backup"]
+      - primary: "smtp_bulk"
+        fallback: ["smtp_secondary"]
+
+# =============================================================================
+# TEMPLATE RESTRICTIONS
+# =============================================================================
+templates:
+  # Control de acceso a templates
+  access_control:
+    # Templates restringidos por API key
+    restricted_templates:
+      - template: "admin-alert/*"
+        allowed_api_keys: ["admin_key_1", "admin_key_2"]
+      - template: "financial-report/*"
+        allowed_api_keys: ["finance_key"]
+        
+    # Templates públicos (sin restricción)
+    public_templates:
+      - "welcome-email/*"
+      - "password-reset/*"
+      - "test-*"
+      
+  # Validación de templates
+  validation:
+    # Variables requeridas por template
+    required_variables:
+      "welcome-email/v1":
+        - "user_name"
+        - "activation_link"
+      "password-reset/v1":
+        - "user_email"
+        - "reset_link"
+        - "expiry_time"
+        
+    # Variables prohibidas
+    forbidden_variables:
+      - "password"
+      - "credit_card"
+      - "ssn"
+      - "api_key"
+      
+    # Patrones de template bloqueados
+    blocked_patterns:
+      - ".*admin.*"
+      - ".*system.*"
+      - ".*internal.*"
+
+# =============================================================================
+# SECURITY POLICIES
+# =============================================================================
+security:
+  # Políticas de autenticación
+  authentication:
+    require_api_key: true
+    api_key_min_length: 32
+    
+    # Rotación de claves
+    key_rotation:
+      enabled: false
+      max_age_days: 90
+      warning_days: 7
+      
+  # Políticas de autorización
+  authorization:
+    # Endpoints que requieren permisos especiales
+    protected_endpoints:
+      - endpoint: "/api/notify"
+        required_permissions: ["send_email"]
+      - endpoint: "/api/test/*"
+        required_permissions: ["testing"]
+      - endpoint: "/api/notify/*/cancel"
+        required_permissions: ["cancel_emails"]
+        
+  # Auditoría
+  audit:
+    # Logging de eventos sensibles
+    log_sensitive_events: true
+    
+    # Eventos a auditar
+    audit_events:
+      - "email_sent"
+      - "email_failed"
+      - "api_key_used"
+      - "template_rendered"
+      - "policy_violation"
+      
+    # Retención de logs de auditoría
+    retention_days: 90
+    
+  # Protección contra abuse
+  abuse_protection:
+    # Detección de patrones sospechosos
+    suspicious_patterns:
+      - multiple_failed_sends: 10
+      - rapid_requests: 100
+      - invalid_recipients: 20
+      
+    # Acciones automáticas
+    auto_actions:
+      temporary_disable: true
+      alert_admins: true
+      rate_limit_aggressive: true
+
+# =============================================================================
+# COMPLIANCE
+# =============================================================================
+compliance:
+  # GDPR compliance
+  gdpr:
+    enabled: true
+    
+    # Retención de datos
+    data_retention:
+      email_logs: 30        # días
+      personal_data: 90     # días
+      anonymize_after: 365  # días
+      
+    # Derechos del usuario
+    user_rights:
+      right_to_erasure: true
+      right_to_portability: true
+      right_to_rectification: true
+      
+  # CAN-SPAM compliance
+  can_spam:
+    enabled: true
+    require_unsubscribe_link: true
+    require_physical_address: false
+    
+  # Configuración regional
+  regional:
+    # Configuración por región
+    eu:
+      strict_consent: true
+      require_opt_in: true
+    us:
+      allow_opt_out: true
+    apac:
+      country_specific_rules: true
+
+# =============================================================================
+# MONITORING & ALERTS
+# =============================================================================
+monitoring:
+  # Métricas a trackear
+  metrics:
+    - policy_violations
+    - rate_limit_hits
+    - failed_authentications
+    - blocked_content
+    - routing_decisions
+    
+  # Alertas automáticas
+  alerts:
+    # Violaciones de política
+    policy_violations:
+      threshold: 10
+      window_minutes: 5
+      action: "alert_admins"
+      
+    # Rate limiting
+    rate_limit_abuse:
+      threshold: 50
+      window_minutes: 1
+      action: "temporary_block"
+      
+    # Contenido sospechoso
+    suspicious_content:
+      threshold: 5
+      window_minutes: 10
+      action: "flag_for_review"
+
+# =============================================================================
+# EMERGENCY PROCEDURES
+# =============================================================================
+emergency:
+  # Modo de emergencia
+  emergency_mode:
+    enabled: false
+    
+    # Acciones en modo emergencia
+    actions:
+      - disable_bulk_sending: true
+      - enable_manual_approval: true
+      - limit_recipients: 10
+      - disable_attachments: true
+      
+  # Circuit breaker
+  circuit_breaker:
+    # Deshabilitar automáticamente si hay muchos fallos
+    failure_threshold: 100
+    window_minutes: 5
+    recovery_time_minutes: 30
+    
+  # Kill switch
+  kill_switch:
+    # Parar todo el sistema en emergencia
+    enabled: false
+    triggers:
+      - manual_activation: true
+      - security_breach: true
+      - regulatory_violation: true
