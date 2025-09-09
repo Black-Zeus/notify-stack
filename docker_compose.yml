@@ -3,6 +3,7 @@ services:
     build:
       context: .
       dockerfile: ./dockerfile/bkn_notify.Dockerfile
+    image: notify-stack/bkn_notify:1.0.0
     container_name: bkn_notify
     env_file:
       - ./Config/secrets.env
@@ -29,6 +30,7 @@ services:
     build:
       context: .
       dockerfile: ./dockerfile/bkn_celery.Dockerfile
+    image: notify-stack/bkn_celery:1.0.0
     container_name: bkn_celery
     env_file:
       - ./Config/secrets.env
@@ -47,6 +49,7 @@ services:
     build:
       context: .
       dockerfile: ./dockerfile/bkn_celery.Dockerfile
+    image: notify-stack/bkn_celery:1.0.0
     container_name: bkn_celery_beat
     env_file:
       - ./Config/secrets.env
@@ -70,7 +73,6 @@ services:
       - redis_data:/data
     restart: unless-stopped
     
-    # Recursos para Redis
     deploy:
       resources:
         limits:
@@ -96,39 +98,6 @@ services:
       timeout: 5s
       retries: 5
       start_period: 10s
-
-  # front:
-  #   image: nginx:alpine
-  #   container_name: front
-  #   ports:
-  #     - "80:80"
-  #     - "443:443"
-  #   depends_on:
-  #     bkn_notify:
-  #       condition: service_healthy
-  #   networks:
-  #     - frontend
-  #   volumes:
-  #     - ./Config/nginx.conf:/etc/nginx/nginx.conf:ro
-  #     - ./Config/ssl:/etc/nginx/ssl:ro
-  #   restart: unless-stopped
-    
-  #   # Recursos para Nginx
-  #   deploy:
-  #     resources:
-  #       limits:
-  #         cpus: '0.5'
-  #         memory: 128M
-  #       reservations:
-  #         cpus: '0.05'
-  #         memory: 32M
-    
-  #   healthcheck:
-  #     test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
-  #     interval: 30s
-  #     timeout: 5s
-  #     retries: 3
-  #     start_period: 5s
 
 volumes:
   redis_data:

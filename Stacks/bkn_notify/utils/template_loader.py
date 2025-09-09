@@ -7,7 +7,7 @@ import os
 import logging
 from typing import Dict, Any, List, Optional
 from pathlib import Path
-from jinja2 import Environment, FileSystemLoader, Template, TemplateNotFound, TemplateSyntaxError
+from jinja2 import Environment, FileSystemLoader, Template, TemplateNotFound, TemplateSyntaxError, StrictUndefined
 
 from constants import TEMPLATES_DIR
 
@@ -34,7 +34,7 @@ def get_jinja_environment() -> Environment:
                 autoescape=True,  # Seguridad: escapar HTML por defecto
                 trim_blocks=True,
                 lstrip_blocks=True,
-                undefined='strict'  # Fallar si variable no está definida
+                undefined=StrictUndefined  # Fallar si variable no está definida
             )
             
             # Agregar filtros personalizados

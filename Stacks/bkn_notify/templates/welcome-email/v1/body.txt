@@ -7,7 +7,7 @@ Tu cuenta ha sido creada exitosamente y ya puedes comenzar a usar nuestro servic
 Información de tu cuenta:
 - Usuario: {{ user_name }}
 - Email: {{ user_email | default('No especificado') }}
-- Fecha de registro: {{ now.strftime('%d/%m/%Y') }}
+- Fecha de registro: {{ now }}
 
 Si tienes alguna pregunta, no dudes en contactarnos.
 

@@ -6,6 +6,7 @@ Carga y cache de archivos de configuración YAML
 import os
 import yaml
 import logging
+import re
 from typing import Dict, Any, Optional
 from pathlib import Path
 
@@ -15,9 +16,20 @@ from constants import CONFIG_FILE, PROVIDERS_FILE, POLICY_FILE
 _config_cache: Dict[str, Any] = {}
 
 
+def expand_env_vars(content: str) -> str:
+    """
+    Expande variables de entorno en formato ${VAR_NAME}
+    """
+    def replace_var(match):
+        var_name = match.group(1)
+        return os.getenv(var_name, match.group(0))  # Retorna original si no existe
+    
+    return re.sub(r'\$\{([^}]+)\}', replace_var, content)
+
+
 def load_yaml_file(file_path: str) -> Dict[str, Any]:
     """
-    Carga archivo YAML con manejo de errores
+    Carga archivo YAML con manejo de errores y expansión de variables de entorno
     """
     try:
         if not os.path.exists(file_path):
@@ -25,7 +37,12 @@ def load_yaml_file(file_path: str) -> Dict[str, Any]:
             return {}
         
         with open(file_path, 'r', encoding='utf-8') as file:
-            data = yaml.safe_load(file) or {}
+            content = file.read()
+            
+            # Expandir variables de entorno ${VAR_NAME}
+            content = expand_env_vars(content)
+            
+            data = yaml.safe_load(content) or {}
             logging.debug(f"Loaded config from {file_path}")
             return data
             
@@ -135,7 +152,17 @@ def validate_providers_config(providers: Dict[str, Any]) -> Dict[str, Any]:
     
     validated = {}
     
+    # Secciones que no son proveedores individuales
+    skip_sections = {
+        'provider_groups', 'health_monitoring', 'cost_optimization',
+        'regional_settings', 'development', 'statistics'
+    }
+    
     for name, config in providers.items():
+        # Saltar secciones de configuración general
+        if name in skip_sections:
+            continue
+            
         try:
             # Validaciones básicas
             if not isinstance(config, dict):
