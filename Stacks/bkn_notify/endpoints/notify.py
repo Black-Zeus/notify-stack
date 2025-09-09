@@ -8,14 +8,14 @@ from datetime import datetime
 from fastapi import APIRouter, HTTPException, Request, Depends
 from fastapi.responses import JSONResponse
 
-from app.constants import (
+from constants import (
     HTTP_202_ACCEPTED, HTTP_400_BAD_REQUEST, HTTP_409_CONFLICT,
     IDEMPOTENCY_HEADER, REQUEST_ID_HEADER, REDIS_IDEMPOTENCY_PREFIX
 )
 from models.notify_request import NotifyRequest, NotifyResponse
-from app.utils.redis_client import get_redis_client
-from app.utils.policy_validator import validate_request
-from app.utils.routing_engine import apply_routing
+from utils.redis_client import get_redis_client
+from utils.policy_validator import validate_request
+from utils.routing_engine import apply_routing
 from services.celery_tasks import send_notification_task
 
 router = APIRouter()
@@ -172,7 +172,7 @@ async def cache_idempotent_response(redis_client, idempotency_key: str, response
     """
     Guarda la respuesta en cache para futuras requests idempotentes
     """
-    from app.constants import REDIS_TTL_IDEMPOTENCY
+    from constants import REDIS_TTL_IDEMPOTENCY
     import json
     
     cache_key = f"{REDIS_IDEMPOTENCY_PREFIX}{idempotency_key}"

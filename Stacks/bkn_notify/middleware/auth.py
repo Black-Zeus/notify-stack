@@ -8,7 +8,7 @@ import logging
 from fastapi import Request, HTTPException
 from fastapi.responses import JSONResponse
 
-from app.constants import API_KEYS, AUTH_HEADER, REQUEST_ID_HEADER, HTTP_401_UNAUTHORIZED
+from constants import API_KEYS, AUTH_HEADER, REQUEST_ID_HEADER, HTTP_401_UNAUTHORIZED
 
 
 async def auth_middleware(request: Request, call_next):

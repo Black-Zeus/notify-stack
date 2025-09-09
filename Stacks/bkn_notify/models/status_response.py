@@ -4,7 +4,7 @@ Esquemas para consulta de estado y logs de notificaciones
 """
 
 from typing import List, Optional, Dict, Any, Union
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator
 from datetime import datetime
 from enum import Enum
 
@@ -41,8 +41,8 @@ class ErrorInfo(BaseModel):
     error_code: Optional[str] = Field(default=None, description="Código de error específico del proveedor")
     retry_after: Optional[int] = Field(default=None, description="Segundos hasta el próximo reintento")
     
-    class Config:
-        schema_extra = {
+    model_config = {
+        "json_schema_extra": {
             "example": {
                 "error_type": "SMTPAuthenticationError",
                 "error_message": "Invalid credentials for SMTP server",
@@ -50,6 +50,7 @@ class ErrorInfo(BaseModel):
                 "retry_after": 300
             }
         }
+    }
 
 
 class ProviderInfo(BaseModel):
@@ -61,8 +62,8 @@ class ProviderInfo(BaseModel):
     endpoint: Optional[str] = Field(default=None, description="Endpoint o servidor utilizado")
     response_time: Optional[float] = Field(default=None, description="Tiempo de respuesta en segundos")
     
-    class Config:
-        schema_extra = {
+    model_config = {
+        "json_schema_extra": {
             "example": {
                 "provider_name": "smtp_primary",
                 "provider_type": "smtp",
@@ -70,6 +71,7 @@ class ProviderInfo(BaseModel):
                 "response_time": 1.234
             }
         }
+    }
 
 
 class DeliveryResult(BaseModel):
@@ -83,8 +85,8 @@ class DeliveryResult(BaseModel):
     open_tracking: Optional[Dict[str, Any]] = Field(default=None, description="Info de tracking de apertura")
     click_tracking: Optional[Dict[str, Any]] = Field(default=None, description="Info de tracking de clicks")
     
-    class Config:
-        schema_extra = {
+    model_config = {
+        "json_schema_extra": {
             "example": {
                 "delivered_at": "2024-01-15T10:35:22Z",
                 "provider_message_id": "0000014a-f4d6-4f88-b8ca-6c2e4b8b4b4b",
@@ -94,6 +96,7 @@ class DeliveryResult(BaseModel):
                 "click_tracking": {"enabled": False}
             }
         }
+    }
 
 
 class StatusResponse(BaseModel):
@@ -128,19 +131,9 @@ class StatusResponse(BaseModel):
     processing_duration: Optional[float] = Field(default=None, description="Duración del procesamiento en segundos")
     total_duration: Optional[float] = Field(default=None, description="Duración total desde creación")
     
-    @validator('status')
-    def validate_status_consistency(cls, v, values):
-        """Valida consistencia entre status y otros campos"""
-        # Si está completado, debe tener completed_at
-        if v in [TaskStatus.SUCCESS, TaskStatus.FAILED, TaskStatus.CANCELLED]:
-            # Nota: En validador no podemos modificar otros campos, solo validar
-            pass
-        
-        return v
-    
-    class Config:
-        use_enum_values = True
-        schema_extra = {
+    model_config = {
+        "use_enum_values": True,
+        "json_schema_extra": {
             "example": {
                 "message_id": "550e8400-e29b-41d4-a716-446655440000",
                 "status": "success",
@@ -168,6 +161,7 @@ class StatusResponse(BaseModel):
                 "total_duration": 322.0
             }
         }
+    }
 
 
 class LogEntry(BaseModel):
@@ -184,16 +178,17 @@ class LogEntry(BaseModel):
     celery_task_id: Optional[str] = Field(default=None, description="ID de tarea Celery si aplica")
     request_id: Optional[str] = Field(default=None, description="ID de request HTTP si aplica")
     
-    @validator('message')
+    @field_validator('message')
+    @classmethod
     def validate_message_length(cls, v):
         """Valida longitud del mensaje"""
         if len(v) > 1000:
             return v[:997] + "..."
         return v
     
-    class Config:
-        use_enum_values = True
-        schema_extra = {
+    model_config = {
+        "use_enum_values": True,
+        "json_schema_extra": {
             "example": {
                 "timestamp": "2024-01-15T10:30:05Z",
                 "level": "INFO",
@@ -208,6 +203,7 @@ class LogEntry(BaseModel):
                 "request_id": "req_550e8400-e29b-41d4-a716-446655440000"
             }
         }
+    }
 
 
 class LogsResponse(BaseModel):
@@ -226,8 +222,8 @@ class LogsResponse(BaseModel):
     # Metadata
     retrieved_at: Optional[datetime] = Field(default_factory=datetime.utcnow, description="Timestamp de la consulta")
     
-    class Config:
-        schema_extra = {
+    model_config = {
+        "json_schema_extra": {
             "example": {
                 "message_id": "550e8400-e29b-41d4-a716-446655440000",
                 "total_logs": 8,
@@ -259,6 +255,7 @@ class LogsResponse(BaseModel):
                 "retrieved_at": "2024-01-15T11:00:00Z"
             }
         }
+    }
 
 
 class BatchStatusResponse(BaseModel):
@@ -289,7 +286,8 @@ class BatchStatusResponse(BaseModel):
     average_processing_time: Optional[float] = Field(default=None, description="Tiempo promedio de procesamiento")
     throughput_per_minute: Optional[float] = Field(default=None, description="Mensajes procesados por minuto")
     
-    @validator('progress_percentage')
+    @field_validator('progress_percentage')
+    @classmethod
     def validate_progress(cls, v):
         """Valida que el progreso esté entre 0 y 100"""
         if v < 0:
@@ -298,8 +296,8 @@ class BatchStatusResponse(BaseModel):
             return 100.0
         return round(v, 2)
     
-    class Config:
-        schema_extra = {
+    model_config = {
+        "json_schema_extra": {
             "example": {
                 "batch_id": "batch_550e8400-e29b-41d4-a716-446655440000",
                 "status": "processing",
@@ -317,6 +315,7 @@ class BatchStatusResponse(BaseModel):
                 "throughput_per_minute": 45.5
             }
         }
+    }
 
 
 class MetricsResponse(BaseModel):
@@ -345,7 +344,8 @@ class MetricsResponse(BaseModel):
     # Metadata
     generated_at: datetime = Field(default_factory=datetime.utcnow, description="Timestamp de generación")
     
-    @validator('success_rate', 'bounce_rate')
+    @field_validator('success_rate', 'bounce_rate')
+    @classmethod
     def validate_rates(cls, v):
         """Valida que las tasas estén entre 0 y 100"""
         if v < 0:
@@ -354,8 +354,8 @@ class MetricsResponse(BaseModel):
             return 100.0
         return round(v, 2)
     
-    class Config:
-        schema_extra = {
+    model_config = {
+        "json_schema_extra": {
             "example": {
                 "timeframe": "last_24_hours",
                 "total_messages": 15420,
@@ -381,3 +381,4 @@ class MetricsResponse(BaseModel):
                 "generated_at": "2024-01-15T11:00:00Z"
             }
         }
+    }

@@ -10,7 +10,7 @@ import sys
 from datetime import datetime
 from typing import Dict, Any
 
-from app.constants import LOG_LEVEL, LOG_FORMAT, SERVICE_NAME
+from constants import LOG_LEVEL, LOG_FORMAT, SERVICE_NAME
 
 
 def setup_logging():

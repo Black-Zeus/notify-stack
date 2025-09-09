@@ -4,7 +4,7 @@ Esquemas para endpoints de testing y validación del sistema
 """
 
 from typing import List, Optional, Dict, Any, Union
-from pydantic import BaseModel, EmailStr, Field, validator
+from pydantic import BaseModel, EmailStr, Field, field_validator
 from datetime import datetime
 from enum import Enum
 
@@ -39,9 +39,9 @@ class TestRequest(BaseModel):
     provider: str = Field(..., max_length=50, description="Nombre del proveedor a probar")
     
     # Destinatarios (opcional, usa defaults si no se especifica)
-    to: Optional[List[EmailStr]] = Field(default=None, max_items=5, description="Destinatarios de prueba")
-    cc: Optional[List[EmailStr]] = Field(default=None, max_items=3, description="CC de prueba")
-    bcc: Optional[List[EmailStr]] = Field(default=None, max_items=3, description="BCC de prueba")
+    to: Optional[List[EmailStr]] = Field(default=None, max_length=5, description="Destinatarios de prueba")
+    cc: Optional[List[EmailStr]] = Field(default=None, max_length=3, description="CC de prueba")
+    bcc: Optional[List[EmailStr]] = Field(default=None, max_length=3, description="BCC de prueba")
     
     # Contenido del test
     subject: Optional[str] = Field(default=None, max_length=200, description="Subject personalizado")
@@ -53,13 +53,14 @@ class TestRequest(BaseModel):
     vars: Optional[Dict[str, Any]] = Field(default_factory=dict, description="Variables de prueba")
     
     # Attachments de prueba
-    attachments: Optional[List[AttachmentModel]] = Field(default=None, max_items=3, description="Attachments de prueba")
+    attachments: Optional[List[AttachmentModel]] = Field(default=None, max_length=3, description="Attachments de prueba")
     
     # Configuración del test
     skip_validation: bool = Field(default=False, description="Omitir validaciones de política")
     timeout: Optional[int] = Field(default=30, ge=5, le=300, description="Timeout en segundos")
     
-    @validator('provider')
+    @field_validator('provider')
+    @classmethod
     def validate_provider_name(cls, v):
         """Valida nombre del proveedor"""
         import re
@@ -67,15 +68,16 @@ class TestRequest(BaseModel):
             raise ValueError("Provider name can only contain letters, numbers, hyphens and underscores")
         return v
     
-    @validator('to', 'cc', 'bcc')
+    @field_validator('to', 'cc', 'bcc')
+    @classmethod
     def validate_test_recipients(cls, v):
         """Valida que no sean demasiados destinatarios para test"""
         if v and len(v) > 5:
             raise ValueError("Too many recipients for test (max 5 per field)")
         return v
     
-    class Config:
-        schema_extra = {
+    model_config = {
+        "json_schema_extra": {
             "example": {
                 "provider": "smtp_primary",
                 "to": ["test@example.com"],
@@ -88,6 +90,7 @@ class TestRequest(BaseModel):
                 "timeout": 30
             }
         }
+    }
 
 
 class TestResponse(BaseModel):
@@ -105,9 +108,9 @@ class TestResponse(BaseModel):
     test_type: TestType = Field(default=TestType.SEND, description="Tipo de test realizado")
     created_at: datetime = Field(default_factory=datetime.utcnow, description="Timestamp del test")
     
-    class Config:
-        use_enum_values = True
-        schema_extra = {
+    model_config = {
+        "use_enum_values": True,
+        "json_schema_extra": {
             "example": {
                 "test_id": "test_550e8400-e29b-41d4-a716-446655440000",
                 "status": "accepted",
@@ -119,6 +122,7 @@ class TestResponse(BaseModel):
                 "created_at": "2024-01-15T10:30:00Z"
             }
         }
+    }
 
 
 class ConnectivityTestRequest(BaseModel):
@@ -129,14 +133,15 @@ class ConnectivityTestRequest(BaseModel):
     timeout: int = Field(default=10, ge=1, le=60, description="Timeout de conexión en segundos")
     deep_check: bool = Field(default=False, description="Realizar verificación profunda (más lenta)")
     
-    class Config:
-        schema_extra = {
+    model_config = {
+        "json_schema_extra": {
             "example": {
                 "provider": "smtp_primary",
                 "timeout": 15,
                 "deep_check": True
             }
         }
+    }
 
 
 class ProviderTestResult(BaseModel):
@@ -156,16 +161,17 @@ class ProviderTestResult(BaseModel):
     error_type: Optional[str] = Field(default=None, description="Tipo de error si falló")
     error_message: Optional[str] = Field(default=None, description="Mensaje de error detallado")
     
-    @validator('response_time')
+    @field_validator('response_time')
+    @classmethod
     def validate_response_time(cls, v):
         """Valida tiempo de respuesta"""
         if v < 0:
             return 0.0
         return round(v, 3)
     
-    class Config:
-        use_enum_values = True
-        schema_extra = {
+    model_config = {
+        "use_enum_values": True,
+        "json_schema_extra": {
             "example": {
                 "provider_name": "smtp_primary",
                 "status": "healthy",
@@ -185,6 +191,7 @@ class ProviderTestResult(BaseModel):
                 }
             }
         }
+    }
 
 
 class ConnectivityTestResponse(BaseModel):
@@ -202,29 +209,9 @@ class ConnectivityTestResponse(BaseModel):
     error_count: Optional[int] = Field(default=None, description="Proveedores en estado error")
     average_response_time: Optional[float] = Field(default=None, description="Tiempo promedio de respuesta")
     
-    @validator('results')
-    def calculate_statistics(cls, v, values):
-        """Calcula estadísticas automáticamente"""
-        if not v:
-            return v
-        
-        # Contar estados
-        healthy = sum(1 for result in v.values() if result.status == ConnectivityStatus.HEALTHY)
-        degraded = sum(1 for result in v.values() if result.status == ConnectivityStatus.DEGRADED)
-        error = sum(1 for result in v.values() if result.status == ConnectivityStatus.ERROR)
-        
-        # Calcular tiempo promedio
-        response_times = [result.response_time for result in v.values() if result.response_time > 0]
-        avg_time = sum(response_times) / len(response_times) if response_times else 0.0
-        
-        # Actualizar valores (en un validador real esto no se puede hacer directamente)
-        # Pero lo documentamos para que se haga en la lógica de negocio
-        
-        return v
-    
-    class Config:
-        use_enum_values = True
-        schema_extra = {
+    model_config = {
+        "use_enum_values": True,
+        "json_schema_extra": {
             "example": {
                 "overall_status": "healthy",
                 "providers_tested": 2,
@@ -249,6 +236,7 @@ class ConnectivityTestResponse(BaseModel):
                 "average_response_time": 1.045
             }
         }
+    }
 
 
 class TemplateTestRequest(BaseModel):
@@ -259,7 +247,8 @@ class TemplateTestRequest(BaseModel):
     variables: Optional[Dict[str, Any]] = Field(default_factory=dict, description="Variables para el template")
     validate_syntax: bool = Field(default=True, description="Validar sintaxis del template")
     
-    @validator('template_id')
+    @field_validator('template_id')
+    @classmethod
     def validate_template_format(cls, v):
         """Valida formato del template ID"""
         import re
@@ -267,8 +256,8 @@ class TemplateTestRequest(BaseModel):
             raise ValueError("template_id must follow format: template-name/vN")
         return v
     
-    class Config:
-        schema_extra = {
+    model_config = {
+        "json_schema_extra": {
             "example": {
                 "template_id": "welcome-email/v1",
                 "variables": {
@@ -279,6 +268,7 @@ class TemplateTestRequest(BaseModel):
                 "validate_syntax": True
             }
         }
+    }
 
 
 class TemplateTestResponse(BaseModel):
@@ -305,8 +295,8 @@ class TemplateTestResponse(BaseModel):
     errors: Optional[List[str]] = Field(default=None, description="Lista de errores encontrados")
     warnings: Optional[List[str]] = Field(default=None, description="Lista de advertencias")
     
-    class Config:
-        schema_extra = {
+    model_config = {
+        "json_schema_extra": {
             "example": {
                 "template_id": "welcome-email/v1",
                 "status": "success",
@@ -328,6 +318,7 @@ class TemplateTestResponse(BaseModel):
                 "tested_at": "2024-01-15T10:30:00Z"
             }
         }
+    }
 
 
 class ValidationTestRequest(BaseModel):
@@ -335,7 +326,7 @@ class ValidationTestRequest(BaseModel):
     Request para test de validación sin envío
     """
     # Datos a validar
-    to: List[EmailStr] = Field(..., min_items=1, max_items=10, description="Emails a validar")
+    to: List[EmailStr] = Field(..., min_length=1, max_length=10, description="Emails a validar")
     subject: Optional[str] = Field(default=None, description="Subject a validar")
     content: Optional[str] = Field(default=None, description="Contenido a validar")
     
@@ -346,8 +337,8 @@ class ValidationTestRequest(BaseModel):
     check_disposable: bool = Field(default=True, description="Detectar dominios desechables")
     check_policies: bool = Field(default=True, description="Validar contra políticas del sistema")
     
-    class Config:
-        schema_extra = {
+    model_config = {
+        "json_schema_extra": {
             "example": {
                 "to": ["user@example.com", "admin@company.com"],
                 "subject": "Test subject with ñ special chars",
@@ -359,6 +350,7 @@ class ValidationTestRequest(BaseModel):
                 "check_policies": True
             }
         }
+    }
 
 
 class ValidationTestResponse(BaseModel):
@@ -386,8 +378,8 @@ class ValidationTestResponse(BaseModel):
     validation_time: Optional[float] = Field(default=None, description="Tiempo de validación en segundos")
     validated_at: datetime = Field(default_factory=datetime.utcnow, description="Timestamp de la validación")
     
-    class Config:
-        schema_extra = {
+    model_config = {
+        "json_schema_extra": {
             "example": {
                 "overall_valid": True,
                 "email_results": [
@@ -428,3 +420,4 @@ class ValidationTestResponse(BaseModel):
                 "validated_at": "2024-01-15T10:30:00Z"
             }
         }
+    }

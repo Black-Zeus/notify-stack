@@ -10,7 +10,7 @@ from email_validator import validate_email as validate_email_lib, EmailNotValidE
 import dns.resolver
 import socket
 
-from app.utils.config_loader import load_policy_config
+from utils.config_loader import load_policy_config
 
 
 class EmailValidator:

@@ -7,8 +7,8 @@ import logging
 from typing import Dict, Any, Optional
 from datetime import datetime
 
-from app.utils.template_loader import load_template_files, render_template as render_template_files
-from app.utils.config_loader import load_config
+from utils.template_loader import load_template_files, render_template as render_template_files
+from utils.config_loader import load_config
 
 
 async def render_template(
@@ -195,7 +195,7 @@ async def _render_string_template(template_string: str, variables: Dict[str, Any
     """
     
     try:
-        from app.utils.template_loader import compile_template
+        from utils.template_loader import compile_template
         
         # Compilar y renderizar template string
         compiled_template = compile_template(template_string, f"inline_{field_name}")
@@ -314,7 +314,7 @@ def validate_template_variables(template_id: str, variables: Dict[str, Any]) -> 
         
         # Intentar compilar templates para detectar variables faltantes
         from jinja2 import meta
-        from app.utils.template_loader import get_jinja_environment
+        from utils.template_loader import get_jinja_environment
         
         env = get_jinja_environment()
         

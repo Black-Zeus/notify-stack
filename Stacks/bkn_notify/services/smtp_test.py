@@ -11,7 +11,7 @@ import logging
 from typing import Dict, Any
 from datetime import datetime
 
-from app.constants import SMTP_TIMEOUT
+from constants import SMTP_TIMEOUT
 
 
 async def test_smtp_connectivity(provider_config: Dict[str, Any], timeout: int = SMTP_TIMEOUT) -> Dict[str, Any]:

@@ -8,11 +8,11 @@ from typing import Optional
 from datetime import datetime
 from fastapi import APIRouter, HTTPException, Depends, Query
 
-from app.constants import (
+from constants import (
     HTTP_404_NOT_FOUND, TASK_STATES, REDIS_TASK_PREFIX, REDIS_LOG_PREFIX
 )
 from models.status_response import StatusResponse, LogEntry, LogsResponse
-from app.utils.redis_client import get_redis_client
+from utils.redis_client import get_redis_client
 from services.celery_app import get_celery_app
 
 router = APIRouter()

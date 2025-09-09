@@ -9,7 +9,7 @@ import logging
 from typing import Dict, Any, Optional
 from pathlib import Path
 
-from app.constants import CONFIG_FILE, PROVIDERS_FILE, POLICY_FILE
+from constants import CONFIG_FILE, PROVIDERS_FILE, POLICY_FILE
 
 # Cache global de configuraciones
 _config_cache: Dict[str, Any] = {}

@@ -15,7 +15,7 @@ from typing import Dict, Any, List, Optional
 from datetime import datetime
 import base64
 
-from app.constants import SMTP_TIMEOUT
+from constants import SMTP_TIMEOUT
 
 
 class SMTPSender:

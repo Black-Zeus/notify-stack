@@ -9,7 +9,7 @@ from typing import Dict, Any, List, Optional
 from pathlib import Path
 from jinja2 import Environment, FileSystemLoader, Template, TemplateNotFound, TemplateSyntaxError
 
-from app.constants import TEMPLATES_DIR
+from constants import TEMPLATES_DIR
 
 # Cache global de templates compilados
 _template_cache: Dict[str, Template] = {}

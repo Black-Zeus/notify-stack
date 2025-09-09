@@ -4,7 +4,7 @@ Esquemas de validación para el sistema de notificaciones
 """
 
 from typing import List, Optional, Dict, Any
-from pydantic import BaseModel, EmailStr, Field, validator, root_validator
+from pydantic import BaseModel, EmailStr, Field, field_validator, model_validator
 from datetime import datetime
 
 
@@ -16,7 +16,8 @@ class AttachmentModel(BaseModel):
     content: str = Field(..., description="Contenido del archivo en base64")
     content_type: Optional[str] = Field(default="application/octet-stream", description="MIME type del archivo")
     
-    @validator('filename')
+    @field_validator('filename')
+    @classmethod
     def validate_filename(cls, v):
         """Valida nombre de archivo seguro"""
         # Caracteres peligrosos
@@ -31,7 +32,8 @@ class AttachmentModel(BaseModel):
         
         return v.strip()
     
-    @validator('content')
+    @field_validator('content')
+    @classmethod
     def validate_content(cls, v):
         """Valida contenido base64"""
         import base64
@@ -54,9 +56,9 @@ class NotifyRequest(BaseModel):
     """
     
     # Destinatarios (requerido)
-    to: List[EmailStr] = Field(..., min_items=1, max_items=100, description="Destinatarios principales")
-    cc: Optional[List[EmailStr]] = Field(default=None, max_items=50, description="Destinatarios en copia")
-    bcc: Optional[List[EmailStr]] = Field(default=None, max_items=50, description="Destinatarios en copia oculta")
+    to: List[EmailStr] = Field(..., min_length=1, max_length=100, description="Destinatarios principales")
+    cc: Optional[List[EmailStr]] = Field(default=None, max_length=50, description="Destinatarios en copia")
+    bcc: Optional[List[EmailStr]] = Field(default=None, max_length=50, description="Destinatarios en copia oculta")
     
     # Contenido
     subject: Optional[str] = Field(default=None, max_length=998, description="Asunto del email")
@@ -68,7 +70,7 @@ class NotifyRequest(BaseModel):
     vars: Optional[Dict[str, Any]] = Field(default_factory=dict, description="Variables para el template")
     
     # Attachments
-    attachments: Optional[List[AttachmentModel]] = Field(default=None, max_items=10, description="Archivos adjuntos")
+    attachments: Optional[List[AttachmentModel]] = Field(default=None, max_length=10, description="Archivos adjuntos")
     
     # Configuración de envío
     provider: Optional[str] = Field(default=None, max_length=50, description="Proveedor específico a usar")
@@ -77,17 +79,17 @@ class NotifyRequest(BaseModel):
     # Headers personalizados
     custom_headers: Optional[Dict[str, str]] = Field(default=None, description="Headers HTTP personalizados")
     
-    @root_validator
-    def validate_content_requirements(cls, values):
+    @model_validator(mode='after')
+    def validate_content_requirements(self):
         """Valida que hay contenido suficiente para el email"""
-        template_id = values.get('template_id')
-        subject = values.get('subject')
-        body_text = values.get('body_text')
-        body_html = values.get('body_html')
+        template_id = self.template_id
+        subject = self.subject
+        body_text = self.body_text
+        body_html = self.body_html
         
         # Si usa template, no necesita otros campos obligatorios
         if template_id:
-            return values
+            return self
         
         # Si no usa template, necesita subject y al menos un body
         if not subject:
@@ -96,9 +98,10 @@ class NotifyRequest(BaseModel):
         if not body_text and not body_html:
             raise ValueError("Either body_text or body_html is required when not using template_id")
         
-        return values
+        return self
     
-    @validator('to', 'cc', 'bcc')
+    @field_validator('to', 'cc', 'bcc')
+    @classmethod
     def validate_email_lists(cls, v):
         """Valida listas de emails y elimina duplicados"""
         if not v:
@@ -115,21 +118,22 @@ class NotifyRequest(BaseModel):
         
         return unique_emails
     
-    @root_validator
-    def validate_total_recipients(cls, values):
+    @model_validator(mode='after')
+    def validate_total_recipients(self):
         """Valida límite total de destinatarios"""
-        to = values.get('to', [])
-        cc = values.get('cc', [])
-        bcc = values.get('bcc', [])
+        to = self.to or []
+        cc = self.cc or []
+        bcc = self.bcc or []
         
-        total_recipients = len(to) + len(cc or []) + len(bcc or [])
+        total_recipients = len(to) + len(cc) + len(bcc)
         
         if total_recipients > 150:  # Límite total más generoso
             raise ValueError(f"Too many total recipients: {total_recipients} (max: 150)")
         
-        return values
+        return self
     
-    @validator('subject')
+    @field_validator('subject')
+    @classmethod
     def validate_subject(cls, v):
         """Valida subject"""
         if v is None:
@@ -145,7 +149,8 @@ class NotifyRequest(BaseModel):
         
         return normalized
     
-    @validator('template_id')
+    @field_validator('template_id')
+    @classmethod
     def validate_template_id(cls, v):
         """Valida formato de template ID"""
         if v is None:
@@ -158,7 +163,8 @@ class NotifyRequest(BaseModel):
         
         return v
     
-    @validator('provider')
+    @field_validator('provider')
+    @classmethod
     def validate_provider(cls, v):
         """Valida nombre de proveedor"""
         if v is None:
@@ -171,7 +177,8 @@ class NotifyRequest(BaseModel):
         
         return v
     
-    @validator('routing_hint')
+    @field_validator('routing_hint')
+    @classmethod
     def validate_routing_hint(cls, v):
         """Valida routing hint"""
         if v is None:
@@ -187,7 +194,8 @@ class NotifyRequest(BaseModel):
         
         return v
     
-    @validator('custom_headers')
+    @field_validator('custom_headers')
+    @classmethod
     def validate_custom_headers(cls, v):
         """Valida headers personalizados"""
         if not v:
@@ -214,14 +222,12 @@ class NotifyRequest(BaseModel):
         
         return v
     
-    class Config:
-        """Configuración del modelo Pydantic"""
-        str_strip_whitespace = True
-        validate_assignment = True
-        use_enum_values = True
-        extra = "forbid"  # No permitir campos adicionales
-        
-        schema_extra = {
+    model_config = {
+        "str_strip_whitespace": True,
+        "validate_assignment": True,
+        "use_enum_values": True,
+        "extra": "forbid",  # No permitir campos adicionales
+        "json_schema_extra": {
             "example": {
                 "to": ["user@example.com"],
                 "cc": ["manager@example.com"],
@@ -234,6 +240,7 @@ class NotifyRequest(BaseModel):
                 "routing_hint": "transactional"
             }
         }
+    }
 
 
 class NotifyResponse(BaseModel):
@@ -247,8 +254,8 @@ class NotifyResponse(BaseModel):
     estimated_delivery: Optional[str] = Field(default="immediate", description="Tiempo estimado de entrega")
     created_at: Optional[datetime] = Field(default_factory=datetime.utcnow, description="Timestamp de creación")
     
-    class Config:
-        schema_extra = {
+    model_config = {
+        "json_schema_extra": {
             "example": {
                 "message_id": "550e8400-e29b-41d4-a716-446655440000",
                 "status": "accepted",
@@ -258,6 +265,7 @@ class NotifyResponse(BaseModel):
                 "created_at": "2024-01-15T10:30:00Z"
             }
         }
+    }
 
 
 class BulkNotifyRequest(BaseModel):
@@ -265,12 +273,13 @@ class BulkNotifyRequest(BaseModel):
     Modelo para envío masivo de notificaciones
     """
     template_id: str = Field(..., description="Template común para todos los envíos")
-    recipients: List[Dict[str, Any]] = Field(..., min_items=1, max_items=1000, description="Lista de destinatarios con sus variables")
+    recipients: List[Dict[str, Any]] = Field(..., min_length=1, max_length=1000, description="Lista de destinatarios con sus variables")
     common_vars: Optional[Dict[str, Any]] = Field(default_factory=dict, description="Variables comunes para todos")
     provider: Optional[str] = Field(default=None, description="Proveedor específico")
     routing_hint: Optional[str] = Field(default="bulk", description="Hint de routing")
     
-    @validator('recipients')
+    @field_validator('recipients')
+    @classmethod
     def validate_recipients(cls, v):
         """Valida estructura de destinatarios"""
         for i, recipient in enumerate(v):
@@ -278,16 +287,15 @@ class BulkNotifyRequest(BaseModel):
                 raise ValueError(f"Recipient {i} missing required 'email' field")
             
             # Validar email
-            from pydantic import EmailStr
             try:
-                EmailStr.validate(recipient['email'])
+                EmailStr._validate(recipient['email'], None)
             except Exception:
                 raise ValueError(f"Invalid email in recipient {i}: {recipient['email']}")
         
         return v
     
-    class Config:
-        schema_extra = {
+    model_config = {
+        "json_schema_extra": {
             "example": {
                 "template_id": "newsletter/v2",
                 "recipients": [
@@ -309,6 +317,7 @@ class BulkNotifyRequest(BaseModel):
                 "routing_hint": "bulk"
             }
         }
+    }
 
 
 class BulkNotifyResponse(BaseModel):
@@ -321,8 +330,8 @@ class BulkNotifyResponse(BaseModel):
     celery_task_ids: List[str] = Field(..., description="IDs de todas las tareas Celery creadas")
     estimated_completion: Optional[str] = Field(default=None, description="Tiempo estimado de finalización")
     
-    class Config:
-        schema_extra = {
+    model_config = {
+        "json_schema_extra": {
             "example": {
                 "batch_id": "batch_550e8400-e29b-41d4-a716-446655440000",
                 "status": "accepted",
@@ -331,3 +340,4 @@ class BulkNotifyResponse(BaseModel):
                 "estimated_completion": "5 minutes"
             }
         }
+    }

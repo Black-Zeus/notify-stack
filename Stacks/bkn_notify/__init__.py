@@ -8,7 +8,7 @@ __author__ = "notify-stack"
 __description__ = "Sistema ligero de notificaciones por correo"
 
 # Exportar componentes principales para importación directa
-from app.constants import (
+from constants import (
     SERVICE_NAME,
     API_VERSION,
     TASK_STATES

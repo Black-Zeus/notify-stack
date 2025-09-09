@@ -7,7 +7,7 @@ import redis.asyncio as redis
 import logging
 from typing import Optional
 
-from app.constants import REDIS_URL, REDIS_TTL_DEFAULT
+from constants import REDIS_URL, REDIS_TTL_DEFAULT
 
 # Cliente Redis global
 _redis_client: Optional[redis.Redis] = None

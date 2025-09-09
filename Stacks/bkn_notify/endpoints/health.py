@@ -7,9 +7,9 @@ from datetime import datetime
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import JSONResponse
 
-from app.constants import SERVICE_NAME, API_VERSION, HTTP_503_SERVICE_UNAVAILABLE
-from app.utils.redis_client import get_redis_client
-from app.utils.config_loader import load_config
+from constants import SERVICE_NAME, API_VERSION, HTTP_503_SERVICE_UNAVAILABLE
+from utils.redis_client import get_redis_client
+from utils.config_loader import load_config
 
 router = APIRouter()
 

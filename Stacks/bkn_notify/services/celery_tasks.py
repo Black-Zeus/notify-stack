@@ -13,7 +13,7 @@ from celery import Task
 from celery.exceptions import MaxRetriesExceededError
 
 from .celery_app import get_celery_app
-from app.utils.config_loader import get_provider_config
+from utils.config_loader import get_provider_config
 from .smtp_sender import SMTPSender
 from .api_sender import APISender
 
@@ -31,7 +31,7 @@ from .template_renderer import (
     validate_template_variables,     # opcional, para logs de validación
 )
 
-from app.constants import (
+from constants import (
     REDIS_TASK_PREFIX, REDIS_LOG_PREFIX, MAX_RETRIES, RETRY_BACKOFF,
     CELERY_TASK_TIMEOUT
 )

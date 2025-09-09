@@ -8,12 +8,12 @@ from datetime import datetime
 from fastapi import APIRouter, HTTPException, Depends, Query
 from typing import Optional
 
-from app.constants import (
+from constants import (
     HTTP_202_ACCEPTED, HTTP_400_BAD_REQUEST, TEST_RECIPIENTS, HTTP_404_NOT_FOUND
 )
 from models.test_request import TestRequest, TestResponse, ConnectivityTestResponse
-from app.utils.redis_client import get_redis_client
-from app.utils.config_loader import load_providers_config
+from utils.redis_client import get_redis_client
+from utils.config_loader import load_providers_config
 from services.celery_tasks import send_test_notification_task
 from services.smtp_test import test_smtp_connectivity
 
@@ -230,7 +230,7 @@ async def list_available_templates():
     """
     
     try:
-        from app.utils.template_loader import get_available_templates
+        from utils.template_loader import get_available_templates
         
         templates = get_available_templates()
         

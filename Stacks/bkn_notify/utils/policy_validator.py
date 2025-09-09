@@ -9,7 +9,7 @@ from typing import List, Dict, Any
 from email_validator import validate_email, EmailNotValidError
 
 from .config_loader import load_policy_config
-from app.constants import MAX_RECIPIENTS, MAX_ATTACHMENTS, MAX_ATTACHMENT_SIZE
+from constants import MAX_RECIPIENTS, MAX_ATTACHMENTS, MAX_ATTACHMENT_SIZE
 
 
 async def validate_request(request) -> None:

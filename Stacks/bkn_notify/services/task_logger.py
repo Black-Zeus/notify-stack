@@ -8,8 +8,8 @@ import logging
 from typing import Dict, Any, List, Optional
 from datetime import datetime
 
-from app.constants import REDIS_LOG_PREFIX, REDIS_TASK_PREFIX
-from app.utils.redis_client import get_redis_client, RedisHelper
+from constants import REDIS_LOG_PREFIX, REDIS_TASK_PREFIX
+from utils.redis_client import get_redis_client, RedisHelper
 
 
 async def log_task_event(
