@@ -1,0 +1,1 @@
+[RED] {{ tipo_alerta }} - {{ destino_afectado }}

@@ -1,0 +1,26 @@
+INFORMACIÓN DEL SISTEMA
+
+{{ mensaje }}
+
+Detalles:
+- Título: {{ titulo }}
+- Categoría: {{ categoria }}
+- Fecha: {{ fecha }}
+- Remitente: {{ remitente }}
+
+{% if datos_adicionales -%}
+Información adicional:
+{{ datos_adicionales }}
+{% endif %}
+
+{% if accion_requerida -%}
+Acción requerida:
+{{ accion_requerida }}
+{% endif %}
+
+{% if enlace -%}
+Más información: {{ enlace }}
+{% endif %}
+
+Atentamente,
+{{ remitente }}

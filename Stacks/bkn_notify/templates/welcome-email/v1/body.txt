@@ -1,15 +1,13 @@
-Hola {{ user_name }},
+Estimado {{ user_name }},
 
-¡Bienvenido al sistema de notificaciones Notify API!
+¡Bienvenido a {{ company_name }}!
 
-Tu cuenta ha sido creada exitosamente y ya puedes comenzar a usar nuestro servicio.
+Tu cuenta ha sido creada exitosamente. Puedes acceder con el email: {{ user_email }}
 
-Información de tu cuenta:
-- Usuario: {{ user_name }}
-- Email: {{ user_email | default('No especificado') }}
-- Fecha de registro: {{ now }}
+Para activar tu cuenta, haz clic en el siguiente enlace:
+{{ activation_link }}
 
 Si tienes alguna pregunta, no dudes en contactarnos.
 
-Saludos,
-Equipo Notify API
+Atentamente,
+Equipo de {{ company_name }}

@@ -1,0 +1,23 @@
+ERROR DEL SISTEMA
+
+Se ha detectado un error en el sistema que requiere atención.
+
+Información del error:
+- Tipo: {{ tipo_error }}
+- Componente: {{ componente }}
+- Descripción: {{ descripcion }}
+- Hora del error: {{ hora_error }}
+- Severidad: {{ severidad }}
+- ID de error: {{ error_id }}
+
+{% if solucion_sugerida -%}
+Posible solución:
+{{ solucion_sugerida }}
+{% endif %}
+
+{% if contacto -%}
+Para asistencia, contactar: {{ contacto }}
+{% endif %}
+
+Atentamente,
+Sistema de Monitoreo

@@ -1,0 +1,95 @@
+ALERTA DE SEGURIDAD
+
+Se ha detectado un evento de seguridad que requiere atención inmediata.
+
+Información del evento:
+- Tipo de alerta: {{ tipo_alerta }}
+- Usuario afectado: {{ usuario_afectado }}
+- Nivel de riesgo: {{ nivel_riesgo }}
+- Hora del evento: {{ hora_evento }}
+- ID del evento: {{ evento_id }}
+
+{% if intento_acceso -%}
+Intento de acceso no autorizado:
+- IP de origen: {{ ip_origen }}
+- País/Región: {{ pais_origen }}
+- Método de acceso: {{ metodo_acceso }}
+- Endpoint atacado: {{ endpoint_atacado }}
+- User-Agent: {{ user_agent }}
+- Número de intentos: {{ numero_intentos }}
+- Resultado: {{ resultado_acceso }}
+{% endif %}
+
+{% if password_expiry -%}
+Contraseña próxima a vencer:
+- Días para vencimiento: {{ dias_vencimiento }}
+- Fecha de vencimiento: {{ fecha_vencimiento }}
+- Último cambio: {{ ultimo_cambio_password }}
+- Política aplicada: {{ politica_password }}
+- Historial de recordatorios: {{ recordatorios_enviados }}
+{% endif %}
+
+{% if login_sospechoso -%}
+Acceso desde ubicación inusual:
+- IP de acceso: {{ ip_acceso }}
+- País/Ciudad: {{ ubicacion_acceso }}
+- Dispositivo: {{ dispositivo }}
+- Navegador: {{ navegador }}
+- Hora de acceso: {{ hora_acceso }}
+- Ubicación habitual: {{ ubicacion_habitual }}
+- Distancia: {{ distancia_km }} km
+- VPN detectada: {{ vpn_detectada }}
+{% endif %}
+
+{% if api_abuse -%}
+Abuso de API detectado:
+- API Key: {{ api_key }}
+- Endpoint: {{ api_endpoint }}
+- Requests por minuto: {{ requests_minuto }}
+- Límite excedido: {{ limite_excedido }}
+- Patrón detectado: {{ patron_abuso }}
+{% endif %}
+
+{% if sesion_multiple -%}
+Sesiones múltiples simultáneas:
+- Sesiones activas: {{ sesiones_activas }}
+- Ubicaciones: {{ ubicaciones_sesiones }}
+- Dispositivos: {{ dispositivos_sesiones }}
+- Última actividad: {{ ultima_actividad }}
+{% endif %}
+
+{% if cambio_privilegios -%}
+Cambio de privilegios:
+- Privilegios anteriores: {{ privilegios_anteriores }}
+- Nuevos privilegios: {{ privilegios_nuevos }}
+- Modificado por: {{ modificado_por }}
+- Justificación: {{ justificacion }}
+- Aprobación requerida: {{ aprobacion_requerida }}
+{% endif %}
+
+{% if archivo_malicioso -%}
+Archivo malicioso detectado:
+- Nombre del archivo: {{ nombre_archivo }}
+- Tipo de amenaza: {{ tipo_amenaza }}
+- Ubicación: {{ ubicacion_archivo }}
+- Hash MD5: {{ hash_md5 }}
+- Scanner: {{ antivirus_usado }}
+- Acción tomada: {{ accion_tomada }}
+{% endif %}
+
+{% if accion_inmediata -%}
+ACCIÓN INMEDIATA REQUERIDA:
+{{ accion_inmediata }}
+{% endif %}
+
+{% if accion_recomendada -%}
+Acciones recomendadas:
+{{ accion_recomendada }}
+{% endif %}
+
+{% if contacto_seguridad -%}
+Para reportar incidentes: {{ contacto_seguridad }}
+{% endif %}
+
+Atentamente,
+Sistema de Seguridad

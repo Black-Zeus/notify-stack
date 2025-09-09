@@ -1,0 +1,62 @@
+ALERTA DEL SISTEMA
+
+Se ha detectado un problema en la infraestructura que requiere atención.
+
+Información del servidor:
+- Servidor: {{ servidor }}
+- Tipo de alerta: {{ tipo_alerta }}
+- Severidad: {{ severidad }}
+- Hora de detección: {{ hora_deteccion }}
+
+{% if uso_disco -%}
+Espacio en disco:
+- Uso actual: {{ uso_disco }}%
+- Espacio libre: {{ espacio_libre }}
+- Punto de montaje: {{ punto_montaje }}
+{% endif %}
+
+{% if uso_memoria -%}
+Uso de memoria:
+- Memoria usada: {{ uso_memoria }}%
+- RAM total: {{ memoria_total }}
+- RAM disponible: {{ memoria_disponible }}
+{% endif %}
+
+{% if uso_cpu -%}
+Uso de CPU:
+- CPU actual: {{ uso_cpu }}%
+- Load average: {{ load_average }}
+- Procesos activos: {{ procesos_activos }}
+{% endif %}
+
+{% if servicio -%}
+Servicio afectado:
+- Nombre: {{ servicio }}
+- Estado: {{ estado_servicio }}
+- Puerto: {{ puerto }}
+- Último reinicio: {{ ultimo_reinicio }}
+{% endif %}
+
+{% if base_datos -%}
+Base de datos:
+- Servidor BD: {{ servidor_bd }}
+- Base de datos: {{ base_datos }}
+- Error: {{ error_bd }}
+- Tiempo sin conexión: {{ tiempo_desconexion }}
+{% endif %}
+
+{% if backup -%}
+Respaldo fallido:
+- Tipo de backup: {{ tipo_backup }}
+- Destino: {{ destino_backup }}
+- Tamaño esperado: {{ tamano_esperado }}
+- Error: {{ error_backup }}
+{% endif %}
+
+{% if accion_recomendada -%}
+Acción recomendada:
+{{ accion_recomendada }}
+{% endif %}
+
+Atentamente,
+Sistema de Monitoreo

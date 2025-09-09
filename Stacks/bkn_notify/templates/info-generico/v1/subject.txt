@@ -1,0 +1,1 @@
+[INFO] {{ titulo }} - {{ categoria }}

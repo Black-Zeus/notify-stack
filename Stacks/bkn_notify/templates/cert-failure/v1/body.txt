@@ -1,0 +1,18 @@
+ATENCIÓN REQUERIDA
+
+La renovación automática del certificado SSL/TLS para {{ dominio }} ha fallado y requiere gestión manual inmediata.
+
+Detalles del problema:
+- Dominio: {{ dominio }}
+- Fecha de vencimiento actual: {{ fecha_vencimiento }}
+- Días restantes: {{ dias_restantes }}
+- Error: {{ motivo_fallo }}
+- Último intento: {{ ultimo_intento }}
+
+ACCIÓN REQUERIDA:
+Se necesita renovación manual antes del {{ fecha_vencimiento }} para evitar interrupciones del servicio.
+
+Contacte al administrador de sistemas para resolver este problema.
+
+Atentamente,
+Sistema de Gestión de Certificados

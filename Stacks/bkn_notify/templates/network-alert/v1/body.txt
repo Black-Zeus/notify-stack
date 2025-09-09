@@ -1,0 +1,122 @@
+ALERTA DE RED/CONECTIVIDAD
+
+Se ha detectado un problema de conectividad que afecta el funcionamiento del sistema.
+
+Información del problema:
+- Tipo de alerta: {{ tipo_alerta }}
+- Destino afectado: {{ destino_afectado }}
+- Severidad: {{ severidad }}
+- Hora de detección: {{ hora_deteccion }}
+- ID del evento: {{ evento_id }}
+- Monitor: {{ servidor_monitor }}
+
+{% if latencia_alta -%}
+Latencia alta detectada:
+- Latencia actual: {{ latencia_actual }}ms
+- Latencia promedio: {{ latencia_promedio }}ms
+- Umbral configurado: {{ umbral_latencia }}ms
+- Duración del problema: {{ duracion_problema }}
+- Pérdida de paquetes: {{ perdida_paquetes }}%
+- Jitter: {{ jitter }}ms
+- Ruta de red: {{ ruta_red }}
+{% endif %}
+
+{% if dns_fallo -%}
+Fallo en resolución DNS:
+- Dominio: {{ dominio_dns }}
+- Servidor DNS: {{ servidor_dns }}
+- Tipo de consulta: {{ tipo_consulta }}
+- Código de error: {{ codigo_error_dns }}
+- Tiempo de timeout: {{ timeout_dns }}s
+- DNS alternativo probado: {{ dns_alternativo }}
+- TTL esperado: {{ ttl_esperado }}
+- Última resolución exitosa: {{ ultima_resolucion_exitosa }}
+{% endif %}
+
+{% if endpoint_timeout -%}
+Timeout en endpoint externo:
+- URL/Endpoint: {{ url_endpoint }}
+- Método HTTP: {{ metodo_http }}
+- Timeout configurado: {{ timeout_configurado }}s
+- Tiempo de respuesta: {{ tiempo_respuesta }}s
+- Código de estado: {{ codigo_estado }}
+- Tamaño de respuesta: {{ tamano_respuesta }}
+- Headers de respuesta: {{ headers_respuesta }}
+- Reintentos realizados: {{ reintentos_realizados }}
+{% endif %}
+
+{% if conectividad_general -%}
+Estado de conectividad general:
+- Gateway por defecto: {{ gateway_accesible }}
+- Conectividad a Internet: {{ internet_accesible }}
+- Proxy configurado: {{ proxy_configurado }}
+- Firewall activo: {{ firewall_activo }}
+- VPN activa: {{ vpn_activa }}
+- Interfaz de red: {{ interfaz_red }}
+- Velocidad de enlace: {{ velocidad_enlace }}
+{% endif %}
+
+{% if ssl_tls -%}
+Problemas SSL/TLS:
+- Certificado válido: {{ certificado_valido }}
+- Fecha de vencimiento: {{ fecha_vencimiento_cert }}
+- Emisor del certificado: {{ emisor_certificado }}
+- Protocolo SSL/TLS: {{ protocolo_ssl }}
+- Cipher suite: {{ cipher_suite }}
+- Verificación del hostname: {{ verificacion_hostname }}
+{% endif %}
+
+{% if cdn_problema -%}
+Problemas con CDN:
+- Proveedor CDN: {{ proveedor_cdn }}
+- Edge server: {{ edge_server }}
+- Cache hit ratio: {{ cache_hit_ratio }}%
+- Origen alcanzable: {{ origen_alcanzable }}
+- TTL del cache: {{ ttl_cache }}
+- Purge requerido: {{ purge_requerido }}
+{% endif %}
+
+{% if balanceador -%}
+Estado del balanceador de carga:
+- Balanceador: {{ nombre_balanceador }}
+- Algoritmo: {{ algoritmo_balanceo }}
+- Nodos activos: {{ nodos_activos }}
+- Nodos totales: {{ nodos_totales }}
+- Health checks: {{ health_checks_ok }}
+- Sesiones activas: {{ sesiones_activas }}
+- Distribución de carga: {{ distribucion_carga }}
+{% endif %}
+
+{% if base_datos_red -%}
+Conectividad a base de datos:
+- Servidor de BD: {{ servidor_bd }}
+- Puerto: {{ puerto_bd }}
+- Pool de conexiones: {{ pool_conexiones }}
+- Conexiones activas: {{ conexiones_activas }}
+- Timeout de conexión: {{ timeout_bd }}s
+- Max conexiones: {{ max_conexiones }}
+- Query timeout: {{ query_timeout }}s
+{% endif %}
+
+{% if impacto_servicios -%}
+Servicios impactados:
+{{ servicios_impactados }}
+{% endif %}
+
+{% if diagnostico -%}
+Diagnóstico realizado:
+{{ diagnostico }}
+{% endif %}
+
+{% if accion_automatica -%}
+Acciones automáticas tomadas:
+{{ accion_automatica }}
+{% endif %}
+
+{% if accion_recomendada -%}
+Acciones recomendadas:
+{{ accion_recomendada }}
+{% endif %}
+
+Atentamente,
+Sistema de Monitoreo de Red

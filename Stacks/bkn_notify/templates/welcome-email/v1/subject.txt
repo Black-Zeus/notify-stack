@@ -1,1 +1,1 @@
-Bienvenido a Notify API, {{ user_name }}!
+¡Bienvenido {{ user_name }} a {{ company_name }}!

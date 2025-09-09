@@ -1,0 +1,14 @@
+Estimado administrador,
+
+El certificado SSL/TLS para el dominio {{ dominio }} ha sido renovado exitosamente.
+
+Detalles de la renovación:
+- Dominio: {{ dominio }}
+- Fecha de renovación: {{ fecha_renovacion }}
+- Nueva fecha de vencimiento: {{ fecha_vencimiento }}
+- Emisor del certificado: {{ emisor }}
+
+El sitio web continuará funcionando sin interrupciones con la nueva certificación.
+
+Atentamente,
+Sistema de Gestión de Certificados

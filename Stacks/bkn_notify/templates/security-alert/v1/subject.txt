@@ -1,0 +1,1 @@
+[SEGURIDAD] {{ tipo_alerta }} - {{ usuario_afectado }}

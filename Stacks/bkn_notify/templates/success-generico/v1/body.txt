@@ -1,0 +1,24 @@
+OPERACIÓN COMPLETADA EXITOSAMENTE
+
+La siguiente operación se ha completado con éxito.
+
+Información de la operación:
+- Operación: {{ operacion }}
+- Componente: {{ componente }}
+- Descripción: {{ descripcion }}
+- Hora de finalización: {{ hora_finalizacion }}
+- Duración: {{ duracion }}
+- ID de operación: {{ operacion_id }}
+
+{% if resultado -%}
+Resultado:
+{{ resultado }}
+{% endif %}
+
+{% if siguiente_accion -%}
+Próximos pasos:
+{{ siguiente_accion }}
+{% endif %}
+
+Atentamente,
+Sistema de Monitoreo

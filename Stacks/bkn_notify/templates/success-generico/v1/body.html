@@ -60,7 +60,7 @@
 
     /* Header */
     .header {
-      background-color: #667eea;
+      background-color: #059669;
       padding: 20px;
       text-align: center;
     }
@@ -72,7 +72,7 @@
       margin: 0;
     }
 
-    .welcome-icon {
+    .success-icon {
       font-size: 32px;
       margin-bottom: 10px;
     }
@@ -83,9 +83,25 @@
       background-color: #f8f9fa;
     }
 
-    .welcome-box {
-      background-color: #f0f9ff;
-      border: 2px solid #667eea;
+    .success-box {
+      background-color: #f0fdf4;
+      border: 2px solid #059669;
+      border-radius: 4px;
+      padding: 20px;
+      margin: 20px 0;
+    }
+
+    .result-box {
+      background-color: #eff6ff;
+      border: 2px solid #2563eb;
+      border-radius: 4px;
+      padding: 20px;
+      margin: 20px 0;
+    }
+
+    .action-box {
+      background-color: #fefce8;
+      border: 2px solid #eab308;
       border-radius: 4px;
       padding: 20px;
       margin: 20px 0;
@@ -110,7 +126,7 @@
     }
 
     .info-value {
-      color: #667eea;
+      color: #059669;
       font-weight: bold;
     }
 
@@ -121,15 +137,27 @@
       margin: 15px 0;
     }
 
-    .action-button {
-      background-color: #667eea;
+    .status-badge {
+      background-color: #059669;
       color: #ffffff;
-      padding: 12px 24px;
-      text-decoration: none;
-      border-radius: 4px;
-      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 16px;
+      font-size: 14px;
       font-weight: bold;
-      margin: 15px 0;
+      display: inline-block;
+    }
+
+    .operation-id {
+      font-family: monospace;
+      background-color: #f3f4f6;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-size: 14px;
+    }
+
+    .duration {
+      color: #6b7280;
+      font-style: italic;
     }
 
     /* Footer */
@@ -177,7 +205,7 @@
           <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
             <tr>
               <td class="header">
-                <h1><span class="welcome-icon">🎉</span> ¡BIENVENIDO A {{ company_name|upper }}!</h1>
+                <h1><span class="success-icon">✅</span> OPERACIÓN EXITOSA</h1>
               </td>
             </tr>
           </table>
@@ -187,30 +215,61 @@
             <tr>
               <td class="content">
 
-                <div class="welcome-box">
+                <div class="success-box">
                   <p class="message-text">
-                    <strong>¡Hola {{ user_name }}! Tu cuenta ha sido creada exitosamente.</strong>
+                    <strong>La operación se ha completado exitosamente:</strong>
+                    <span class="status-badge">✓ COMPLETADO</span>
                   </p>
 
                   <table class="info-table" role="presentation" cellspacing="0" cellpadding="0" border="0">
                     <tr>
-                      <td class="info-label">Usuario:</td>
-                      <td class="info-value">{{ user_name }}</td>
+                      <td class="info-label">Operación:</td>
+                      <td class="info-value">{{ operacion }}</td>
                     </tr>
                     <tr>
-                      <td class="info-label">Email:</td>
-                      <td class="info-value">{{ user_email }}</td>
+                      <td class="info-label">Componente:</td>
+                      <td class="info-value">{{ componente }}</td>
                     </tr>
                     <tr>
-                      <td class="info-label">Empresa:</td>
-                      <td class="info-value">{{ company_name }}</td>
+                      <td class="info-label">Descripción:</td>
+                      <td style="color: #333;">{{ descripcion }}</td>
+                    </tr>
+                    <tr>
+                      <td class="info-label">Finalización:</td>
+                      <td class="info-value">{{ hora_finalizacion }}</td>
+                    </tr>
+                    <tr>
+                      <td class="info-label">Duración:</td>
+                      <td class="duration">{{ duracion }}</td>
+                    </tr>
+                    <tr>
+                      <td class="info-label">ID de operación:</td>
+                      <td><span class="operation-id">{{ operacion_id }}</span></td>
                     </tr>
                   </table>
                 </div>
 
-                <p class="message-text">
-                  Para completar el proceso, haz clic en el botón <strong>"Activar Cuenta"</strong> o accede al siguiente enlace:
-                </p>
+                {% if resultado -%}
+                <div class="result-box">
+                  <p class="message-text">
+                    <strong>📊 Resultado:</strong>
+                  </p>
+                  <p class="message-text">
+                    {{ resultado }}
+                  </p>
+                </div>
+                {% endif %}
+
+                {% if siguiente_accion -%}
+                <div class="action-box">
+                  <p class="message-text">
+                    <strong>📋 Próximos pasos:</strong>
+                  </p>
+                  <p class="message-text">
+                    {{ siguiente_accion }}
+                  </p>
+                </div>
+                {% endif %}
 
               </td>
             </tr>
@@ -221,8 +280,8 @@
             <tr>
               <td class="footer">
                 <p class="footer-text">
-                  Este es un mensaje automático de bienvenida.<br>
-                  Generado el {{ timestamp }} por {{ company_name }}
+                  Este es un mensaje automático del sistema de monitoreo.<br>
+                  Generado el {{ timestamp }} por Notify API
                 </p>
               </td>
             </tr>
