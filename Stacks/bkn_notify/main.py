@@ -16,6 +16,7 @@ if BASE_DIR not in sys.path:
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, RedirectResponse
+from fastapi.security import APIKeyHeader
 
 # Imports directos con manejo de errores
 try:
@@ -27,6 +28,8 @@ except ImportError:
         LOG_LEVEL = "INFO"
     constants = Constants()
 
+# Definir esquema de seguridad para Swagger
+api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -39,7 +42,7 @@ async def lifespan(app: FastAPI):
     logging.info(f"{constants.SERVICE_NAME} shutting down")
 
 
-# Crear app FastAPI (Swagger en /swagger y alias /docs)
+# Crear app FastAPI con configuración de seguridad para Swagger
 app = FastAPI(
     title="Notify API",
     description="Sistema ligero de notificaciones por correo",
@@ -48,7 +51,49 @@ app = FastAPI(
     redoc_url="/redoc",
     openapi_url="/openapi.json",
     lifespan=lifespan,
+    # Configuración de seguridad para Swagger UI
+    swagger_ui_parameters={
+        "persistAuthorization": True,
+    }
 )
+
+# Configurar esquema de seguridad en OpenAPI
+def custom_openapi():
+    if app.openapi_schema:
+        return app.openapi_schema
+    
+    from fastapi.openapi.utils import get_openapi
+    openapi_schema = get_openapi(
+        title=app.title,
+        version=app.version,
+        description=app.description,
+        routes=app.routes,
+    )
+    
+    # Agregar configuración de seguridad
+    openapi_schema["components"]["securitySchemes"] = {
+        "APIKeyHeader": {
+            "type": "apiKey",
+            "in": "header",
+            "name": "X-API-Key",
+            "description": "API Key requerida para acceder a los endpoints"
+        }
+    }
+    
+    # Aplicar seguridad a todos los endpoints excepto públicos
+    for path, path_item in openapi_schema["paths"].items():
+        # Endpoints públicos que no requieren autenticación
+        if path in ["/", "/api/info", "/api/healthz", "/api/readyz"]:
+            continue
+            
+        for method, operation in path_item.items():
+            if method.lower() in ["get", "post", "put", "delete", "patch"]:
+                operation["security"] = [{"APIKeyHeader": []}]
+    
+    app.openapi_schema = openapi_schema
+    return app.openapi_schema
+
+app.openapi = custom_openapi
 
 # Alias /docs → /swagger
 @app.get("/docs", include_in_schema=False)

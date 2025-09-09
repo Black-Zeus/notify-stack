@@ -10,7 +10,7 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.mime.base import MIMEBase
 from email import encoders
-from emailapp.utils import formataddr, formatdate
+from email.utils import formataddr, formatdate
 from typing import Dict, Any, List, Optional
 from datetime import datetime
 import base64
