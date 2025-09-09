@@ -1,0 +1,15 @@
+Hola {{ user_name }},
+
+¡Bienvenido al sistema de notificaciones Notify API!
+
+Tu cuenta ha sido creada exitosamente y ya puedes comenzar a usar nuestro servicio.
+
+Información de tu cuenta:
+- Usuario: {{ user_name }}
+- Email: {{ user_email | default('No especificado') }}
+- Fecha de registro: {{ now.strftime('%d/%m/%Y') }}
+
+Si tienes alguna pregunta, no dudes en contactarnos.
+
+Saludos,
+Equipo Notify API

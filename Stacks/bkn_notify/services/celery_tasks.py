@@ -1,11 +1,12 @@
 # services/celery_tasks.py
 """
 Celery tasks para procesamiento de notificaciones
-Workers que manejan envío de correos en background
+Workers que manejan envío de correos en background - VERSION SYNC
 """
 
 import json
 import logging
+import asyncio
 from datetime import datetime, timedelta
 from typing import Dict, Any, Optional
 
@@ -16,20 +17,6 @@ from .celery_app import get_celery_app
 from utils.config_loader import get_provider_config
 from .smtp_sender import SMTPSender
 from .api_sender import APISender
-
-# Helpers de logging/estado en Redis y render de templates
-from .task_logger import (
-    log_task_event,
-    log_task_start,
-    log_task_success,
-    log_task_failure,
-    log_task_retry,
-    update_task_status,
-)
-from .template_renderer import (
-    render_template,                 # loader de templates (expuesto por tu util)
-    validate_template_variables,     # opcional, para logs de validación
-)
 
 from constants import (
     REDIS_TASK_PREFIX, REDIS_LOG_PREFIX, MAX_RETRIES, RETRY_BACKOFF,
@@ -59,19 +46,53 @@ class NotificationTask(Task):
     base=NotificationTask,
     name="send_notification",
     max_retries=MAX_RETRIES,
-    default_retry_delay=60,          # 1 minuto
+    default_retry_delay=60,
     retry_backoff=RETRY_BACKOFF,
     time_limit=CELERY_TASK_TIMEOUT
 )
-async def send_notification_task(self, payload: Dict[str, Any]) -> Dict[str, Any]:
+def send_notification_task(self, payload: Dict[str, Any]) -> Dict[str, Any]:
     """
-    Tarea principal para envío de notificaciones
+    Tarea principal para envío de notificaciones - SYNC wrapper
+    """
+    #return asyncio.run(_send_notification_async(self, payload))
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    try:
+        return loop.run_until_complete(_send_notification_async(self, payload))
+    finally:
+        loop.close()
 
-    Args:
-        payload: Dict con todos los datos del email
 
-    Returns:
-        Dict con resultado del envío
+@celery_app.task(
+    bind=True,
+    base=NotificationTask,
+    name="send_test_notification",
+    max_retries=1,
+    time_limit=120
+)
+def send_test_notification_task(self, payload: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Tarea para envío de notificaciones de prueba - SYNC wrapper
+    """
+    payload = dict(payload or {})
+    payload.setdefault("provider", payload.get("provider") or "smtp_primary")
+    payload.setdefault("message_id", payload.get("message_id") or f"test-{datetime.utcnow().timestamp()}")
+    #return asyncio.run(_send_notification_async(self, payload))
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    try:
+        return loop.run_until_complete(_send_notification_async(self, payload))
+    finally:
+        loop.close()
+
+
+# -------------------------
+# Funciones async internas
+# -------------------------
+
+async def _send_notification_async(self, payload: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Lógica async para envío de notificaciones
     """
     message_id = payload.get("message_id")
     request_id = payload.get("request_id")
@@ -86,15 +107,15 @@ async def send_notification_task(self, payload: Dict[str, Any]) -> Dict[str, Any
 
     try:
         # Log de arranque y estado inicial
-        await log_task_start(message_id, payload, self.request.id)
-        await log_task_event(
+        await _log_task_start(message_id, payload, self.request.id)
+        await _log_task_event(
             message_id=message_id,
             event="processing_started",
             message="Notification processing started",
             details={"celery_task_id": self.request.id, "provider": provider},
             celery_task_id=self.request.id,
         )
-        await update_task_status(
+        await _update_task_status(
             message_id=message_id,
             status="processing",
             celery_task_id=self.request.id,
@@ -104,8 +125,8 @@ async def send_notification_task(self, payload: Dict[str, Any]) -> Dict[str, Any
             },
         )
 
-        # Render del contenido (si viene template_id/vars)
-        rendered = await _prepare_email_content(payload)
+        # Render del contenido
+        rendered = await _prepare_email_content_async(payload)
 
         # Config del proveedor
         provider_config = get_provider_config(provider)
@@ -113,10 +134,10 @@ async def send_notification_task(self, payload: Dict[str, Any]) -> Dict[str, Any
             raise ValueError(f"Provider configuration not found: {provider}")
 
         # Envío con el proveedor
-        send_result = await _send_email(payload, rendered, provider_config)
+        send_result = await _send_email_async(payload, rendered, provider_config)
 
         # Logs/estado de éxito
-        await log_task_event(
+        await _log_task_event(
             message_id=message_id,
             event="sent_successfully",
             message="Email sent successfully",
@@ -127,12 +148,12 @@ async def send_notification_task(self, payload: Dict[str, Any]) -> Dict[str, Any
             },
             celery_task_id=self.request.id,
         )
-        await log_task_success(
+        await _log_task_success(
             message_id=message_id,
             provider_response=send_result,
             celery_task_id=self.request.id,
         )
-        await update_task_status(
+        await _update_task_status(
             message_id=message_id,
             status="success",
             celery_task_id=self.request.id,
@@ -166,17 +187,17 @@ async def send_notification_task(self, payload: Dict[str, Any]) -> Dict[str, Any
         }
 
         if should_retry and self.request.retries < MAX_RETRIES:
-            # Siguiente backoff (minutos -> segundos)
+            # Siguiente backoff
             retry_delay = (RETRY_BACKOFF ** max(1, self.request.retries)) * 60
             next_retry_time = (datetime.utcnow() + timedelta(seconds=retry_delay)).isoformat()
 
-            await log_task_retry(
+            await _log_task_retry(
                 message_id=message_id,
                 retry_count=self.request.retries + 1,
                 next_retry_time=next_retry_time,
                 celery_task_id=self.request.id,
             )
-            await update_task_status(
+            await _update_task_status(
                 message_id=message_id,
                 status="retry",
                 celery_task_id=self.request.id,
@@ -190,21 +211,21 @@ async def send_notification_task(self, payload: Dict[str, Any]) -> Dict[str, Any
             raise self.retry(countdown=retry_delay, exc=exc)
 
         # Fallo definitivo
-        await log_task_failure(
+        await _log_task_failure(
             message_id=message_id,
             error=exc,
             celery_task_id=self.request.id,
             retry_count=self.request.retries,
             will_retry=False,
         )
-        await log_task_event(
+        await _log_task_event(
             message_id=message_id,
             event="failed_permanently",
             message=f"Notification failed permanently: {exc}",
             details=error_info,
             celery_task_id=self.request.id,
         )
-        await update_task_status(
+        await _update_task_status(
             message_id=message_id,
             status="failed",
             celery_task_id=self.request.id,
@@ -218,29 +239,6 @@ async def send_notification_task(self, payload: Dict[str, Any]) -> Dict[str, Any
         raise
 
 
-@celery_app.task(
-    bind=True,
-    base=NotificationTask,
-    name="send_test_notification",
-    max_retries=1,     # Menos reintentos para tests
-    time_limit=120     # Timeout más corto
-)
-async def send_test_notification_task(self, payload: Dict[str, Any]) -> Dict[str, Any]:
-    """
-    Tarea para envío de notificaciones de prueba
-    Similar a send_notification_task pero con logging especial
-    """
-    # Aquí podrías llamar al mismo pipeline y marcar `is_test=True` en logs
-    payload = dict(payload or {})
-    payload.setdefault("provider", payload.get("provider") or "smtp")
-    payload.setdefault("message_id", payload.get("message_id") or f"test-{datetime.utcnow().timestamp()}")
-    return await send_notification_task(payload)  # reutilizamos
-
-
-# -------------------------
-# Helpers internos
-# -------------------------
-
 def _should_retry_error(exc: Exception, current_retries: int) -> bool:
     """
     Heurística simple para decidir reintentos
@@ -249,44 +247,39 @@ def _should_retry_error(exc: Exception, current_retries: int) -> bool:
         ConnectionError,
         TimeoutError,
     )
-    # Errores de provider típicamente transitorios si contienen ciertos códigos
     msg = str(exc).lower()
     if isinstance(exc, transient_errors):
         return True
     if "timeout" in msg or "temporarily" in msg or "rate limit" in msg:
         return True
-    # No reintentar si ya llegamos al máximo
     return current_retries < MAX_RETRIES
 
 
-async def _prepare_email_content(payload: Dict[str, Any]) -> Dict[str, Optional[str]]:
+async def _prepare_email_content_async(payload: Dict[str, Any]) -> Dict[str, Optional[str]]:
     """
-    Prepara/normaliza el contenido a enviar:
-    - Renderiza template si hay template_id/variables
-    - Asegura que existan claves subject/body_text/body_html (aunque sea None)
+    Prepara/normaliza el contenido a enviar
     """
     template_id = payload.get("template_id")
-    variables = payload.get("variables") or {}
+    variables = payload.get("vars") or {}
 
     subject = payload.get("subject")
     body_text = payload.get("body_text")
     body_html = payload.get("body_html")
 
     if template_id:
-        # Validación opcional (solo log)
         try:
-            validate_template_variables(template_id, variables)
-        except Exception:
-            pass
-
-        rendered = await render_template(
-            template_id=template_id,
-            variables=variables
-        )
-        # El renderer debe regresar campos consistentes (subject/body_text/body_html)
-        subject = rendered.get("subject", subject)
-        body_text = rendered.get("body_text", body_text)
-        body_html = rendered.get("body_html", body_html)
+            # Renderizar template
+            from services.template_renderer import render_template
+            rendered = await render_template(
+                template_id=template_id,
+                variables=variables
+            )
+            subject = rendered.get("subject", subject)
+            body_text = rendered.get("body_text", body_text)
+            body_html = rendered.get("body_html", body_html)
+        except Exception as e:
+            logging.error(f"Template rendering failed: {e}")
+            # Continuar con contenido fallback si existe
 
     return {
         "subject": subject,
@@ -295,7 +288,7 @@ async def _prepare_email_content(payload: Dict[str, Any]) -> Dict[str, Optional[
     }
 
 
-async def _send_email(
+async def _send_email_async(
     payload: Dict[str, Any],
     rendered: Dict[str, Optional[str]],
     provider_config: Dict[str, Any],
@@ -347,3 +340,171 @@ async def _send_email(
         return {"channel": "api", **result}
 
     raise ValueError(f"Unsupported provider type: {channel}")
+
+
+# -------------------------
+# Logging helpers async
+# -------------------------
+
+async def _log_task_event(
+    message_id: str,
+    event: str,
+    message: str,
+    level: str = "INFO",
+    details: Dict[str, Any] = None,
+    celery_task_id: str = None
+):
+    """Log de evento de tarea en Redis"""
+    try:
+        from utils.redis_client import get_redis_client, RedisHelper
+        from constants import REDIS_LOG_PREFIX
+
+        redis_client = await get_redis_client()
+        redis_helper = RedisHelper(redis_client)
+
+        log_entry = {
+            "timestamp": datetime.utcnow().isoformat(),
+            "message_id": message_id,
+            "event": event,
+            "level": level,
+            "message": message,
+            "details": details or {},
+            "celery_task_id": celery_task_id
+        }
+
+        log_key = f"{REDIS_LOG_PREFIX}{message_id}"
+        await redis_helper.push_log(log_key, log_entry, max_entries=500)
+
+        log_level = getattr(logging, level.upper(), logging.INFO)
+        logging.log(log_level, f"[{message_id}] {event}: {message}", extra={
+            "message_id": message_id,
+            "event": event,
+            "celery_task_id": celery_task_id,
+            **log_entry["details"]
+        })
+
+    except Exception as e:
+        logging.error(f"Task logging failed for {message_id}: {e}")
+
+
+async def _log_task_start(message_id: str, task_payload: Dict[str, Any], celery_task_id: str):
+    """Log de inicio de tarea"""
+    await _log_task_event(
+        message_id=message_id,
+        event="task_started",
+        message="Email delivery task started",
+        level="INFO",
+        details={
+            "recipients_count": len(task_payload.get("to", [])),
+            "has_template": bool(task_payload.get("template_id")),
+            "provider": task_payload.get("provider"),
+            "routing_hint": task_payload.get("routing_hint")
+        },
+        celery_task_id=celery_task_id
+    )
+
+
+async def _log_task_success(
+    message_id: str,
+    provider_response: Dict[str, Any],
+    celery_task_id: str,
+    delivery_time: float = None
+):
+    """Log de tarea completada exitosamente"""
+    await _log_task_event(
+        message_id=message_id,
+        event="email_sent",
+        message="Email sent successfully",
+        level="INFO",
+        details={
+            "provider_response": provider_response,
+            "delivery_time_seconds": delivery_time,
+            "success": True
+        },
+        celery_task_id=celery_task_id
+    )
+
+
+async def _log_task_failure(
+    message_id: str,
+    error: Exception,
+    celery_task_id: str,
+    retry_count: int = 0,
+    will_retry: bool = False
+):
+    """Log de fallo de tarea"""
+    await _log_task_event(
+        message_id=message_id,
+        event="task_failed" if not will_retry else "task_retry",
+        message=f"Email delivery failed: {str(error)}",
+        level="ERROR" if not will_retry else "WARNING",
+        details={
+            "error_type": type(error).__name__,
+            "error_message": str(error),
+            "retry_count": retry_count,
+            "will_retry": will_retry,
+            "success": False
+        },
+        celery_task_id=celery_task_id
+    )
+
+
+async def _log_task_retry(message_id: str, retry_count: int, next_retry_time: str, celery_task_id: str):
+    """Log de reintento de tarea"""
+    await _log_task_event(
+        message_id=message_id,
+        event="task_retry_scheduled",
+        message=f"Task retry scheduled (attempt #{retry_count})",
+        level="WARNING",
+        details={
+            "retry_count": retry_count,
+            "next_retry_time": next_retry_time
+        },
+        celery_task_id=celery_task_id
+    )
+
+
+async def _update_task_status(
+    message_id: str,
+    status: str,
+    celery_task_id: str,
+    additional_info: Dict[str, Any] = None
+):
+    """Actualiza estado de tarea en Redis"""
+    try:
+        from utils.redis_client import get_redis_client
+        from constants import REDIS_TASK_PREFIX
+
+        redis_client = await get_redis_client()
+
+        task_key = f"{REDIS_TASK_PREFIX}{message_id}"
+        existing_data = await redis_client.get(task_key)
+
+        if existing_data:
+            task_data = json.loads(existing_data)
+        else:
+            task_data = {
+                "message_id": message_id,
+                "celery_task_id": celery_task_id,
+                "created_at": datetime.utcnow().isoformat()
+            }
+
+        task_data.update({
+            "status": status,
+            "updated_at": datetime.utcnow().isoformat(),
+            **(additional_info or {})
+        })
+
+        await redis_client.setex(task_key, 86400, json.dumps(task_data))
+
+        await _log_task_event(
+            message_id=message_id,
+            event="status_updated",
+            message=f"Task status updated to {status}",
+            level="DEBUG",
+            details={"new_status": status, **task_data},
+            celery_task_id=celery_task_id
+        )
+
+    except Exception as e:
+        logging.error(f"Failed to update task status for {message_id}: {e}")
