@@ -1,0 +1,29 @@
+# error-generico/v1/variables.yml
+name: "Error Genérico"
+description: "Template para notificar errores del sistema"
+category: "errors"
+
+# Variables que aparecen en {{ variable }}
+variables:
+  - tipo_error
+  - componente
+  - descripcion
+  - hora_error
+  - severidad
+  - error_id
+
+# Secciones opcionales que aparecen en {% if variable %}
+conditionals:
+  - solucion_sugerida
+  - contacto
+
+# Ejemplo de uso
+example:
+  tipo_error: "Database Connection Error"
+  componente: "API Gateway"
+  descripcion: "No se puede conectar a la base de datos principal"
+  hora_error: "2024-01-15 14:30:45"
+  severidad: "alta"
+  error_id: "ERR-2024-001"
+  solucion_sugerida: "Verificar conectividad de red y estado del servidor de BD"
+  contacto: "admin@empresa.com"

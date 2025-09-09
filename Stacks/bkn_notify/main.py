@@ -83,7 +83,7 @@ def custom_openapi():
     # Aplicar seguridad a todos los endpoints excepto públicos
     for path, path_item in openapi_schema["paths"].items():
         # Endpoints públicos que no requieren autenticación
-        if path in ["/", "/api/info", "/api/healthz", "/api/readyz"]:
+        if path in ["/", "/api/info", "/api/healthz", "/api/readyz", "/api/templates", "/api/templates/{template_id}/info"]:
             continue
             
         for method, operation in path_item.items():
@@ -112,15 +112,16 @@ app.add_middleware(
 # Middleware de autenticación (opcional) con whitelist de docs
 try:
     from middleware.auth import auth_middleware
-    ALLOWED_PATHS = {"/swagger", "/docs", "/redoc", "/openapi.json"}
+    ALLOWED_PATHS = {"/swagger", "/docs", "/redoc", "/openapi.json", "/api/templates", "/api/templates/{template_id}/info"}
 
     async def _auth_wrapper(request: Request, call_next):
-        if request.url.path in ALLOWED_PATHS:
+        # Permitir acceso a endpoints de templates sin autenticación
+        if request.url.path in ALLOWED_PATHS or request.url.path.startswith("/api/templates"):
             return await call_next(request)
         return await auth_middleware(request, call_next)
 
     app.middleware("http")(_auth_wrapper)
-    logging.info("Authentication middleware loaded (with docs whitelist)")
+    logging.info("Authentication middleware loaded (with docs and templates whitelist)")
 except ImportError:
     logging.warning("Authentication middleware not available - API will be open")
 
@@ -129,14 +130,14 @@ try:
     from endpoints.health import router as health_router
     from endpoints.notify import router as notify_router
     from endpoints.status import router as status_router
-    from endpoints.test import router as test_router
+    from endpoints.template import router as template_router
 
     app.include_router(health_router, prefix="/api", tags=["Health"])
     app.include_router(notify_router, prefix="/api", tags=["Notifications"])
     app.include_router(status_router, prefix="/api", tags=["Status"])
-    app.include_router(test_router, prefix="/api", tags=["Testing"])
+    app.include_router(template_router, prefix="/api", tags=["Templates"])
 
-    routers_loaded = ["health", "notify", "status", "test"]
+    routers_loaded = ["health", "notify", "status", "template"]
 except Exception as e:
     logging.error(f"Error cargando routers: {e}", exc_info=True)
     routers_loaded = []
@@ -163,14 +164,12 @@ async def root():
         "redoc": "/redoc",
         "openapi": "/openapi.json",
         "routers_loaded": routers_loaded,
-    }
-
-@app.get("/api/info")
-async def api_info():
-    return {
-        "service": constants.SERVICE_NAME,
-        "version": constants.API_VERSION,
-        "routers_loaded": routers_loaded,
+        "endpoints": {
+            "notifications": "/api/notify",
+            "templates": "/api/templates",
+            "health": "/api/healthz",
+            "status": "/api/notify/{message_id}/status"
+        }
     }
 
 if __name__ == "__main__":

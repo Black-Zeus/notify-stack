@@ -1,0 +1,19 @@
+# alerta-simple/v1/variables.yml
+name: "Alerta Simple"
+description: "Template básico para alertas del sistema"
+category: "alerts"
+
+# Variables que aparecen en {{ variable }}
+variables:
+  - host
+  - estado
+  - hora
+
+# Secciones opcionales que aparecen en {% if variable %}
+conditionals: []
+
+# Ejemplo de uso
+example:
+  host: "web-server-01"
+  estado: "DOWN" 
+  hora: "14:30"

@@ -208,8 +208,27 @@
                   </table>
                 </div>
 
+                {% if activation_link -%}
                 <p class="message-text">
                   Para completar el proceso, haz clic en el botón <strong>"Activar Cuenta"</strong> o accede al siguiente enlace:
+                </p>
+
+                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                  <tr>
+                    <td align="center">
+                      <a href="{{ activation_link }}" class="action-button">Activar Cuenta</a>
+                    </td>
+                  </tr>
+                </table>
+
+                <p class="message-text" style="font-size: 14px; color: #666;">
+                  O copia y pega este enlace en tu navegador:<br>
+                  <a href="{{ activation_link }}" style="color: #667eea; word-break: break-all;">{{ activation_link }}</a>
+                </p>
+                {% endif %}
+
+                <p class="message-text">
+                  Si tienes alguna pregunta, no dudes en contactarnos.
                 </p>
 
               </td>

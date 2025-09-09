@@ -39,6 +39,7 @@ CONFIG_FILE = os.path.join(CONFIG_DIR, "config.yml")
 PROVIDERS_FILE = os.path.join(CONFIG_DIR, "providers.yml") 
 POLICY_FILE = os.path.join(CONFIG_DIR, "policy.yml")
 TEMPLATES_DIR = "/app/templates"
+TEMPLATES_BASE_PATH = TEMPLATES_DIR
 
 # Estados de tareas Celery
 TASK_STATES = {

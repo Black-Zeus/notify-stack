@@ -1,13 +1,20 @@
+¡BIENVENIDO A {{ company_name|upper }}!
+
 Estimado {{ user_name }},
 
-¡Bienvenido a {{ company_name }}!
+¡Tu cuenta ha sido creada exitosamente!
 
-Tu cuenta ha sido creada exitosamente. Puedes acceder con el email: {{ user_email }}
+Detalles de tu cuenta:
+- Usuario: {{ user_name }}
+- Email: {{ user_email }}
+- Empresa: {{ company_name }}
 
-Para activar tu cuenta, haz clic en el siguiente enlace:
+{% if activation_link -%}
+Para completar el proceso de registro, activa tu cuenta haciendo clic en el siguiente enlace:
+
 {{ activation_link }}
 
-Si tienes alguna pregunta, no dudes en contactarnos.
+{% endif %}Si tienes alguna pregunta, no dudes en contactarnos.
 
 Atentamente,
 Equipo de {{ company_name }}

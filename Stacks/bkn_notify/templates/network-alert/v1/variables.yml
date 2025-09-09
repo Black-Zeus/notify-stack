@@ -1,0 +1,42 @@
+# network-alert/v1/variables.yml
+name: "Alerta de Red/Conectividad"
+description: "Template para alertas de problemas de red y conectividad"
+category: "network"
+
+# Variables que aparecen en {{ variable }}
+variables:
+  - tipo_alerta
+  - destino_afectado
+  - severidad
+  - hora_deteccion
+  - evento_id
+  - servidor_monitor
+  - servicios_impactados
+  - diagnostico
+  - accion_automatica
+  - accion_recomendada
+
+# Secciones opcionales que aparecen en {% if variable %}
+conditionals:
+  - latencia_alta
+  - dns_fallo
+  - endpoint_timeout
+  - conectividad_general
+  - ssl_tls
+  - cdn_problema
+  - balanceador
+  - base_datos_red
+  - impacto_servicios
+
+# Ejemplo de uso
+example:
+  tipo_alerta: "latencia"
+  destino_afectado: "api.empresa.com"
+  severidad: "alta"
+  hora_deteccion: "2024-01-15 14:30:45"
+  evento_id: "NET-2024-001"
+  servidor_monitor: "monitor-prod-01"
+  latencia_alta: true
+  latencia_actual: 850
+  latencia_promedio: 45
+  umbral_latencia: 200

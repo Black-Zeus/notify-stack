@@ -1,0 +1,33 @@
+# system-alert/v1/variables.yml
+name: "Alerta del Sistema"
+description: "Template para alertas de infraestructura y recursos del sistema"
+category: "system"
+
+# Variables que aparecen en {{ variable }}
+variables:
+  - servidor
+  - tipo_alerta
+  - severidad
+  - hora_deteccion
+  - accion_recomendada
+
+# Secciones opcionales que aparecen en {% if variable %}
+conditionals:
+  - uso_disco
+  - uso_memoria
+  - uso_cpu
+  - servicio
+  - base_datos
+  - backup
+
+# Ejemplo de uso
+example:
+  servidor: "web-prod-01"
+  tipo_alerta: "espacio_disco"
+  severidad: "alta"
+  hora_deteccion: "2024-01-15 16:45:00"
+  uso_disco: true
+  uso_disco: 85
+  espacio_libre: "2.5GB"
+  punto_montaje: "/var/log"
+  accion_recomendada: "Limpiar logs antiguos o expandir el volumen"

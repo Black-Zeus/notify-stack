@@ -1,0 +1,21 @@
+# welcome-alert/v1/variables.yml
+name: "Mensaje de Bienvenida"
+description: "Template para dar la bienvenida a nuevos usuarios"
+category: "user-management"
+
+# Variables que aparecen en {{ variable }}
+variables:
+  - user_name
+  - company_name
+  - user_email
+
+# Secciones opcionales que aparecen en {% if variable %}
+conditionals:
+  - activation_link
+
+# Ejemplo de uso
+example:
+  user_name: "Juan Pérez"
+  company_name: "Empresa Tecnológica S.A."
+  user_email: "juan.perez@empresa.com"
+  activation_link: "https://app.empresa.com/activate/abc123xyz"

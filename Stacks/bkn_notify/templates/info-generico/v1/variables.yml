@@ -1,0 +1,28 @@
+# info-generico/v1/variables.yml
+name: "Información Genérica"
+description: "Template para mensajes informativos del sistema"
+category: "information"
+
+# Variables que aparecen en {{ variable }}
+variables:
+  - mensaje
+  - titulo
+  - categoria
+  - fecha
+  - remitente
+
+# Secciones opcionales que aparecen en {% if variable %}
+conditionals:
+  - datos_adicionales
+  - accion_requerida
+  - enlace
+
+# Ejemplo de uso
+example:
+  mensaje: "El mantenimiento programado se ha completado exitosamente"
+  titulo: "Mantenimiento Completado"
+  categoria: "mantenimiento"
+  fecha: "2024-01-15"
+  remitente: "Equipo de Infraestructura"
+  datos_adicionales: "Todos los servicios están operando normalmente"
+  enlace: "https://status.empresa.com"

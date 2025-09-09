@@ -1,0 +1,21 @@
+# cert-renewal/v1/variables.yml
+name: "Renovación de Certificado"
+description: "Template para notificar renovaciones exitosas de certificados SSL/TLS"
+category: "certificates"
+
+# Variables que aparecen en {{ variable }}
+variables:
+  - dominio
+  - fecha_renovacion
+  - fecha_vencimiento
+  - emisor
+
+# Secciones opcionales que aparecen en {% if variable %}
+conditionals: []
+
+# Ejemplo de uso
+example:
+  dominio: "api.empresa.com"
+  fecha_renovacion: "2024-01-15"
+  fecha_vencimiento: "2024-04-15"
+  emisor: "Let's Encrypt Authority X3"

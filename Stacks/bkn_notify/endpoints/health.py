@@ -93,34 +93,3 @@ async def readiness_check():
         )
     
     return response_data
-
-
-@router.get("/metrics")
-async def basic_metrics():
-    """
-    Métricas básicas del servicio
-    Simple y sin sobre-ingeniería
-    """
-    try:
-        redis_client = get_redis_client()
-        
-        # Estadísticas básicas de Redis
-        redis_info = await redis_client.info()
-        
-        return {
-            "service": SERVICE_NAME,
-            "version": API_VERSION,
-            "timestamp": datetime.utcnow().isoformat(),
-            "metrics": {
-                "redis_connected_clients": redis_info.get("connected_clients", 0),
-                "redis_used_memory": redis_info.get("used_memory", 0),
-                "redis_keyspace_hits": redis_info.get("keyspace_hits", 0),
-                "redis_keyspace_misses": redis_info.get("keyspace_misses", 0)
-            }
-        }
-    except Exception as e:
-        logging.error(f"Metrics collection failed: {e}")
-        raise HTTPException(
-            status_code=HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Metrics unavailable"
-        )

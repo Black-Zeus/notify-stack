@@ -1,0 +1,23 @@
+# cert-failure/v1/variables.yml
+name: "Fallo de Certificado"
+description: "Template para notificar fallos en renovación de certificados SSL/TLS"
+category: "certificates"
+
+# Variables que aparecen en {{ variable }}
+variables:
+  - dominio
+  - fecha_vencimiento
+  - dias_restantes
+  - motivo_fallo
+  - ultimo_intento
+
+# Secciones opcionales que aparecen en {% if variable %}
+conditionals: []
+
+# Ejemplo de uso
+example:
+  dominio: "api.empresa.com"
+  fecha_vencimiento: "2024-02-15"
+  dias_restantes: 7
+  motivo_fallo: "Error de validación DNS"
+  ultimo_intento: "2024-01-15 10:30:00"

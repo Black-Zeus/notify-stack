@@ -85,6 +85,8 @@ celery_app.conf.update(
     # Security
     worker_disable_rate_limits=False,
     task_reject_on_worker_lost=True,
+
+    broker_connection_retry_on_startup=True,
 )
 
 # Autodiscovery de tareas (con manejo de errores)
