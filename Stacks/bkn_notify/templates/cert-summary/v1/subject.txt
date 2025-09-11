@@ -1,0 +1,1 @@
+[CERTIFICADOS] Resumen semanal - {{ total_certificados }} certificados verificados

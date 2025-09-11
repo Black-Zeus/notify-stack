@@ -1,0 +1,57 @@
+# cert-summary/v1/variables.yml
+name: "Resumen de Certificados SSL"
+description: "Template para resumen semanal del estado de todos los certificados SSL"
+category: "certificates"
+
+# Variables que aparecen en {{ variable }}
+variables:
+  - fecha_verificacion
+  - total_certificados
+  - total_validos
+  - total_auto_pendientes
+  - total_manual_pendientes
+  - total_errores
+  - umbral_dias
+  - certificados
+  - timestamp
+
+# Secciones opcionales que aparecen en {% if variable %}
+conditionals:
+  - proxima_verificacion
+
+# Estructura del array certificados
+# Cada elemento debe contener:
+certificados_structure:
+  - dominio: "string"
+    estado: "string"      # VÁLIDO, RENOVACIÓN AUTO, RENOVACIÓN MANUAL, ERROR
+    dias_restantes: "number"
+    tipo: "string"        # auto, manual
+    fecha_vencimiento: "string"  # YYYY-MM-DD
+
+# Ejemplo de uso
+example:
+  fecha_verificacion: "2024-01-15 02:00:00"
+  total_certificados: 6
+  total_validos: 4
+  total_auto_pendientes: 1
+  total_manual_pendientes: 1
+  total_errores: 0
+  umbral_dias: 30
+  timestamp: "2024-01-15 02:15:00"
+  proxima_verificacion: "2024-01-22 02:00:00"
+  certificados:
+    - dominio: "faro-jpv.cl"
+      estado: "VÁLIDO"
+      dias_restantes: 45
+      tipo: "auto"
+      fecha_vencimiento: "2024-03-01"
+    - dominio: "www.faro-jpv.cl"
+      estado: "RENOVACIÓN AUTO"
+      dias_restantes: 15
+      tipo: "auto"
+      fecha_vencimiento: "2024-01-30"
+    - dominio: "intranet.tecnocomp.cl"
+      estado: "RENOVACIÓN MANUAL"
+      dias_restantes: 20
+      tipo: "manual"
+      fecha_vencimiento: "2024-02-05"
