@@ -1,0 +1,351 @@
+"""
+Database Service - Operaciones CRUD para notificaciones
+Capa de abstracción para operaciones de base de datos
+"""
+
+import logging
+from datetime import datetime, timedelta
+from typing import Optional, List, Dict, Any, Tuple
+from uuid import uuid4
+
+from sqlalchemy.orm import Session
+from sqlalchemy import desc, and_, or_, func
+from sqlalchemy.exc import SQLAlchemyError
+
+from models.database_models import (
+    Notification, NotificationLog, NotificationAttachment, 
+    ProviderStats, NotificationStatus, NotificationPriority
+)
+from utils.database import get_db_session
+
+logger = logging.getLogger(__name__)
+
+
+class DatabaseService:
+    """Servicio para operaciones de base de datos"""
+
+    @staticmethod
+    def create_notification(
+        message_id: str,
+        to_email: str,
+        subject: Optional[str] = None,
+        template_id: Optional[str] = None,
+        params_json: Optional[Dict[str, Any]] = None,
+        provider: Optional[str] = None,
+        celery_task_id: Optional[str] = None,
+        **kwargs
+    ) -> Optional[Notification]:
+        """Crea una nueva notificación en la base de datos"""
+        
+        try:
+            with get_db_session() as db:
+                notification = Notification(
+                    message_id=message_id,
+                    to_email=to_email,
+                    subject=subject,
+                    template_id=template_id,
+                    params_json=params_json,
+                    provider=provider,
+                    celery_task_id=celery_task_id,
+                    **kwargs
+                )
+                
+                db.add(notification)
+                db.commit()
+                db.refresh(notification)
+                
+                logger.info(f"Created notification: {message_id}")
+                return notification
+                
+        except SQLAlchemyError as e:
+            logger.error(f"Error creating notification {message_id}: {e}")
+            return None
+
+    @staticmethod
+    def get_notification(message_id: str) -> Optional[Notification]:
+        """Obtiene una notificación por message_id"""
+        
+        try:
+            with get_db_session() as db:
+                return db.query(Notification).filter(
+                    Notification.message_id == message_id
+                ).first()
+                
+        except SQLAlchemyError as e:
+            logger.error(f"Error getting notification {message_id}: {e}")
+            return None
+
+    @staticmethod
+    def update_notification_status(
+        message_id: str, 
+        status: NotificationStatus,
+        sent_at: Optional[datetime] = None,
+        retry_count: Optional[int] = None
+    ) -> bool:
+        """Actualiza el estado de una notificación"""
+        
+        try:
+            with get_db_session() as db:
+                notification = db.query(Notification).filter(
+                    Notification.message_id == message_id
+                ).first()
+                
+                if not notification:
+                    logger.warning(f"Notification not found: {message_id}")
+                    return False
+                
+                notification.status = status
+                if sent_at:
+                    notification.sent_at = sent_at
+                if retry_count is not None:
+                    notification.retry_count = retry_count
+                
+                db.commit()
+                logger.debug(f"Updated notification {message_id} to {status}")
+                return True
+                
+        except SQLAlchemyError as e:
+            logger.error(f"Error updating notification {message_id}: {e}")
+            return False
+
+    @staticmethod
+    def get_notifications_by_status(
+        status: NotificationStatus,
+        limit: int = 100,
+        offset: int = 0
+    ) -> List[Notification]:
+        """Obtiene notificaciones por estado"""
+        
+        try:
+            with get_db_session() as db:
+                return db.query(Notification).filter(
+                    Notification.status == status
+                ).order_by(desc(Notification.created_at)).limit(limit).offset(offset).all()
+                
+        except SQLAlchemyError as e:
+            logger.error(f"Error getting notifications by status {status}: {e}")
+            return []
+
+    @staticmethod
+    def get_notifications_for_retry(max_retries: int = 3) -> List[Notification]:
+        """Obtiene notificaciones que necesitan reintento"""
+        
+        try:
+            with get_db_session() as db:
+                return db.query(Notification).filter(
+                    and_(
+                        Notification.status == NotificationStatus.FAILED,
+                        Notification.retry_count < max_retries,
+                        Notification.created_at > datetime.utcnow() - timedelta(hours=24)
+                    )
+                ).order_by(Notification.created_at).all()
+                
+        except SQLAlchemyError as e:
+            logger.error(f"Error getting notifications for retry: {e}")
+            return []
+
+    @staticmethod
+    def add_notification_log(
+        message_id: str,
+        event_type: str,
+        event_status: Optional[str] = None,
+        event_message: Optional[str] = None,
+        details_json: Optional[Dict[str, Any]] = None,
+        component: Optional[str] = None,
+        provider: Optional[str] = None,
+        processing_time_ms: Optional[int] = None
+    ) -> Optional[NotificationLog]:
+        """Agrega un log de evento a una notificación"""
+        
+        try:
+            with get_db_session() as db:
+                log_entry = NotificationLog(
+                    message_id=message_id,
+                    event_type=event_type,
+                    event_status=event_status,
+                    event_message=event_message,
+                    details_json=details_json,
+                    component=component,
+                    provider=provider,
+                    processing_time_ms=processing_time_ms
+                )
+                
+                db.add(log_entry)
+                db.commit()
+                db.refresh(log_entry)
+                
+                logger.debug(f"Added log for {message_id}: {event_type}")
+                return log_entry
+                
+        except SQLAlchemyError as e:
+            logger.error(f"Error adding log for {message_id}: {e}")
+            return None
+
+    @staticmethod
+    def get_notification_logs(
+        message_id: str,
+        limit: int = 50,
+        offset: int = 0
+    ) -> List[NotificationLog]:
+        """Obtiene logs de una notificación"""
+        
+        try:
+            with get_db_session() as db:
+                return db.query(NotificationLog).filter(
+                    NotificationLog.message_id == message_id
+                ).order_by(desc(NotificationLog.timestamp)).limit(limit).offset(offset).all()
+                
+        except SQLAlchemyError as e:
+            logger.error(f"Error getting logs for {message_id}: {e}")
+            return []
+
+    @staticmethod
+    def search_notifications(
+        email: Optional[str] = None,
+        template_id: Optional[str] = None,
+        provider: Optional[str] = None,
+        status: Optional[NotificationStatus] = None,
+        date_from: Optional[datetime] = None,
+        date_to: Optional[datetime] = None,
+        limit: int = 50,
+        offset: int = 0
+    ) -> Tuple[List[Notification], int]:
+        """Búsqueda avanzada de notificaciones con conteo total"""
+        
+        try:
+            with get_db_session() as db:
+                query = db.query(Notification)
+                
+                # Aplicar filtros
+                if email:
+                    query = query.filter(Notification.to_email.like(f"%{email}%"))
+                if template_id:
+                    query = query.filter(Notification.template_id == template_id)
+                if provider:
+                    query = query.filter(Notification.provider == provider)
+                if status:
+                    query = query.filter(Notification.status == status)
+                if date_from:
+                    query = query.filter(Notification.created_at >= date_from)
+                if date_to:
+                    query = query.filter(Notification.created_at <= date_to)
+                
+                # Contar total
+                total = query.count()
+                
+                # Obtener resultados paginados
+                results = query.order_by(desc(Notification.created_at)).limit(limit).offset(offset).all()
+                
+                return results, total
+                
+        except SQLAlchemyError as e:
+            logger.error(f"Error searching notifications: {e}")
+            return [], 0
+
+    @staticmethod
+    def get_notification_with_logs(message_id: str) -> Optional[Dict[str, Any]]:
+        """Obtiene notificación completa con sus logs"""
+        
+        notification = DatabaseService.get_notification(message_id)
+        if not notification:
+            return None
+        
+        logs = DatabaseService.get_notification_logs(message_id)
+        
+        return {
+            "notification": notification.to_dict(),
+            "logs": [log.to_dict() for log in logs],
+            "total_logs": len(logs)
+        }
+
+    @staticmethod
+    def regenerate_notification_data(message_id: str) -> Optional[Dict[str, Any]]:
+        """Obtiene datos para regenerar una notificación"""
+        
+        notification = DatabaseService.get_notification(message_id)
+        if not notification:
+            return None
+        
+        return {
+            "template_id": notification.template_id,
+            "to_email": notification.to_email,
+            "cc_emails": notification.cc_emails,
+            "bcc_emails": notification.bcc_emails,
+            "params_json": notification.params_json,
+            "provider": notification.provider,
+            "routing_hint": notification.routing_hint,
+            "priority": notification.priority.value if notification.priority else "medium"
+        }
+
+    @staticmethod
+    def get_provider_stats(
+        provider: Optional[str] = None,
+        date_from: Optional[datetime] = None,
+        date_to: Optional[datetime] = None
+    ) -> List[Dict[str, Any]]:
+        """Obtiene estadísticas de proveedores"""
+        
+        try:
+            with get_db_session() as db:
+                query = db.query(
+                    Notification.provider,
+                    func.count(Notification.id).label('total'),
+                    func.sum(func.case(
+                        (Notification.status == NotificationStatus.SENT, 1),
+                        else_=0
+                    )).label('sent'),
+                    func.sum(func.case(
+                        (Notification.status == NotificationStatus.FAILED, 1),
+                        else_=0
+                    )).label('failed'),
+                    func.avg(func.case(
+                        (Notification.sent_at.isnot(None), 
+                         func.timestampdiff('SECOND', Notification.created_at, Notification.sent_at)),
+                        else_=None
+                    )).label('avg_delivery_seconds')
+                ).filter(Notification.provider.isnot(None))
+                
+                if provider:
+                    query = query.filter(Notification.provider == provider)
+                if date_from:
+                    query = query.filter(Notification.created_at >= date_from)
+                if date_to:
+                    query = query.filter(Notification.created_at <= date_to)
+                
+                results = query.group_by(Notification.provider).all()
+                
+                return [
+                    {
+                        "provider": r.provider,
+                        "total": r.total,
+                        "sent": r.sent,
+                        "failed": r.failed,
+                        "success_rate": round((r.sent / r.total * 100), 2) if r.total > 0 else 0,
+                        "avg_delivery_seconds": round(r.avg_delivery_seconds, 2) if r.avg_delivery_seconds else None
+                    }
+                    for r in results
+                ]
+                
+        except SQLAlchemyError as e:
+            logger.error(f"Error getting provider stats: {e}")
+            return []
+
+    @staticmethod
+    def cleanup_old_notifications(days_to_keep: int = 90) -> int:
+        """Elimina notificaciones antiguas"""
+        
+        try:
+            cutoff_date = datetime.utcnow() - timedelta(days=days_to_keep)
+            
+            with get_db_session() as db:
+                deleted = db.query(Notification).filter(
+                    Notification.created_at < cutoff_date
+                ).delete()
+                
+                db.commit()
+                logger.info(f"Cleaned up {deleted} old notifications")
+                return deleted
+                
+        except SQLAlchemyError as e:
+            logger.error(f"Error cleaning up notifications: {e}")
+            return 0

@@ -13,6 +13,7 @@ services:
       - ./Stacks/bkn_notify/logs:/app/logs
     depends_on:
       - bkn_redis
+      - mysql
     networks:
       - backend
       - frontend
@@ -40,6 +41,7 @@ services:
       - ./Stacks/bkn_notify/logs:/app/logs
     depends_on:
       - bkn_redis
+      - mysql
     networks:
       - backend
     restart: unless-stopped
@@ -57,8 +59,10 @@ services:
       - ./Config:/app/Config:ro
       - ./Stacks/bkn_notify/templates:/app/templates:ro
       - ./Stacks/bkn_notify/logs:/app/logs
+      - celery_beat_data:/app/celerybeat-schedule
     depends_on:
       - bkn_redis
+      - mysql
     networks:
       - backend
     restart: unless-stopped
@@ -99,8 +103,99 @@ services:
       retries: 5
       start_period: 10s
 
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    env_file:
+      - ./Config/secrets.env
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./Database/init:/docker-entrypoint-initdb.d:ro
+      - ./Stacks/mysql/conf.d:/etc/mysql/conf.d:ro
+    networks:
+      - backend
+    ports:
+      - "3306:3306"
+    restart: unless-stopped
+    
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+        reservations:
+          cpus: '0.2'
+          memory: 128M
+    
+    command: [
+      "mysqld",
+      "--character-set-server=utf8mb4",
+      "--collation-server=utf8mb4_unicode_ci",
+      "--innodb-buffer-pool-size=128M",
+      "--max-connections=100",
+      "--innodb-log-file-size=64M"
+    ]
+    
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: mailpit
+    volumes:
+      - mailpit_data:/data
+    networks:
+      - backend
+      - frontend
+    ports:
+      - "8025:8025"  # Web UI
+      - "1025:1025"  # SMTP
+    restart: unless-stopped
+    
+    command: [
+      "--database", "/data/mailpit.db",
+      "--listen", "0.0.0.0:8025",
+      "--smtp", "0.0.0.0:1025",
+      "--max", "5000"
+    ]
+    
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8025/api/v1/info"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  front:
+    image: nginx:alpine
+    container_name: front
+    volumes:
+      - ./Config/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - bkn_notify
+      - mailpit
+    networks:
+      - frontend
+    ports:
+      - "80:80"
+    restart: unless-stopped
+    
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
 volumes:
   redis_data:
+    driver: local
+  mysql_data:
+    driver: local
+  mailpit_data:
     driver: local
   celery_beat_data:
     driver: local

@@ -37,6 +37,46 @@ server:
     allow_credentials: true
 
 # =============================================================================
+# DATABASE CONFIGURATION
+# =============================================================================
+database:
+  # Configuración MySQL
+  host: "mysql"
+  port: 3306
+  name: "${MYSQL_DATABASE}"
+  user: "${MYSQL_USER}"
+  password: "${MYSQL_PASSWORD}"
+  
+  # Pool de conexiones
+  pool_size: 10
+  max_overflow: 20
+  pool_recycle: 3600
+  pool_pre_ping: true
+  
+  # Configuración de sesiones
+  autocommit: false
+  autoflush: false
+  expire_on_commit: false
+  
+  # Timeouts (segundos)
+  connect_timeout: 30
+  read_timeout: 30
+  write_timeout: 30
+  
+  # Configuración MySQL específica
+  charset: "utf8mb4"
+  isolation_level: "READ_COMMITTED"
+  
+  # Logging de queries (solo desarrollo)
+  echo_queries: false
+  
+  # Limpieza automática
+  cleanup:
+    enabled: true
+    retention_days: 90
+    cleanup_hour: 2  # 2 AM
+
+# =============================================================================
 # LOGGING CONFIGURATION
 # =============================================================================
 logging:
@@ -49,6 +89,8 @@ logging:
     httpx: "WARNING"
     redis: "WARNING"
     celery: "INFO"
+    sqlalchemy.engine: "WARNING"
+    sqlalchemy.pool: "WARNING"
     
   # Archivos de log (opcional)
   file_logging:
@@ -56,6 +98,13 @@ logging:
     path: "/app/logs"
     max_size: "10MB"
     backup_count: 5
+  
+  # Database logging
+  database_logging:
+    enabled: true
+    log_queries: false  # Solo en debug
+    log_slow_queries: true
+    slow_query_threshold: 1000  # ms
 
 # =============================================================================
 # REDIS CONFIGURATION
@@ -238,6 +287,13 @@ development:
     log_sql_queries: false
     profile_requests: false
     enable_debug_toolbar: false
+  
+  # MailPit integration
+  mailpit:
+    enabled: true
+    web_url: "http://localhost:8025"
+    smtp_host: "mailpit"
+    smtp_port: 1025
 
 # =============================================================================
 # FEATURE FLAGS
