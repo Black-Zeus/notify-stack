@@ -38,7 +38,7 @@ CREATE TABLE IF NOT EXISTS notifications (
     -- Configuración de envío
     provider VARCHAR(50),
     routing_hint VARCHAR(100),
-    priority ENUM('low', 'medium', 'high') DEFAULT 'medium',
+    priority ENUM('LOW', 'MEDIUM', 'HIGH') DEFAULT 'MEDIUM',
     
     -- Variables del template (JSON)
     params_json JSON,

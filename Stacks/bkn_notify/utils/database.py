@@ -8,7 +8,7 @@ import os
 from contextlib import contextmanager
 from typing import Generator, Optional
 
-from sqlalchemy import create_engine, event
+from sqlalchemy import create_engine, event, text
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.pool import QueuePool
@@ -26,11 +26,11 @@ _SessionLocal: Optional[sessionmaker] = None
 def get_database_url() -> str:
     """Construye URL de conexión desde variables de entorno"""
     
-    host = os.getenv("MYSQL_HOST", "mysql")
-    port = os.getenv("MYSQL_PORT", "3306")
-    user = os.getenv("MYSQL_USER", "notify_user")
+    host = os.getenv("MYSQL_HOST", "")
+    port = os.getenv("MYSQL_PORT", "")
+    user = os.getenv("MYSQL_USER", "")
     password = os.getenv("MYSQL_PASSWORD", "")
-    database = os.getenv("MYSQL_DATABASE", "notify_db")
+    database = os.getenv("MYSQL_DATABASE", "")
     
     if not password:
         raise ValueError("MYSQL_PASSWORD environment variable is required")
@@ -119,9 +119,9 @@ def initialize_database() -> bool:
         # Crear tablas si no existen
         Base.metadata.create_all(bind=_engine)
         
-        # Verificar conexión
+        # Verificar conexión - FIXED: usar text() para SQLAlchemy 2.0
         with get_db_session() as db:
-            db.execute("SELECT 1")
+            db.execute(text("SELECT 1"))
         
         logger.info("Database initialized successfully")
         return True
@@ -190,7 +190,8 @@ def check_database_health() -> bool:
     
     try:
         with get_db_session() as db:
-            result = db.execute("SELECT 1 as health_check").fetchone()
+            # FIXED: usar text() para SQLAlchemy 2.0
+            result = db.execute(text("SELECT 1 as health_check")).fetchone()
             return result[0] == 1
             
     except Exception as e:
@@ -203,9 +204,9 @@ def get_database_info() -> dict:
     
     try:
         with get_db_session() as db:
-            # Información de MySQL
-            version_result = db.execute("SELECT VERSION() as version").fetchone()
-            charset_result = db.execute("SELECT @@character_set_database as charset").fetchone()
+            # FIXED: usar text() para SQLAlchemy 2.0
+            version_result = db.execute(text("SELECT VERSION() as version")).fetchone()
+            charset_result = db.execute(text("SELECT @@character_set_database as charset")).fetchone()
             
             # Estadísticas de conexiones
             engine = get_database_engine()
@@ -273,7 +274,8 @@ def execute_raw_sql(sql: str, params: Optional[dict] = None) -> list:
     
     try:
         with get_db_session() as db:
-            result = db.execute(sql, params or {})
+            # FIXED: usar text() para SQLAlchemy 2.0
+            result = db.execute(text(sql), params or {})
             
             if result.returns_rows:
                 return result.fetchall()

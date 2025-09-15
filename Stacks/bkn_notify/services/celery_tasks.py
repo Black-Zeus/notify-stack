@@ -17,6 +17,7 @@ from .celery_app import get_celery_app
 from utils.config_loader import get_provider_config
 from .smtp_sender import SMTPSender
 from .api_sender import APISender
+from services.database_service import DatabaseService
 
 from constants import (
     REDIS_TASK_PREFIX, REDIS_LOG_PREFIX, MAX_RETRIES, RETRY_BACKOFF,
@@ -125,6 +126,24 @@ async def _send_notification_async(self, payload: Dict[str, Any]) -> Dict[str, A
             },
         )
 
+        # NUEVO: Actualizar estado en MySQL a processing
+        try:
+            DatabaseService.update_notification_status(
+                message_id=message_id,
+                status="processing"
+            )
+            DatabaseService.add_notification_log(
+                message_id=message_id,
+                event_type="processing_started",
+                event_status="info",
+                event_message="Notification processing started",
+                component="celery",
+                provider=provider,
+                details_json={"celery_task_id": self.request.id}
+            )
+        except Exception as db_error:
+            logging.error(f"Database update error for {message_id}: {db_error}")
+
         # Render del contenido
         rendered = await _prepare_email_content_async(payload)
 
@@ -135,6 +154,28 @@ async def _send_notification_async(self, payload: Dict[str, Any]) -> Dict[str, A
 
         # Envío con el proveedor
         send_result = await _send_email_async(payload, rendered, provider_config)
+
+        # NUEVO: Actualizar estado en MySQL a sent
+        try:
+            DatabaseService.update_notification_status(
+                message_id=message_id,
+                status="sent",
+                sent_at=datetime.utcnow()
+            )
+            DatabaseService.add_notification_log(
+                message_id=message_id,
+                event_type="email_sent",
+                event_status="success",
+                event_message="Email sent successfully",
+                component="celery",
+                provider=provider,
+                details_json={
+                    "provider_response": send_result.get("provider_response", {}),
+                    "channel": send_result.get("channel")
+                }
+            )
+        except Exception as db_error:
+            logging.error(f"Database success update error for {message_id}: {db_error}")
 
         # Logs/estado de éxito
         await _log_task_event(
@@ -187,6 +228,25 @@ async def _send_notification_async(self, payload: Dict[str, Any]) -> Dict[str, A
         }
 
         if should_retry and self.request.retries < MAX_RETRIES:
+            # NUEVO: Log de retry en MySQL
+            try:
+                DatabaseService.update_notification_status(
+                    message_id=message_id,
+                    status="failed",
+                    retry_count=self.request.retries + 1
+                )
+                DatabaseService.add_notification_log(
+                    message_id=message_id,
+                    event_type="retry_scheduled",
+                    event_status="warning",
+                    event_message=f"Retry scheduled (attempt #{self.request.retries + 1})",
+                    component="celery",
+                    provider=provider,
+                    details_json=error_info
+                )
+            except Exception as db_error:
+                logging.error(f"Database retry update error for {message_id}: {db_error}")
+
             # Siguiente backoff
             retry_delay = (RETRY_BACKOFF ** max(1, self.request.retries)) * 60
             next_retry_time = (datetime.utcnow() + timedelta(seconds=retry_delay)).isoformat()
@@ -209,6 +269,24 @@ async def _send_notification_async(self, payload: Dict[str, Any]) -> Dict[str, A
             )
             logging.warning(f"Retrying task in {retry_delay}s", extra=log_extra)
             raise self.retry(countdown=retry_delay, exc=exc)
+
+        # NUEVO: Fallo definitivo en MySQL
+        try:
+            DatabaseService.update_notification_status(
+                message_id=message_id,
+                status="failed"
+            )
+            DatabaseService.add_notification_log(
+                message_id=message_id,
+                event_type="failed_permanently",
+                event_status="error",
+                event_message=f"Notification failed permanently: {str(exc)}",
+                component="celery",
+                provider=provider,
+                details_json=error_info
+            )
+        except Exception as db_error:
+            logging.error(f"Database failure update error for {message_id}: {db_error}")
 
         # Fallo definitivo
         await _log_task_failure(

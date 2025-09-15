@@ -33,12 +33,28 @@ class DatabaseService:
         params_json: Optional[Dict[str, Any]] = None,
         provider: Optional[str] = None,
         celery_task_id: Optional[str] = None,
+        priority: Optional[str] = None,  # Agregado para manejar priority
         **kwargs
     ) -> Optional[Notification]:
         """Crea una nueva notificación en la base de datos"""
         
         try:
             with get_db_session() as db:
+                # Convertir priority string a enum si es necesario
+                priority_enum = None
+                if priority:
+                    priority_lower = priority.lower()
+                    if priority_lower == "low":
+                        priority_enum = NotificationPriority.LOW
+                    elif priority_lower == "medium":
+                        priority_enum = NotificationPriority.MEDIUM
+                    elif priority_lower == "high":
+                        priority_enum = NotificationPriority.HIGH
+                    else:
+                        priority_enum = NotificationPriority.MEDIUM  # Default
+                else:
+                    priority_enum = NotificationPriority.MEDIUM  # Default
+                
                 notification = Notification(
                     message_id=message_id,
                     to_email=to_email,
@@ -47,6 +63,7 @@ class DatabaseService:
                     params_json=params_json,
                     provider=provider,
                     celery_task_id=celery_task_id,
+                    priority=priority_enum,
                     **kwargs
                 )
                 
@@ -80,7 +97,10 @@ class DatabaseService:
         message_id: str, 
         status: NotificationStatus,
         sent_at: Optional[datetime] = None,
-        retry_count: Optional[int] = None
+        retry_count: Optional[int] = None,
+        celery_task_id: Optional[str] = None,  # ✅ AGREGADO: Parámetro faltante
+        provider_response: Optional[Dict[str, Any]] = None,  # ✅ AGREGADO: Para respuestas del proveedor
+        error_message: Optional[str] = None  # ✅ AGREGADO: Para mensajes de error
     ) -> bool:
         """Actualiza el estado de una notificación"""
         
@@ -94,14 +114,38 @@ class DatabaseService:
                     logger.warning(f"Notification not found: {message_id}")
                     return False
                 
+                # Actualizar campos básicos
                 notification.status = status
                 if sent_at:
                     notification.sent_at = sent_at
                 if retry_count is not None:
                     notification.retry_count = retry_count
+                if celery_task_id:
+                    notification.celery_task_id = celery_task_id
+                
+                # Actualizar timestamp
+                notification.updated_at = datetime.utcnow()
                 
                 db.commit()
                 logger.debug(f"Updated notification {message_id} to {status}")
+                
+                # Log del cambio de estado si hay información adicional
+                if provider_response or error_message:
+                    details = {}
+                    if provider_response:
+                        details["provider_response"] = provider_response
+                    if error_message:
+                        details["error_message"] = error_message
+                    
+                    DatabaseService.add_notification_log(
+                        message_id=message_id,
+                        event_type="status_updated",
+                        event_status=status.value,
+                        event_message=f"Status updated to {status.value}",
+                        details_json=details,
+                        component="database"
+                    )
+                
                 return True
                 
         except SQLAlchemyError as e:
@@ -349,3 +393,68 @@ class DatabaseService:
         except SQLAlchemyError as e:
             logger.error(f"Error cleaning up notifications: {e}")
             return 0
+
+    # ✅ MÉTODOS ADICIONALES para soporte completo de workers
+
+    @staticmethod
+    def update_notification_with_provider_response(
+        message_id: str,
+        status: NotificationStatus,
+        provider_response: Dict[str, Any],
+        sent_at: Optional[datetime] = None
+    ) -> bool:
+        """Actualiza notificación con respuesta del proveedor"""
+        
+        return DatabaseService.update_notification_status(
+            message_id=message_id,
+            status=status,
+            sent_at=sent_at,
+            provider_response=provider_response
+        )
+
+    @staticmethod
+    def mark_notification_failed(
+        message_id: str,
+        error_message: str,
+        retry_count: Optional[int] = None,
+        celery_task_id: Optional[str] = None
+    ) -> bool:
+        """Marca notificación como fallida"""
+        
+        return DatabaseService.update_notification_status(
+            message_id=message_id,
+            status=NotificationStatus.FAILED,
+            retry_count=retry_count,
+            celery_task_id=celery_task_id,
+            error_message=error_message
+        )
+
+    @staticmethod
+    def mark_notification_sent(
+        message_id: str,
+        provider_response: Dict[str, Any],
+        celery_task_id: Optional[str] = None
+    ) -> bool:
+        """Marca notificación como enviada exitosamente"""
+        
+        return DatabaseService.update_notification_status(
+            message_id=message_id,
+            status=NotificationStatus.SENT,
+            sent_at=datetime.utcnow(),
+            celery_task_id=celery_task_id,
+            provider_response=provider_response
+        )
+
+    @staticmethod
+    def get_notification_by_task_id(celery_task_id: str) -> Optional[Notification]:
+        """Obtiene notificación por celery_task_id"""
+        
+        try:
+            with get_db_session() as db:
+                return db.query(Notification).filter(
+                    Notification.celery_task_id == celery_task_id
+                ).first()
+                
+        except SQLAlchemyError as e:
+            logger.error(f"Error getting notification by task_id {celery_task_id}: {e}")
+            return None

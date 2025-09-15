@@ -8,7 +8,7 @@ from typing import Optional, Dict, Any, List
 from enum import Enum
 
 from sqlalchemy import (
-    Column, BigInteger, String, Text, LongText, Integer, 
+    Column, BigInteger, String, Text, Integer, 
     DateTime, JSON, Enum as SQLEnum, ForeignKey, Index
 )
 from sqlalchemy.ext.declarative import declarative_base
@@ -28,10 +28,10 @@ class NotificationStatus(str, Enum):
 
 
 class NotificationPriority(str, Enum):
-    """Prioridades de notificación"""
-    LOW = "low"
-    MEDIUM = "medium"
-    HIGH = "high"
+    """Prioridades de notificación - ✅ CORREGIDO: valores en UPPERCASE"""
+    LOW = "LOW"          # Era "low"
+    MEDIUM = "MEDIUM"    # Era "medium" 
+    HIGH = "HIGH"        # Era "high"
 
 
 class Notification(Base):
@@ -56,8 +56,8 @@ class Notification(Base):
 
     # Content
     subject = Column(String(1000), nullable=True)
-    body_text = Column(LongText, nullable=True)
-    body_html = Column(LongText, nullable=True)
+    body_text = Column(Text, nullable=True)
+    body_html = Column(Text, nullable=True)
 
     # Sending config
     provider = Column(String(50), nullable=True, index=True)
@@ -154,7 +154,7 @@ class NotificationLog(Base):
     notification = relationship("Notification", back_populates="logs")
 
     def __repr__(self):
-        return f"<NotificationLog(message_id='{self.message_id}', event='{self.event_type}', status='{self.event_status}')>"
+        return f"<NotificationLog(message_id='{self.message_id}', event='{self.event_type}')>"
 
     def to_dict(self) -> Dict[str, Any]:
         """Convierte el modelo a diccionario"""
@@ -184,20 +184,20 @@ class NotificationAttachment(Base):
     message_id = Column(String(255), ForeignKey("notifications.message_id", ondelete="CASCADE"), nullable=False, index=True)
 
     # File info
-    filename = Column(String(255), nullable=False, index=True)
+    filename = Column(String(255), nullable=False)
     content_type = Column(String(100), nullable=True)
     size_bytes = Column(Integer, nullable=True)
 
-    # Hash for verification
+    # File verification
     file_hash = Column(String(64), nullable=True)
 
-    # Storage (future: S3, local, etc.)
-    storage_type = Column(String(20), default="base64")
+    # Storage info (future: S3, local, etc.)
+    storage_type = Column(String(20), default="local")
     storage_path = Column(String(500), nullable=True)
 
-    # Metadata
+    # Timestamps
     created_at = Column(DateTime, default=func.now(), nullable=False)
-
+    
     # Relationships
     notification = relationship("Notification", back_populates="attachments")
 
@@ -221,54 +221,83 @@ class NotificationAttachment(Base):
 
 class ProviderStats(Base):
     """
-    Modelo para estadísticas agregadas por proveedor
-    Corresponde a la tabla 'provider_stats'
+    Modelo para estadísticas de proveedores (tabla opcional para métricas)
     """
     __tablename__ = "provider_stats"
 
     # Primary key
     id = Column(BigInteger, primary_key=True, autoincrement=True)
-    provider = Column(String(50), nullable=False, index=True)
-
-    # Statistics period
-    stat_date = Column(DateTime, nullable=False, index=True)
-    stat_hour = Column(Integer, nullable=True)
-
-    # Counters
+    
+    # Provider info
+    provider_name = Column(String(50), nullable=False, index=True)
+    date = Column(DateTime, nullable=False, index=True)
+    
+    # Metrics
     total_sent = Column(Integer, default=0)
     total_failed = Column(Integer, default=0)
-    total_rejected = Column(Integer, default=0)
-
-    # Metrics
-    avg_processing_time_ms = Column(Integer, nullable=True)
-    max_processing_time_ms = Column(Integer, nullable=True)
-
+    total_queued = Column(Integer, default=0)
+    avg_delivery_time_ms = Column(Integer, nullable=True)
+    
     # Timestamps
     created_at = Column(DateTime, default=func.now(), nullable=False)
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
 
+    # Unique constraint
+    __table_args__ = (
+        Index('idx_provider_date', 'provider_name', 'date', unique=True),
+    )
+
     def __repr__(self):
-        return f"<ProviderStats(provider='{self.provider}', date='{self.stat_date}', sent={self.total_sent})>"
+        return f"<ProviderStats(provider='{self.provider_name}', date='{self.date}')>"
 
     def to_dict(self) -> Dict[str, Any]:
         """Convierte el modelo a diccionario"""
         return {
             "id": self.id,
-            "provider": self.provider,
-            "stat_date": self.stat_date.isoformat() if self.stat_date else None,
-            "stat_hour": self.stat_hour,
+            "provider_name": self.provider_name,
+            "date": self.date.isoformat() if self.date else None,
             "total_sent": self.total_sent,
             "total_failed": self.total_failed,
-            "total_rejected": self.total_rejected,
-            "avg_processing_time_ms": self.avg_processing_time_ms,
-            "max_processing_time_ms": self.max_processing_time_ms,
+            "total_queued": self.total_queued,
+            "avg_delivery_time_ms": self.avg_delivery_time_ms,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None
         }
 
 
-# Índices adicionales para optimización
-Index('idx_notification_status_created', Notification.status, Notification.created_at)
-Index('idx_notification_provider_status', Notification.provider, Notification.status)
-Index('idx_log_message_timestamp', NotificationLog.message_id, NotificationLog.timestamp)
-Index('idx_provider_stats_date_provider', ProviderStats.stat_date, ProviderStats.provider)
+# ✅ FUNCIONES DE UTILIDAD PARA ENUMS
+
+def get_priority_from_string(priority_str: str) -> NotificationPriority:
+    """Convierte string a enum NotificationPriority"""
+    if not priority_str:
+        return NotificationPriority.MEDIUM
+    
+    priority_upper = priority_str.upper()
+    if priority_upper == "LOW":
+        return NotificationPriority.LOW
+    elif priority_upper == "MEDIUM":
+        return NotificationPriority.MEDIUM
+    elif priority_upper == "HIGH":
+        return NotificationPriority.HIGH
+    else:
+        return NotificationPriority.MEDIUM  # Default
+
+
+def get_status_from_string(status_str: str) -> NotificationStatus:
+    """Convierte string a enum NotificationStatus"""
+    if not status_str:
+        return NotificationStatus.PENDING
+    
+    status_lower = status_str.lower()
+    if status_lower == "pending":
+        return NotificationStatus.PENDING
+    elif status_lower == "processing":
+        return NotificationStatus.PROCESSING
+    elif status_lower == "sent":
+        return NotificationStatus.SENT
+    elif status_lower == "failed":
+        return NotificationStatus.FAILED
+    elif status_lower == "rejected":
+        return NotificationStatus.REJECTED
+    else:
+        return NotificationStatus.PENDING  # Default

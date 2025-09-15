@@ -17,6 +17,7 @@ from utils.redis_client import get_redis_client
 from utils.policy_validator import validate_request
 from utils.routing_engine import apply_routing
 from services.celery_tasks import send_notification_task
+from services.database_service import DatabaseService
 
 router = APIRouter()
 
@@ -33,6 +34,7 @@ async def send_notification(
     - Valida el payload
     - Aplica políticas de routing y whitelist
     - Maneja idempotencia
+    - Registra en MySQL
     - Encola tarea en Celery
     - Retorna message_id para seguimiento
     """
@@ -78,8 +80,75 @@ async def send_notification(
             "timestamp": datetime.utcnow().isoformat()
         }
         
+        # NUEVO: Registrar notificación en MySQL - TODOS LOS CAMPOS
+        try:
+            # Obtener información adicional del request HTTP
+            source_ip = http_request.client.host if http_request.client else None
+            user_agent = http_request.headers.get("user-agent")
+            api_key = http_request.headers.get("X-API-Key")
+            
+            # Hash de API key para auditoría
+            api_key_hash = None
+            if api_key:
+                import hashlib
+                api_key_hash = hashlib.sha256(api_key.encode()).hexdigest()[:16]
+            
+            # Preparar destinatarios como JSON
+            to_emails_json = request.to if isinstance(request.to, list) else [request.to]
+            cc_emails_json = request.cc if request.cc else None
+            bcc_emails_json = request.bcc if request.bcc else None
+            
+            # Crear registro con TODOS los campos requeridos
+            db_notification = DatabaseService.create_notification(
+                message_id=message_id,
+                
+                # Destinatarios
+                to_email=str(to_emails_json[0]) if to_emails_json else "",
+                cc_emails=cc_emails_json,
+                bcc_emails=bcc_emails_json,
+                
+                # Contenido - CAMPOS QUE FALTABAN
+                subject=request.subject,                    # ✅ AGREGADO
+                body_text=request.body_text,               # ✅ AGREGADO
+                # body_html no se guarda como solicitaste
+                
+                # Template info  
+                template_id=request.template_id,
+                params_json=request.vars,
+                
+                # Configuración - CAMPOS QUE FALTABAN  
+                provider=routing_config.get("provider"),
+                routing_hint=request.routing_hint,         # ✅ AGREGADO
+                priority=getattr(request, 'priority', 'medium'),
+                
+                # Metadatos - CAMPOS QUE FALTABAN
+                idempotency_key=idempotency_key,           # ✅ AGREGADO
+                source_ip=source_ip,
+                user_agent=user_agent,
+                api_key_hash=api_key_hash
+            )
+            
+            if db_notification:
+                logging.debug(f"Notification {message_id} registered with ALL fields")
+            else:
+                logging.warning(f"Failed to register notification {message_id}")
+                
+        except Exception as db_error:
+            logging.error(f"Database error for {message_id}: {db_error}", exc_info=True)
+        
         # Encolar tarea en Celery
         celery_task = send_notification_task.delay(task_payload)
+        
+        # NUEVO: Actualizar BD con task ID - CAMPO QUE FALTABA
+        try:
+            DatabaseService.update_notification_status(
+                message_id=message_id,
+                status="processing",                        # ✅ CAMBIARÁ DE pending
+                celery_task_id=celery_task.id              # ✅ AGREGADO
+            )
+            logging.debug(f"Updated {message_id} to processing with task {celery_task.id}")
+        except Exception as db_error:
+            logging.error(f"Failed to update task ID for {message_id}: {db_error}")
         
         # Preparar respuesta
         response_data = NotifyResponse(
