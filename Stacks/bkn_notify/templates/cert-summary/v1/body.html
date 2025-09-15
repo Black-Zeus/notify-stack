@@ -5,352 +5,121 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <!--[if mso]>
-    <noscript>
-        <xml>
-            <o:OfficeDocumentSettings>
-                <o:PixelsPerInch>96</o:PixelsPerInch>
-            </o:OfficeDocumentSettings>
-        </xml>
-    </noscript>
-    <![endif]-->
   <style type="text/css">
-    /* Reset */
-    table,
-    td,
-    div,
-    h1,
-    h2,
-    h3,
-    p {
-      margin: 0;
-      padding: 0;
-    }
-
-    table {
-      border-collapse: collapse;
-    }
-
-    /* Outlook compatibility */
-    .ReadMsgBody {
-      width: 100%;
-    }
-
-    .ExternalClass {
-      width: 100%;
-    }
-
-    .ExternalClass * {
-      line-height: 100%;
-    }
-
-    /* Base styles */
-    body {
-      margin: 0 !important;
-      padding: 0 !important;
-      background-color: #f4f4f4;
-      font-family: Arial, sans-serif;
-    }
-
-    /* Container */
-    .email-container {
-      max-width: 700px;
-      margin: 0 auto;
-      background-color: #ffffff;
-    }
-
-    /* Header */
-    .header {
-      background-color: #28a745;
-      padding: 20px;
-      text-align: center;
-    }
-
-    .header h1 {
-      color: #ffffff;
-      font-size: 24px;
-      font-weight: bold;
-      margin: 0;
-    }
-
-    .summary-icon {
-      font-size: 32px;
-      margin-bottom: 10px;
-    }
-
-    /* Content */
-    .content {
-      padding: 30px 20px;
-      background-color: #f8f9fa;
-    }
-
-    .summary-box {
-      background-color: #e8f5e8;
-      border: 2px solid #28a745;
-      border-radius: 4px;
-      padding: 20px;
-      margin: 20px 0;
-    }
-
-    .stats-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin: 15px 0;
-      background-color: #ffffff;
-      border: 1px solid #dee2e6;
-      border-radius: 4px;
-    }
-
-    .stats-table th {
-      background-color: #f8f9fa;
-      padding: 12px 10px;
-      text-align: left;
-      font-weight: bold;
-      color: #495057;
-      border-bottom: 2px solid #dee2e6;
-    }
-
-    .stats-table td {
-      padding: 8px 10px;
-      border-bottom: 1px solid #eee;
-      vertical-align: top;
-    }
-
-    .stats-label {
-      font-weight: bold;
-      color: #555555;
-      width: 60%;
-    }
-
-    .stats-value {
-      color: #28a745;
-      font-weight: bold;
-      text-align: center;
-    }
-
-    /* Certificate table */
-    .cert-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin: 20px 0;
-      background-color: #ffffff;
-      border: 1px solid #dee2e6;
-      border-radius: 4px;
-    }
-
-    .cert-table th {
-      background-color: #495057;
-      color: #ffffff;
-      padding: 12px 8px;
-      text-align: left;
-      font-weight: bold;
-      font-size: 14px;
-    }
-
-    .cert-table td {
-      padding: 10px 8px;
-      border-bottom: 1px solid #eee;
-      font-size: 13px;
-    }
-
-    /* Status badges */
-    .status-ok {
-      background-color: #d4edda;
-      color: #155724;
-      padding: 4px 8px;
-      border-radius: 3px;
-      font-size: 12px;
-      font-weight: bold;
-    }
-
-    .status-warning {
-      background-color: #fff3cd;
-      color: #856404;
-      padding: 4px 8px;
-      border-radius: 3px;
-      font-size: 12px;
-      font-weight: bold;
-    }
-
-    .status-manual {
-      background-color: #f8d7da;
-      color: #721c24;
-      padding: 4px 8px;
-      border-radius: 3px;
-      font-size: 12px;
-      font-weight: bold;
-    }
-
-    .status-error {
-      background-color: #f5c6cb;
-      color: #721c24;
-      padding: 4px 8px;
-      border-radius: 3px;
-      font-size: 12px;
-      font-weight: bold;
-    }
-
-    .message-text {
-      font-size: 16px;
-      line-height: 1.5;
-      color: #333333;
-      margin: 15px 0;
-    }
-
-    /* Footer */
-    .footer {
-      background-color: #f8f9fa;
-      padding: 15px 20px;
-      text-align: center;
-      border-top: 1px solid #dee2e6;
-    }
-
-    .footer-text {
-      font-size: 12px;
-      color: #6c757d;
-      line-height: 1.4;
-    }
-
-    /* Responsive */
-    @media only screen and (max-width: 480px) {
-      .email-container {
-        width: 100% !important;
-      }
-
-      .content {
-        padding: 20px 15px !important;
-      }
-
-      .header {
-        padding: 15px !important;
-      }
-
-      .header h1 {
-        font-size: 20px !important;
-      }
-
-      .cert-table th,
-      .cert-table td {
-        padding: 8px 4px !important;
-        font-size: 11px !important;
-      }
-    }
+    body, table, td {font-family: Arial, sans-serif !important;}
   </style>
+  <![endif]-->
 </head>
 
-<body>
-  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+<body style="margin:0; padding:0; background-color:#f4f4f4; font-family:Arial, sans-serif;">
+
+  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" bgcolor="#f4f4f4">
     <tr>
-      <td align="center" style="padding: 20px 0;">
-        <div class="email-container">
+      <td align="center" style="padding:20px 0;">
+
+        <!-- Container -->
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="700" bgcolor="#ffffff" style="border-collapse:collapse;">
 
           <!-- Header -->
-          <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
-            <tr>
-              <td class="header">
-                <h1><span class="summary-icon">📊</span> RESUMEN CERTIFICADOS SSL</h1>
-              </td>
-            </tr>
-          </table>
+          <tr>
+            <td align="center" bgcolor="#28a745" style="padding:20px;">
+              <h1 style="margin:0; font-size:24px; font-weight:bold; color:#ffffff;">📊 RESUMEN CERTIFICADOS SSL</h1>
+            </td>
+          </tr>
 
           <!-- Content -->
-          <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
-            <tr>
-              <td class="content">
+          <tr>
+            <td bgcolor="#f8f9fa" style="padding:30px 20px;">
 
-                <div class="summary-box">
-                  <p class="message-text">
+              <!-- Summary Box -->
+              <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" bgcolor="#e8f5e8" style="border:2px solid #28a745; border-radius:4px;">
+                <tr>
+                  <td style="padding:20px; font-size:16px; color:#333333; line-height:1.5;">
                     <strong>Verificación completada el {{ fecha_verificacion }}</strong><br>
                     Se han verificado {{ total_certificados }} certificados SSL en el sistema.
-                  </p>
-                </div>
+                  </td>
+                </tr>
+              </table>
 
-                <!-- Statistics Table -->
-                <table class="stats-table" role="presentation" cellspacing="0" cellpadding="0" border="0">
-                  <thead>
-                    <tr>
-                      <th colspan="2">RESUMEN ESTADÍSTICO</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td class="stats-label">✅ Certificados válidos (> {{ umbral_dias }} días)</td>
-                      <td class="stats-value">{{ total_validos }}</td>
-                    </tr>
-                    <tr>
-                      <td class="stats-label">⚠️ Necesitan renovación automática</td>
-                      <td class="stats-value">{{ total_auto_pendientes }}</td>
-                    </tr>
-                    <tr>
-                      <td class="stats-label">🔧 Requieren renovación manual</td>
-                      <td class="stats-value">{{ total_manual_pendientes }}</td>
-                    </tr>
-                    <tr>
-                      <td class="stats-label">❌ Errores encontrados</td>
-                      <td class="stats-value">{{ total_errores }}</td>
-                    </tr>
-                  </tbody>
-                </table>
+              <!-- Statistics Table -->
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin-top:20px; border:1px solid #dee2e6;">
+                <tr>
+                  <th colspan="2" align="left" bgcolor="#f8f9fa" style="padding:12px 10px; font-size:14px; font-weight:bold; color:#495057; border-bottom:2px solid #dee2e6;">
+                    RESUMEN ESTADÍSTICO
+                  </th>
+                </tr>
+                <tr>
+                  <td style="padding:8px 10px; font-weight:bold; color:#555555;">✅ Certificados válidos (&gt; {{ umbral_dias }} días)</td>
+                  <td align="center" style="padding:8px 10px; font-weight:bold; color:#28a745;">{{ total_validos }}</td>
+                </tr>
+                <tr>
+                  <td style="padding:8px 10px; font-weight:bold; color:#555555;">⚠️ Necesitan renovación automática</td>
+                  <td align="center" style="padding:8px 10px; font-weight:bold; color:#28a745;">{{ total_auto_pendientes }}</td>
+                </tr>
+                <tr>
+                  <td style="padding:8px 10px; font-weight:bold; color:#555555;">🔧 Requieren renovación manual</td>
+                  <td align="center" style="padding:8px 10px; font-weight:bold; color:#28a745;">{{ total_manual_pendientes }}</td>
+                </tr>
+                <tr>
+                  <td style="padding:8px 10px; font-weight:bold; color:#555555;">❌ Errores encontrados</td>
+                  <td align="center" style="padding:8px 10px; font-weight:bold; color:#28a745;">{{ total_errores }}</td>
+                </tr>
+              </table>
 
-                <!-- Certificate Details Table -->
-                <table class="cert-table" role="presentation" cellspacing="0" cellpadding="0" border="0">
-                  <thead>
-                    <tr>
-                      <th>Dominio</th>
-                      <th>Estado</th>
-                      <th>Días Restantes</th>
-                      <th>Tipo</th>
-                      <th>Fecha Vencimiento</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {% for cert in certificados %}
-                    <tr>
-                      <td><strong>{{ cert.dominio }}</strong></td>
-                      <td>
-                        {% if cert.estado == 'VÁLIDO' %}
-                        <span class="status-ok">{{ cert.estado }}</span>
-                        {% elif cert.estado == 'RENOVACIÓN AUTO' %}
-                        <span class="status-warning">{{ cert.estado }}</span>
-                        {% elif cert.estado == 'RENOVACIÓN MANUAL' %}
-                        <span class="status-manual">{{ cert.estado }}</span>
-                        {% else %}
-                        <span class="status-error">{{ cert.estado }}</span>
-                        {% endif %}
-                      </td>
-                      <td>{{ cert.dias_restantes }}</td>
-                      <td>{{ cert.tipo }}</td>
-                      <td>{{ cert.fecha_vencimiento }}</td>
-                    </tr>
-                    {% endfor %}
-                  </tbody>
-                </table>
+              <!-- Certificate Details -->
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin-top:20px; border:1px solid #dee2e6;">
+                <tr>
+                  <th align="left" bgcolor="#495057" style="color:#ffffff; padding:12px 8px; font-size:14px; font-weight:bold;">Dominio</th>
+                  <th align="left" bgcolor="#495057" style="color:#ffffff; padding:12px 8px; font-size:14px; font-weight:bold;">Estado</th>
+                  <th align="left" bgcolor="#495057" style="color:#ffffff; padding:12px 8px; font-size:14px; font-weight:bold;">Días Restantes</th>
+                  <th align="left" bgcolor="#495057" style="color:#ffffff; padding:12px 8px; font-size:14px; font-weight:bold;">Tipo</th>
+                  <th align="left" bgcolor="#495057" style="color:#ffffff; padding:12px 8px; font-size:14px; font-weight:bold;">Fecha Vencimiento</th>
+                </tr>
+                {% for cert in certificados %}
+                <tr>
+                  <td style="padding:10px 8px; font-size:13px;"><strong>{{ cert.dominio }}</strong></td>
+                  <td style="padding:10px 8px; font-size:13px;">
+                    {% if cert.estado == 'VÁLIDO' %}
+                    <span style="background-color:#d4edda; color:#155724; padding:4px 8px; border-radius:3px; font-size:12px; font-weight:bold;">{{ cert.estado }}</span>
+                    {% elif cert.estado == 'RENOVACIÓN AUTO' %}
+                    <span style="background-color:#fff3cd; color:#856404; padding:4px 8px; border-radius:3px; font-size:12px; font-weight:bold;">{{ cert.estado }}</span>
+                    {% elif cert.estado == 'RENOVACIÓN MANUAL' %}
+                    <span style="background-color:#f8d7da; color:#721c24; padding:4px 8px; border-radius:3px; font-size:12px; font-weight:bold;">{{ cert.estado }}</span>
+                    {% else %}
+                    <span style="background-color:#f5c6cb; color:#721c24; padding:4px 8px; border-radius:3px; font-size:12px; font-weight:bold;">{{ cert.estado }}</span>
+                    {% endif %}
+                  </td>
+                  <td style="padding:10px 8px; font-size:13px;">{{ cert.dias_restantes }}</td>
+                  <td style="padding:10px 8px; font-size:13px;">{{ cert.tipo }}</td>
+                  <td style="padding:10px 8px; font-size:13px;">{{ cert.fecha_vencimiento }}</td>
+                </tr>
+                {% endfor %}
+              </table>
 
-                {% if proxima_verificacion %}
-                <p class="message-text">
-                  <strong>Próxima verificación:</strong> {{ proxima_verificacion }}
-                </p>
-                {% endif %}
+              {% if proxima_verificacion %}
+              <p style="margin:15px 0; font-size:16px; line-height:1.5; color:#333333;">
+                <strong>Próxima verificación:</strong> {{ proxima_verificacion }}
+              </p>
+              {% endif %}
 
-              </td>
-            </tr>
-          </table>
+            </td>
+          </tr>
 
           <!-- Footer -->
-          <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
-            <tr>
-              <td class="footer">
-                <p class="footer-text">
-                  Este es un resumen automático del sistema de gestión de certificados SSL.<br>
-                  Generado el {{ timestamp }} por Notify API
-                </p>
-              </td>
-            </tr>
-          </table>
+          <tr>
+            <td align="center" bgcolor="#f8f9fa" style="padding:15px 20px; border-top:1px solid #dee2e6;">
+              <p style="margin:0; font-size:12px; color:#6c757d; line-height:1.4;">
+                Este es un resumen automático del sistema de gestión de certificados SSL.<br>
+                Generado el {{ timestamp }} por Notify API
+              </p>
+            </td>
+          </tr>
 
-        </div>
+        </table>
+
       </td>
     </tr>
   </table>
-</body>
 
+</body>
 </html>

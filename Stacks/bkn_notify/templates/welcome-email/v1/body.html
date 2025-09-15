@@ -5,252 +5,103 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <!--[if mso]>
-    <noscript>
-        <xml>
-            <o:OfficeDocumentSettings>
-                <o:PixelsPerInch>96</o:PixelsPerInch>
-            </o:OfficeDocumentSettings>
-        </xml>
-    </noscript>
-    <![endif]-->
   <style type="text/css">
-    /* Reset */
-    table,
-    td,
-    div,
-    h1,
-    h2,
-    h3,
-    p {
-      margin: 0;
-      padding: 0;
-    }
-
-    table {
-      border-collapse: collapse;
-    }
-
-    /* Outlook compatibility */
-    .ReadMsgBody {
-      width: 100%;
-    }
-
-    .ExternalClass {
-      width: 100%;
-    }
-
-    .ExternalClass * {
-      line-height: 100%;
-    }
-
-    /* Base styles */
-    body {
-      margin: 0 !important;
-      padding: 0 !important;
-      background-color: #f4f4f4;
-      font-family: Arial, sans-serif;
-    }
-
-    /* Container */
-    .email-container {
-      max-width: 600px;
-      margin: 0 auto;
-      background-color: #ffffff;
-    }
-
-    /* Header */
-    .header {
-      background-color: #667eea;
-      padding: 20px;
-      text-align: center;
-    }
-
-    .header h1 {
-      color: #ffffff;
-      font-size: 24px;
-      font-weight: bold;
-      margin: 0;
-    }
-
-    .welcome-icon {
-      font-size: 32px;
-      margin-bottom: 10px;
-    }
-
-    /* Content */
-    .content {
-      padding: 30px 20px;
-      background-color: #f8f9fa;
-    }
-
-    .welcome-box {
-      background-color: #f0f9ff;
-      border: 2px solid #667eea;
-      border-radius: 4px;
-      padding: 20px;
-      margin: 20px 0;
-    }
-
-    .info-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin: 15px 0;
-    }
-
-    .info-table td {
-      padding: 8px 10px;
-      border-bottom: 1px solid #eee;
-      vertical-align: top;
-    }
-
-    .info-label {
-      font-weight: bold;
-      color: #555555;
-      width: 30%;
-    }
-
-    .info-value {
-      color: #667eea;
-      font-weight: bold;
-    }
-
-    .message-text {
-      font-size: 16px;
-      line-height: 1.5;
-      color: #333333;
-      margin: 15px 0;
-    }
-
-    .action-button {
-      background-color: #667eea;
-      color: #ffffff;
-      padding: 12px 24px;
-      text-decoration: none;
-      border-radius: 4px;
-      display: inline-block;
-      font-weight: bold;
-      margin: 15px 0;
-    }
-
-    /* Footer */
-    .footer {
-      background-color: #f8f9fa;
-      padding: 15px 20px;
-      text-align: center;
-      border-top: 1px solid #dee2e6;
-    }
-
-    .footer-text {
-      font-size: 12px;
-      color: #6c757d;
-      line-height: 1.4;
-    }
-
-    /* Responsive */
-    @media only screen and (max-width: 480px) {
-      .email-container {
-        width: 100% !important;
-      }
-
-      .content {
-        padding: 20px 15px !important;
-      }
-
-      .header {
-        padding: 15px !important;
-      }
-
-      .header h1 {
-        font-size: 20px !important;
-      }
-    }
+    body, table, td {font-family: Arial, sans-serif !important;}
   </style>
+  <![endif]-->
 </head>
 
-<body>
-  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+<body style="margin:0; padding:0; background-color:#f4f4f4; font-family:Arial, sans-serif;">
+
+  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" bgcolor="#f4f4f4">
     <tr>
-      <td align="center" style="padding: 20px 0;">
-        <div class="email-container">
+      <td align="center" style="padding:20px 0;">
+
+        <!-- Container -->
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" bgcolor="#ffffff" style="border-collapse:collapse;">
 
           <!-- Header -->
-          <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
-            <tr>
-              <td class="header">
-                <h1><span class="welcome-icon">🎉</span> ¡BIENVENIDO A {{ company_name|upper }}!</h1>
-              </td>
-            </tr>
-          </table>
+          <tr>
+            <td align="center" bgcolor="#667eea" style="padding:20px;">
+              <h1 style="margin:0; font-size:24px; font-weight:bold; color:#ffffff;">🎉 ¡BIENVENIDO A {{ company_name|upper }}!</h1>
+            </td>
+          </tr>
 
           <!-- Content -->
-          <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
-            <tr>
-              <td class="content">
+          <tr>
+            <td bgcolor="#f8f9fa" style="padding:30px 20px;">
 
-                <div class="welcome-box">
-                  <p class="message-text">
+              <!-- Caja bienvenida -->
+              <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" bgcolor="#f0f9ff" style="border:2px solid #667eea;">
+                <tr>
+                  <td style="padding:20px; font-size:16px; color:#333333;">
                     <strong>¡Hola {{ user_name }}! Tu cuenta ha sido creada exitosamente.</strong>
-                  </p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:0 20px 20px 20px;">
+                    <table role="presentation" width="100%">
+                      <tr>
+                        <td style="padding:8px 10px; font-weight:bold; color:#555555;" width="30%">Usuario:</td>
+                        <td style="padding:8px 10px; font-weight:bold; color:#667eea;">{{ user_name }}</td>
+                      </tr>
+                      <tr>
+                        <td style="padding:8px 10px; font-weight:bold; color:#555555;">Email:</td>
+                        <td style="padding:8px 10px; font-weight:bold; color:#667eea;">{{ user_email }}</td>
+                      </tr>
+                      <tr>
+                        <td style="padding:8px 10px; font-weight:bold; color:#555555;">Empresa:</td>
+                        <td style="padding:8px 10px; font-weight:bold; color:#667eea;">{{ company_name }}</td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
 
-                  <table class="info-table" role="presentation" cellspacing="0" cellpadding="0" border="0">
-                    <tr>
-                      <td class="info-label">Usuario:</td>
-                      <td class="info-value">{{ user_name }}</td>
-                    </tr>
-                    <tr>
-                      <td class="info-label">Email:</td>
-                      <td class="info-value">{{ user_email }}</td>
-                    </tr>
-                    <tr>
-                      <td class="info-label">Empresa:</td>
-                      <td class="info-value">{{ company_name }}</td>
-                    </tr>
-                  </table>
-                </div>
+              {% if activation_link -%}
+              <p style="font-size:16px; color:#333; margin:15px 0;">
+                Para completar el proceso, haz clic en el botón <strong>"Activar Cuenta"</strong> o accede al siguiente enlace:
+              </p>
 
-                {% if activation_link -%}
-                <p class="message-text">
-                  Para completar el proceso, haz clic en el botón <strong>"Activar Cuenta"</strong> o accede al siguiente enlace:
-                </p>
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                <tr>
+                  <td align="center">
+                    <a href="{{ activation_link }}" style="background-color:#667eea; color:#ffffff; padding:12px 24px; text-decoration:none; border-radius:4px; display:inline-block; font-weight:bold;">
+                      Activar Cuenta
+                    </a>
+                  </td>
+                </tr>
+              </table>
 
-                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
-                  <tr>
-                    <td align="center">
-                      <a href="{{ activation_link }}" class="action-button">Activar Cuenta</a>
-                    </td>
-                  </tr>
-                </table>
+              <p style="font-size:14px; color:#666; margin:15px 0;">
+                O copia y pega este enlace en tu navegador:<br>
+                <a href="{{ activation_link }}" style="color:#667eea; word-break:break-all;">{{ activation_link }}</a>
+              </p>
+              {% endif %}
 
-                <p class="message-text" style="font-size: 14px; color: #666;">
-                  O copia y pega este enlace en tu navegador:<br>
-                  <a href="{{ activation_link }}" style="color: #667eea; word-break: break-all;">{{ activation_link }}</a>
-                </p>
-                {% endif %}
+              <p style="font-size:16px; color:#333; margin:15px 0;">
+                Si tienes alguna pregunta, no dudes en contactarnos.
+              </p>
 
-                <p class="message-text">
-                  Si tienes alguna pregunta, no dudes en contactarnos.
-                </p>
-
-              </td>
-            </tr>
-          </table>
+            </td>
+          </tr>
 
           <!-- Footer -->
-          <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
-            <tr>
-              <td class="footer">
-                <p class="footer-text">
-                  Este es un mensaje automático de bienvenida.<br>
-                  Generado el {{ timestamp }} por {{ company_name }}
-                </p>
-              </td>
-            </tr>
-          </table>
+          <tr>
+            <td align="center" bgcolor="#f8f9fa" style="padding:15px 20px; border-top:1px solid #dee2e6;">
+              <p style="margin:0; font-size:12px; color:#6c757d; line-height:1.4;">
+                Este es un mensaje automático de bienvenida.<br>
+                Generado el {{ timestamp }} por {{ company_name }}
+              </p>
+            </td>
+          </tr>
 
-        </div>
+        </table>
+        <!-- End Container -->
+
       </td>
     </tr>
   </table>
-</body>
 
+</body>
 </html>

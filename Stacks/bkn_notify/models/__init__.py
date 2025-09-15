@@ -26,19 +26,11 @@ from .status_response import (
     MetricsResponse
 )
 
-# Modelos de testing
-from .test_request import (
-    TestType,
-    ConnectivityStatus,
-    TestRequest,
-    TestResponse,
-    ConnectivityTestRequest,
-    ProviderTestResult,
-    ConnectivityTestResponse,
-    TemplateTestRequest,
-    TemplateTestResponse,
-    ValidationTestRequest,
-    ValidationTestResponse
+# Modelos de información de templates
+from .template_info import (
+    TemplateInfo,
+    TemplateListResponse,
+    TemplateValidationResponse
 )
 
 # Exports organizados por categoría
@@ -62,18 +54,10 @@ __all__ = [
     "BatchStatusResponse", 
     "MetricsResponse",
     
-    # === TESTING MODELS ===
-    "TestType",
-    "ConnectivityStatus",
-    "TestRequest",
-    "TestResponse",
-    "ConnectivityTestRequest",
-    "ProviderTestResult",
-    "ConnectivityTestResponse",
-    "TemplateTestRequest",
-    "TemplateTestResponse",
-    "ValidationTestRequest",
-    "ValidationTestResponse"
+    # === TEMPLATE MODELS ===
+    "TemplateInfo",
+    "TemplateListResponse",
+    "TemplateValidationResponse"
 ]
 
 # Información del paquete de modelos
@@ -90,11 +74,8 @@ MODEL_INFO = {
             "DeliveryResult", "StatusResponse", "LogEntry", "LogsResponse",
             "BatchStatusResponse", "MetricsResponse"
         ],
-        "testing": [
-            "TestType", "ConnectivityStatus", "TestRequest", "TestResponse",
-            "ConnectivityTestRequest", "ProviderTestResult", "ConnectivityTestResponse",
-            "TemplateTestRequest", "TemplateTestResponse", 
-            "ValidationTestRequest", "ValidationTestResponse"
+        "templates": [
+            "TemplateInfo", "TemplateListResponse", "TemplateValidationResponse"
         ]
     },
     "total_models": len(__all__),
@@ -129,7 +110,7 @@ def get_models_by_category(category: str) -> list:
     Obtiene modelos por categoría
     
     Args:
-        category: notifications, status_logging, testing
+        category: notifications, status_logging, templates
         
     Returns:
         Lista de clases de modelos en esa categoría

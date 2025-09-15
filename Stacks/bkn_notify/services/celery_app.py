@@ -120,27 +120,20 @@ def get_celery_app() -> Celery:
     return celery_app
 
 
-# Tareas básicas de ejemplo (placeholders)
-@celery_app.task(bind=True)
-def send_notification_task(self, payload):
-    """
-    Placeholder para tarea de envío de notificaciones
-    """
-    try:
-        logging.info(f"Processing notification task: {payload.get('message_id', 'unknown')}")
-        
-        # TODO: Implementar envío real cuando otros módulos estén listos
-        import time
-        time.sleep(2)  # Simular trabajo
-        
-        return {
-            "success": True,
-            "message_id": payload.get('message_id'),
-            "status": "placeholder_sent"
-        }
-    except Exception as exc:
-        logging.error(f"Task failed: {exc}")
-        raise self.retry(exc=exc, countdown=60, max_retries=3)
+# ====================================================================
+# FUNCIONES PLACEHOLDER ELIMINADAS
+# ====================================================================
+# La función send_notification_task() fue eliminada de aquí para evitar
+# conflictos con la versión completa en services/celery_tasks.py
+# 
+# ANTES había:
+# @celery_app.task(bind=True)
+# def send_notification_task(self, payload): ...
+# 
+# Esto causaba que los logs no se registraran en MySQL porque
+# esta versión placeholder tenía precedencia sobre la versión
+# completa con integración a base de datos.
+# ====================================================================
 
 
 @celery_app.task

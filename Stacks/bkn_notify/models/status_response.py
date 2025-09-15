@@ -13,12 +13,12 @@ class TaskStatus(str, Enum):
     """
     Estados posibles de una tarea de notificación
     """
-    PENDING = "pending"           # En cola, no procesada aún
-    PROCESSING = "processing"     # Siendo procesada por worker
-    SUCCESS = "success"           # Enviada exitosamente
-    FAILED = "failed"            # Falló el envío
-    RETRY = "retry"              # En proceso de reintento
-    CANCELLED = "cancelled"       # Cancelada manualmente
+    PENDING = "PENDING"           # En cola, no procesada aún
+    PROCESSING = "PROCESSING"     # Siendo procesada por worker
+    SUCCESS = "SUCCESS"           # Enviada exitosamente
+    FAILED = "FAILED"             # Falló el envío
+    RETRY = "RETRY"               # En proceso de reintento
+    CANCELLED = "CANCELLED"       # Cancelada manualmente
 
 
 class LogLevel(str, Enum):

@@ -5,665 +5,192 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <!--[if mso]>
-    <noscript>
-        <xml>
-            <o:OfficeDocumentSettings>
-                <o:PixelsPerInch>96</o:PixelsPerInch>
-            </o:OfficeDocumentSettings>
-        </xml>
-    </noscript>
-    <![endif]-->
   <style type="text/css">
-    /* Reset */
-    table,
-    td,
-    div,
-    h1,
-    h2,
-    h3,
-    p {
-      margin: 0;
-      padding: 0;
-    }
-
-    table {
-      border-collapse: collapse;
-    }
-
-    /* Outlook compatibility */
-    .ReadMsgBody {
-      width: 100%;
-    }
-
-    .ExternalClass {
-      width: 100%;
-    }
-
-    .ExternalClass * {
-      line-height: 100%;
-    }
-
-    /* Base styles */
-    body {
-      margin: 0 !important;
-      padding: 0 !important;
-      background-color: #f4f4f4;
-      font-family: Arial, sans-serif;
-    }
-
-    /* Container */
-    .email-container {
-      max-width: 600px;
-      margin: 0 auto;
-      background-color: #ffffff;
-    }
-
-    /* Header */
-    .header {
-      background-color: #db2777;
-      padding: 20px;
-      text-align: center;
-    }
-
-    .header h1 {
-      color: #ffffff;
-      font-size: 24px;
-      font-weight: bold;
-      margin: 0;
-    }
-
-    .network-icon {
-      font-size: 32px;
-      margin-bottom: 10px;
-    }
-
-    /* Content */
-    .content {
-      padding: 30px 20px;
-      background-color: #f8f9fa;
-    }
-
-    .alert-box {
-      background-color: #fdf2f8;
-      border: 2px solid #db2777;
-      border-radius: 4px;
-      padding: 20px;
-      margin: 20px 0;
-    }
-
-    .metric-box {
-      background-color: #f8fafc;
-      border: 2px solid #64748b;
-      border-radius: 4px;
-      padding: 15px;
-      margin: 15px 0;
-    }
-
-    .status-box {
-      background-color: #f0f9ff;
-      border: 2px solid #0ea5e9;
-      border-radius: 4px;
-      padding: 15px;
-      margin: 15px 0;
-    }
-
-    .impact-box {
-      background-color: #fef3c7;
-      border: 2px solid #f59e0b;
-      border-radius: 4px;
-      padding: 20px;
-      margin: 20px 0;
-    }
-
-    .action-box {
-      background-color: #f0fdf4;
-      border: 2px solid #16a34a;
-      border-radius: 4px;
-      padding: 20px;
-      margin: 20px 0;
-    }
-
-    .info-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin: 10px 0;
-    }
-
-    .info-table td {
-      padding: 6px 10px;
-      border-bottom: 1px solid #eee;
-      vertical-align: top;
-    }
-
-    .info-label {
-      font-weight: bold;
-      color: #555555;
-      width: 35%;
-    }
-
-    .info-value {
-      color: #db2777;
-      font-weight: bold;
-    }
-
-    .metric-value {
-      color: #0f172a;
-      font-weight: bold;
-    }
-
-    .status-value {
-      color: #0ea5e9;
-      font-weight: bold;
-    }
-
-    .message-text {
-      font-size: 16px;
-      line-height: 1.5;
-      color: #333333;
-      margin: 15px 0;
-    }
-
-    .severity-critical {
-      background-color: #dc2626;
-      color: #ffffff;
-      padding: 4px 12px;
-      border-radius: 16px;
-      font-size: 14px;
-      font-weight: bold;
-      display: inline-block;
-    }
-
-    .severity-high {
-      background-color: #ea580c;
-      color: #ffffff;
-      padding: 4px 12px;
-      border-radius: 16px;
-      font-size: 14px;
-      font-weight: bold;
-      display: inline-block;
-    }
-
-    .severity-medium {
-      background-color: #ca8a04;
-      color: #ffffff;
-      padding: 4px 12px;
-      border-radius: 16px;
-      font-size: 14px;
-      font-weight: bold;
-      display: inline-block;
-    }
-
-    .severity-low {
-      background-color: #16a34a;
-      color: #ffffff;
-      padding: 4px 12px;
-      border-radius: 16px;
-      font-size: 14px;
-      font-weight: bold;
-      display: inline-block;
-    }
-
-    .event-id {
-      font-family: monospace;
-      background-color: #f3f4f6;
-      padding: 2px 6px;
-      border-radius: 3px;
-      font-size: 14px;
-    }
-
-    .endpoint-url {
-      font-family: monospace;
-      background-color: #fdf2f8;
-      color: #db2777;
-      padding: 2px 6px;
-      border-radius: 3px;
-      font-weight: bold;
-      word-break: break-all;
-    }
-
-    .latency-bar {
-      width: 100%;
-      height: 20px;
-      background-color: #e5e7eb;
-      border-radius: 10px;
-      overflow: hidden;
-      margin: 5px 0;
-    }
-
-    .latency-fill {
-      height: 100%;
-      border-radius: 10px;
-    }
-
-    .latency-good {
-      background-color: #10b981;
-    }
-
-    .latency-warning {
-      background-color: #f59e0b;
-    }
-
-    .latency-critical {
-      background-color: #dc2626;
-    }
-
-    .metric-title {
-      font-size: 16px;
-      font-weight: bold;
-      color: #1f2937;
-      margin-bottom: 10px;
-    }
-
-    .status-good {
-      color: #16a34a;
-      font-weight: bold;
-    }
-
-    .status-bad {
-      color: #dc2626;
-      font-weight: bold;
-    }
-
-    .status-unknown {
-      color: #6b7280;
-      font-weight: bold;
-    }
-
-    /* Footer */
-    .footer {
-      background-color: #f8f9fa;
-      padding: 15px 20px;
-      text-align: center;
-      border-top: 1px solid #dee2e6;
-    }
-
-    .footer-text {
-      font-size: 12px;
-      color: #6c757d;
-      line-height: 1.4;
-    }
-
-    /* Responsive */
-    @media only screen and (max-width: 480px) {
-      .email-container {
-        width: 100% !important;
-      }
-
-      .content {
-        padding: 20px 15px !important;
-      }
-
-      .header {
-        padding: 15px !important;
-      }
-
-      .header h1 {
-        font-size: 20px !important;
-      }
-    }
+    body, table, td {font-family: Arial, sans-serif !important;}
   </style>
+  <![endif]-->
 </head>
 
-<body>
-  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+<body style="margin:0; padding:0; background-color:#f4f4f4; font-family:Arial, sans-serif;">
+
+  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" bgcolor="#f4f4f4">
     <tr>
-      <td align="center" style="padding: 20px 0;">
-        <div class="email-container">
+      <td align="center" style="padding:20px 0;">
+
+        <!-- Container -->
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" bgcolor="#ffffff" style="border-collapse:collapse;">
 
           <!-- Header -->
-          <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
-            <tr>
-              <td class="header">
-                <h1><span class="network-icon">🌐</span> ALERTA DE RED</h1>
-              </td>
-            </tr>
-          </table>
+          <tr>
+            <td align="center" bgcolor="#db2777" style="padding:20px;">
+              <h1 style="margin:0; font-size:24px; font-weight:bold; color:#ffffff;">🌐 ALERTA DE RED</h1>
+            </td>
+          </tr>
 
           <!-- Content -->
-          <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
-            <tr>
-              <td class="content">
+          <tr>
+            <td bgcolor="#f8f9fa" style="padding:30px 20px;">
 
-                <div class="alert-box">
-                  <p class="message-text">
+              <!-- Alert box -->
+              <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" bgcolor="#fdf2f8" style="border:2px solid #db2777;">
+                <tr>
+                  <td style="padding:20px; font-size:16px; color:#333333; line-height:1.5;">
                     <strong>Se ha detectado un problema de conectividad:</strong>
-                  </p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:0 20px 20px 20px;">
+                    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="border-collapse:collapse;">
+                      <tr>
+                        <td style="padding:6px 10px; font-weight:bold; color:#555555;" width="35%">Tipo de alerta:</td>
+                        <td style="padding:6px 10px; font-weight:bold; color:#db2777;">{{ tipo_alerta }}</td>
+                      </tr>
+                      <tr>
+                        <td style="padding:6px 10px; font-weight:bold; color:#555555;">Destino afectado:</td>
+                        <td style="padding:6px 10px; font-weight:bold; color:#db2777;">{{ destino_afectado }}</td>
+                      </tr>
+                      <tr>
+                        <td style="padding:6px 10px; font-weight:bold; color:#555555;">Severidad:</td>
+                        <td style="padding:6px 10px;">
+                          {% if severidad == 'critical' -%}
+                          <span style="background-color:#dc2626; color:#ffffff; padding:4px 12px; font-size:14px; font-weight:bold; display:inline-block;">CRÍTICA</span>
+                          {% elif severidad == 'high' -%}
+                          <span style="background-color:#ea580c; color:#ffffff; padding:4px 12px; font-size:14px; font-weight:bold; display:inline-block;">ALTA</span>
+                          {% elif severidad == 'medium' -%}
+                          <span style="background-color:#ca8a04; color:#ffffff; padding:4px 12px; font-size:14px; font-weight:bold; display:inline-block;">MEDIA</span>
+                          {% else -%}
+                          <span style="background-color:#16a34a; color:#ffffff; padding:4px 12px; font-size:14px; font-weight:bold; display:inline-block;">BAJA</span>
+                          {% endif %}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding:6px 10px; font-weight:bold; color:#555555;">Detección:</td>
+                        <td style="padding:6px 10px; font-weight:bold; color:#db2777;">{{ hora_deteccion }}</td>
+                      </tr>
+                      <tr>
+                        <td style="padding:6px 10px; font-weight:bold; color:#555555;">Monitor:</td>
+                        <td style="padding:6px 10px; font-weight:bold; color:#db2777;">{{ servidor_monitor }}</td>
+                      </tr>
+                      <tr>
+                        <td style="padding:6px 10px; font-weight:bold; color:#555555;">ID del evento:</td>
+                        <td style="padding:6px 10px;"><span style="font-family:monospace; background-color:#f3f4f6; padding:2px 6px; font-size:14px;">{{ evento_id }}</span></td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
 
-                  <table class="info-table" role="presentation" cellspacing="0" cellpadding="0" border="0">
-                    <tr>
-                      <td class="info-label">Tipo de alerta:</td>
-                      <td class="info-value">{{ tipo_alerta }}</td>
-                    </tr>
-                    <tr>
-                      <td class="info-label">Destino afectado:</td>
-                      <td class="info-value">{{ destino_afectado }}</td>
-                    </tr>
-                    <tr>
-                      <td class="info-label">Severidad:</td>
-                      <td>
-                        {% if severidad == 'critical' -%}
-                        <span class="severity-critical">CRÍTICA</span>
-                        {% elif severidad == 'high' -%}
-                        <span class="severity-high">ALTA</span>
-                        {% elif severidad == 'medium' -%}
-                        <span class="severity-medium">MEDIA</span>
-                        {% else -%}
-                        <span class="severity-low">BAJA</span>
-                        {% endif %}
-                      </td>
-                    </tr>
-                    <tr>
-                      <td class="info-label">Detección:</td>
-                      <td class="info-value">{{ hora_deteccion }}</td>
-                    </tr>
-                    <tr>
-                      <td class="info-label">Monitor:</td>
-                      <td class="info-value">{{ servidor_monitor }}</td>
-                    </tr>
-                    <tr>
-                      <td class="info-label">ID del evento:</td>
-                      <td><span class="event-id">{{ evento_id }}</span></td>
-                    </tr>
-                  </table>
-                </div>
+              {% if latencia_alta -%}
+              <!-- Latencia alta -->
+              <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" bgcolor="#f8fafc" style="border:2px solid #64748b; margin-top:15px;">
+                <tr>
+                  <td style="padding:15px; font-size:16px; font-weight:bold; color:#1f2937;">⚡ Latencia Alta Detectada</td>
+                </tr>
+                <tr>
+                  <td style="padding:0 15px 15px 15px;">
+                    <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0">
+                      <tr>
+                        <td style="padding:6px 10px; font-weight:bold; color:#555555;" width="35%">Latencia actual:</td>
+                        <td style="padding:6px 10px; font-weight:bold; color:#0f172a;">{{ latencia_actual }}ms</td>
+                      </tr>
+                      <tr>
+                        <td style="padding:6px 10px; font-weight:bold; color:#555555;">Latencia promedio:</td>
+                        <td style="padding:6px 10px; font-weight:bold; color:#0f172a;">{{ latencia_promedio }}ms</td>
+                      </tr>
+                      <tr>
+                        <td style="padding:6px 10px; font-weight:bold; color:#555555;">Umbral configurado:</td>
+                        <td style="padding:6px 10px; font-weight:bold; color:#0f172a;">{{ umbral_latencia }}ms</td>
+                      </tr>
+                      {% if duracion_problema -%}
+                      <tr>
+                        <td style="padding:6px 10px; font-weight:bold; color:#555555;">Duración:</td>
+                        <td style="padding:6px 10px; font-weight:bold; color:#0f172a;">{{ duracion_problema }}</td>
+                      </tr>
+                      {% endif %}
+                      {% if perdida_paquetes -%}
+                      <tr>
+                        <td style="padding:6px 10px; font-weight:bold; color:#555555;">Pérdida de paquetes:</td>
+                        <td style="padding:6px 10px; font-weight:bold; color:#0f172a;">{{ perdida_paquetes }}%</td>
+                      </tr>
+                      {% endif %}
+                    </table>
 
-                {% if latencia_alta -%}
-                <div class="metric-box">
-                  <div class="metric-title">⚡ Latencia Alta Detectada</div>
-                  <table class="info-table" role="presentation" cellspacing="0" cellpadding="0" border="0">
-                    <tr>
-                      <td class="info-label">Latencia actual:</td>
-                      <td class="metric-value">{{ latencia_actual }}ms</td>
-                    </tr>
-                    <tr>
-                      <td class="info-label">Latencia promedio:</td>
-                      <td class="metric-value">{{ latencia_promedio }}ms</td>
-                    </tr>
-                    <tr>
-                      <td class="info-label">Umbral configurado:</td>
-                      <td class="metric-value">{{ umbral_latencia }}ms</td>
-                    </tr>
-                    {% if duracion_problema -%}
-                    <tr>
-                      <td class="info-label">Duración:</td>
-                      <td class="metric-value">{{ duracion_problema }}</td>
-                    </tr>
-                    {% endif %}
-                    {% if perdida_paquetes -%}
-                    <tr>
-                      <td class="info-label">Pérdida de paquetes:</td>
-                      <td class="metric-value">{{ perdida_paquetes }}%</td>
-                    </tr>
-                    {% endif %}
-                    {% if jitter -%}
-                    <tr>
-                      <td class="info-label">Jitter:</td>
-                      <td class="metric-value">{{ jitter }}ms</td>
-                    </tr>
-                    {% endif %}
-                  </table>
-                  <div class="latency-bar">
-                    <div class="latency-fill {% if latencia_actual|int >= 1000 %}latency-critical{% elif latencia_actual|int >= 500 %}latency-warning{% else %}latency-good{% endif %}" style="width: {% if latencia_actual|int >= 1000 %}100{% else %}{{ (latencia_actual|int / 1000 * 100)|int }}{% endif %}%;"></div>
-                  </div>
-                </div>
-                {% endif %}
+                    <!-- Barra de latencia -->
+                    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin-top:10px; border-collapse:collapse;">
+                      <tr>
+                        <td width="{% if latencia_actual|int >= 1000 %}100{% else %}{{ (latencia_actual|int / 1000 * 100)|int }}{% endif %}%" bgcolor="{% if latencia_actual|int >= 1000 %}#dc2626{% elif latencia_actual|int >= 500 %}#f59e0b{% else %}#10b981{% endif %}" height="20">&nbsp;</td>
+                        <td width="{% if latencia_actual|int >= 1000 %}0{% else %}{{ 100 - (latencia_actual|int / 1000 * 100)|int }}{% endif %}%" bgcolor="#e5e7eb" height="20">&nbsp;</td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+              {% endif %}
 
-                {% if dns_fallo -%}
-                <div class="metric-box">
-                  <div class="metric-title">🔍 Fallo en Resolución DNS</div>
-                  <table class="info-table" role="presentation" cellspacing="0" cellpadding="0" border="0">
-                    <tr>
-                      <td class="info-label">Dominio:</td>
-                      <td class="metric-value">{{ dominio_dns }}</td>
-                    </tr>
-                    <tr>
-                      <td class="info-label">Servidor DNS:</td>
-                      <td class="metric-value">{{ servidor_dns }}</td>
-                    </tr>
-                    {% if tipo_consulta -%}
-                    <tr>
-                      <td class="info-label">Tipo de consulta:</td>
-                      <td class="metric-value">{{ tipo_consulta }}</td>
-                    </tr>
-                    {% endif %}
-                    {% if codigo_error_dns -%}
-                    <tr>
-                      <td class="info-label">Código de error:</td>
-                      <td class="metric-value">{{ codigo_error_dns }}</td>
-                    </tr>
-                    {% endif %}
-                    {% if timeout_dns -%}
-                    <tr>
-                      <td class="info-label">Timeout:</td>
-                      <td class="metric-value">{{ timeout_dns }}s</td>
-                    </tr>
-                    {% endif %}
-                    {% if dns_alternativo -%}
-                    <tr>
-                      <td class="info-label">DNS alternativo:</td>
-                      <td class="metric-value">{{ dns_alternativo }}</td>
-                    </tr>
-                    {% endif %}
-                  </table>
-                </div>
-                {% endif %}
+              {% if dns_fallo -%}
+              <!-- Fallo DNS -->
+              <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" bgcolor="#f8fafc" style="border:2px solid #64748b; margin-top:15px;">
+                <tr>
+                  <td style="padding:15px; font-size:16px; font-weight:bold; color:#1f2937;">🔍 Fallo en Resolución DNS</td>
+                </tr>
+                <tr>
+                  <td style="padding:0 15px 15px 15px;">
+                    <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0">
+                      <tr>
+                        <td style="padding:6px 10px; font-weight:bold; color:#555555;">Dominio:</td>
+                        <td style="padding:6px 10px; font-weight:bold; color:#0f172a;">{{ dominio_dns }}</td>
+                      </tr>
+                      <tr>
+                        <td style="padding:6px 10px; font-weight:bold; color:#555555;">Servidor DNS:</td>
+                        <td style="padding:6px 10px; font-weight:bold; color:#0f172a;">{{ servidor_dns }}</td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+              {% endif %}
 
-                {% if endpoint_timeout -%}
-                <div class="metric-box">
-                  <div class="metric-title">⏱️ Timeout en Endpoint</div>
-                  <table class="info-table" role="presentation" cellspacing="0" cellpadding="0" border="0">
-                    <tr>
-                      <td class="info-label">URL/Endpoint:</td>
-                      <td><span class="endpoint-url">{{ url_endpoint }}</span></td>
-                    </tr>
-                    {% if metodo_http -%}
-                    <tr>
-                      <td class="info-label">Método HTTP:</td>
-                      <td class="metric-value">{{ metodo_http }}</td>
-                    </tr>
-                    {% endif %}
-                    <tr>
-                      <td class="info-label">Timeout configurado:</td>
-                      <td class="metric-value">{{ timeout_configurado }}s</td>
-                    </tr>
-                    {% if tiempo_respuesta -%}
-                    <tr>
-                      <td class="info-label">Tiempo de respuesta:</td>
-                      <td class="metric-value">{{ tiempo_respuesta }}s</td>
-                    </tr>
-                    {% endif %}
-                    {% if codigo_estado -%}
-                    <tr>
-                      <td class="info-label">Código de estado:</td>
-                      <td class="metric-value">{{ codigo_estado }}</td>
-                    </tr>
-                    {% endif %}
-                    {% if reintentos_realizados -%}
-                    <tr>
-                      <td class="info-label">Reintentos:</td>
-                      <td class="metric-value">{{ reintentos_realizados }}</td>
-                    </tr>
-                    {% endif %}
-                  </table>
-                </div>
-                {% endif %}
-
-                {% if conectividad_general -%}
-                <div class="status-box">
-                  <div class="metric-title">🔗 Estado de Conectividad</div>
-                  <table class="info-table" role="presentation" cellspacing="0" cellpadding="0" border="0">
-                    {% if gateway_accesible -%}
-                    <tr>
-                      <td class="info-label">Gateway:</td>
-                      <td class="{% if gateway_accesible == 'OK' %}status-good{% elif gateway_accesible == 'FAIL' %}status-bad{% else %}status-unknown{% endif %}">{{ gateway_accesible }}</td>
-                    </tr>
-                    {% endif %}
-                    {% if internet_accesible -%}
-                    <tr>
-                      <td class="info-label">Internet:</td>
-                      <td class="{% if internet_accesible == 'OK' %}status-good{% elif internet_accesible == 'FAIL' %}status-bad{% else %}status-unknown{% endif %}">{{ internet_accesible }}</td>
-                    </tr>
-                    {% endif %}
-                    {% if interfaz_red -%}
-                    <tr>
-                      <td class="info-label">Interfaz de red:</td>
-                      <td class="status-value">{{ interfaz_red }}</td>
-                    </tr>
-                    {% endif %}
-                    {% if velocidad_enlace -%}
-                    <tr>
-                      <td class="info-label">Velocidad:</td>
-                      <td class="status-value">{{ velocidad_enlace }}</td>
-                    </tr>
-                    {% endif %}
-                  </table>
-                </div>
-                {% endif %}
-
-                {% if ssl_tls -%}
-                <div class="status-box">
-                  <div class="metric-title">🔒 Estado SSL/TLS</div>
-                  <table class="info-table" role="presentation" cellspacing="0" cellpadding="0" border="0">
-                    {% if certificado_valido -%}
-                    <tr>
-                      <td class="info-label">Certificado:</td>
-                      <td class="{% if certificado_valido == 'Válido' %}status-good{% else %}status-bad{% endif %}">{{ certificado_valido }}</td>
-                    </tr>
-                    {% endif %}
-                    {% if fecha_vencimiento_cert -%}
-                    <tr>
-                      <td class="info-label">Vencimiento:</td>
-                      <td class="status-value">{{ fecha_vencimiento_cert }}</td>
-                    </tr>
-                    {% endif %}
-                    {% if protocolo_ssl -%}
-                    <tr>
-                      <td class="info-label">Protocolo:</td>
-                      <td class="status-value">{{ protocolo_ssl }}</td>
-                    </tr>
-                    {% endif %}
-                  </table>
-                </div>
-                {% endif %}
-
-                {% if balanceador -%}
-                <div class="status-box">
-                  <div class="metric-title">⚖️ Balanceador de Carga</div>
-                  <table class="info-table" role="presentation" cellspacing="0" cellpadding="0" border="0">
-                    <tr>
-                      <td class="info-label">Balanceador:</td>
-                      <td class="status-value">{{ nombre_balanceador }}</td>
-                    </tr>
-                    {% if nodos_activos and nodos_totales -%}
-                    <tr>
-                      <td class="info-label">Nodos activos:</td>
-                      <td class="status-value">{{ nodos_activos }}/{{ nodos_totales }}</td>
-                    </tr>
-                    {% endif %}
-                    {% if algoritmo_balanceo -%}
-                    <tr>
-                      <td class="info-label">Algoritmo:</td>
-                      <td class="status-value">{{ algoritmo_balanceo }}</td>
-                    </tr>
-                    {% endif %}
-                    {% if sesiones_activas -%}
-                    <tr>
-                      <td class="info-label">Sesiones:</td>
-                      <td class="status-value">{{ sesiones_activas }}</td>
-                    </tr>
-                    {% endif %}
-                  </table>
-                </div>
-                {% endif %}
-
-                {% if base_datos_red -%}
-                <div class="status-box">
-                  <div class="metric-title">🗄️ Conectividad BD</div>
-                  <table class="info-table" role="presentation" cellspacing="0" cellpadding="0" border="0">
-                    <tr>
-                      <td class="info-label">Servidor:</td>
-                      <td class="status-value">{{ servidor_bd }}:{{ puerto_bd }}</td>
-                    </tr>
-                    {% if pool_conexiones -%}
-                    <tr>
-                      <td class="info-label">Pool:</td>
-                      <td class="status-value">{{ pool_conexiones }}</td>
-                    </tr>
-                    {% endif %}
-                    {% if conexiones_activas -%}
-                    <tr>
-                      <td class="info-label">Conexiones activas:</td>
-                      <td class="status-value">{{ conexiones_activas }}</td>
-                    </tr>
-                    {% endif %}
-                  </table>
-                </div>
-                {% endif %}
-
-                {% if impacto_servicios -%}
-                <div class="impact-box">
-                  <p class="message-text">
-                    <strong>⚠️ Servicios impactados:</strong>
-                  </p>
-                  <p class="message-text">
+              {% if impacto_servicios -%}
+              <!-- Servicios impactados -->
+              <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" bgcolor="#fef3c7" style="border:2px solid #f59e0b; margin-top:15px;">
+                <tr>
+                  <td style="padding:20px; font-size:16px; color:#333333; line-height:1.5;">
+                    <strong>⚠️ Servicios impactados:</strong><br>
                     {{ servicios_impactados }}
-                  </p>
-                </div>
-                {% endif %}
+                  </td>
+                </tr>
+              </table>
+              {% endif %}
 
-                {% if diagnostico -%}
-                <div class="status-box">
-                  <p class="message-text">
-                    <strong>🔍 Diagnóstico:</strong>
-                  </p>
-                  <p class="message-text">
-                    {{ diagnostico }}
-                  </p>
-                </div>
-                {% endif %}
-
-                {% if accion_automatica -%}
-                <div class="action-box">
-                  <p class="message-text">
-                    <strong>🤖 Acciones automáticas:</strong>
-                  </p>
-                  <p class="message-text">
-                    {{ accion_automatica }}
-                  </p>
-                </div>
-                {% endif %}
-
-                {% if accion_recomendada -%}
-                <div class="impact-box">
-                  <p class="message-text">
-                    <strong>💡 Acciones recomendadas:</strong>
-                  </p>
-                  <p class="message-text">
+              {% if accion_recomendada -%}
+              <!-- Acciones recomendadas -->
+              <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" bgcolor="#fef3c7" style="border:2px solid #f59e0b; margin-top:15px;">
+                <tr>
+                  <td style="padding:20px; font-size:16px; color:#333333; line-height:1.5;">
+                    <strong>💡 Acciones recomendadas:</strong><br>
                     {{ accion_recomendada }}
-                  </p>
-                </div>
-                {% endif %}
+                  </td>
+                </tr>
+              </table>
+              {% endif %}
 
-              </td>
-            </tr>
-          </table>
+            </td>
+          </tr>
 
           <!-- Footer -->
-          <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
-            <tr>
-              <td class="footer">
-                <p class="footer-text">
-                  Este es un mensaje automático del sistema de monitoreo de red.<br>
-                  Generado el {{ timestamp }} por Notify API
-                </p>
-              </td>
-            </tr>
-          </table>
+          <tr>
+            <td align="center" bgcolor="#f8f9fa" style="padding:15px 20px; border-top:1px solid #dee2e6;">
+              <p style="margin:0; font-size:12px; color:#6c757d; line-height:1.4;">
+                Este es un mensaje automático del sistema de monitoreo de red.<br>
+                Generado el {{ timestamp }} por Notify API
+              </p>
+            </td>
+          </tr>
 
-        </div>
+        </table>
       </td>
     </tr>
   </table>
-</body>
 
+</body>
 </html>

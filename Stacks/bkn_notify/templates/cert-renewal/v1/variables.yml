@@ -1,4 +1,3 @@
-# cert-renewal/v1/variables.yml
 name: "Renovación de Certificado"
 description: "Template para notificar renovaciones exitosas de certificados SSL/TLS"
 category: "certificates"
@@ -9,6 +8,7 @@ variables:
   - fecha_renovacion
   - fecha_vencimiento
   - emisor
+  - timestamp
 
 # Secciones opcionales que aparecen en {% if variable %}
 conditionals: []
@@ -19,3 +19,4 @@ example:
   fecha_renovacion: "2024-01-15"
   fecha_vencimiento: "2024-04-15"
   emisor: "Let's Encrypt Authority X3"
+  timestamp: "2024-01-15 02:15:00"

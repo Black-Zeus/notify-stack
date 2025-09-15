@@ -5,313 +5,119 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <!--[if mso]>
-    <noscript>
-        <xml>
-            <o:OfficeDocumentSettings>
-                <o:PixelsPerInch>96</o:PixelsPerInch>
-            </o:OfficeDocumentSettings>
-        </xml>
-    </noscript>
-    <![endif]-->
   <style type="text/css">
-    /* Reset */
-    table,
-    td,
-    div,
-    h1,
-    h2,
-    h3,
-    p {
-      margin: 0;
-      padding: 0;
-    }
-
-    table {
-      border-collapse: collapse;
-    }
-
-    /* Outlook compatibility */
-    .ReadMsgBody {
-      width: 100%;
-    }
-
-    .ExternalClass {
-      width: 100%;
-    }
-
-    .ExternalClass * {
-      line-height: 100%;
-    }
-
-    /* Base styles */
-    body {
-      margin: 0 !important;
-      padding: 0 !important;
-      background-color: #f4f4f4;
-      font-family: Arial, sans-serif;
-    }
-
-    /* Container */
-    .email-container {
-      max-width: 600px;
-      margin: 0 auto;
-      background-color: #ffffff;
-    }
-
-    /* Header */
-    .header {
-      background-color: #e11d48;
-      padding: 20px;
-      text-align: center;
-    }
-
-    .header h1 {
-      color: #ffffff;
-      font-size: 24px;
-      font-weight: bold;
-      margin: 0;
-    }
-
-    .error-icon {
-      font-size: 32px;
-      margin-bottom: 10px;
-    }
-
-    /* Content */
-    .content {
-      padding: 30px 20px;
-      background-color: #f8f9fa;
-    }
-
-    .error-box {
-      background-color: #fef2f2;
-      border: 2px solid #e11d48;
-      border-radius: 4px;
-      padding: 20px;
-      margin: 20px 0;
-    }
-
-    .solution-box {
-      background-color: #f0f9ff;
-      border: 2px solid #0284c7;
-      border-radius: 4px;
-      padding: 20px;
-      margin: 20px 0;
-    }
-
-    .info-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin: 15px 0;
-    }
-
-    .info-table td {
-      padding: 8px 10px;
-      border-bottom: 1px solid #eee;
-      vertical-align: top;
-    }
-
-    .info-label {
-      font-weight: bold;
-      color: #555555;
-      width: 30%;
-    }
-
-    .info-value {
-      color: #e11d48;
-      font-weight: bold;
-    }
-
-    .message-text {
-      font-size: 16px;
-      line-height: 1.5;
-      color: #333333;
-      margin: 15px 0;
-    }
-
-    .severity-critical {
-      background-color: #dc2626;
-      color: #ffffff;
-      padding: 4px 12px;
-      border-radius: 16px;
-      font-size: 14px;
-      font-weight: bold;
-      display: inline-block;
-    }
-
-    .severity-high {
-      background-color: #ea580c;
-      color: #ffffff;
-      padding: 4px 12px;
-      border-radius: 16px;
-      font-size: 14px;
-      font-weight: bold;
-      display: inline-block;
-    }
-
-    .severity-medium {
-      background-color: #ca8a04;
-      color: #ffffff;
-      padding: 4px 12px;
-      border-radius: 16px;
-      font-size: 14px;
-      font-weight: bold;
-      display: inline-block;
-    }
-
-    .severity-low {
-      background-color: #16a34a;
-      color: #ffffff;
-      padding: 4px 12px;
-      border-radius: 16px;
-      font-size: 14px;
-      font-weight: bold;
-      display: inline-block;
-    }
-
-    .error-id {
-      font-family: monospace;
-      background-color: #f3f4f6;
-      padding: 2px 6px;
-      border-radius: 3px;
-      font-size: 14px;
-    }
-
-    /* Footer */
-    .footer {
-      background-color: #f8f9fa;
-      padding: 15px 20px;
-      text-align: center;
-      border-top: 1px solid #dee2e6;
-    }
-
-    .footer-text {
-      font-size: 12px;
-      color: #6c757d;
-      line-height: 1.4;
-    }
-
-    /* Responsive */
-    @media only screen and (max-width: 480px) {
-      .email-container {
-        width: 100% !important;
-      }
-
-      .content {
-        padding: 20px 15px !important;
-      }
-
-      .header {
-        padding: 15px !important;
-      }
-
-      .header h1 {
-        font-size: 20px !important;
-      }
-    }
+    body, table, td {font-family: Arial, sans-serif !important;}
   </style>
+  <![endif]-->
 </head>
 
-<body>
-  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+<body style="margin:0; padding:0; background-color:#f4f4f4; font-family:Arial, sans-serif;">
+
+  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" bgcolor="#f4f4f4">
     <tr>
-      <td align="center" style="padding: 20px 0;">
-        <div class="email-container">
+      <td align="center" style="padding:20px 0;">
+
+        <!-- Container -->
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" bgcolor="#ffffff" style="border-collapse:collapse;">
 
           <!-- Header -->
-          <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
-            <tr>
-              <td class="header">
-                <h1><span class="error-icon">❌</span> ERROR DEL SISTEMA</h1>
-              </td>
-            </tr>
-          </table>
+          <tr>
+            <td align="center" bgcolor="#e11d48" style="padding:20px;">
+              <h1 style="margin:0; font-size:24px; font-weight:bold; color:#ffffff;">❌ ERROR DEL SISTEMA</h1>
+            </td>
+          </tr>
 
           <!-- Content -->
-          <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
-            <tr>
-              <td class="content">
+          <tr>
+            <td bgcolor="#f8f9fa" style="padding:30px 20px;">
 
-                <div class="error-box">
-                  <p class="message-text">
+              <!-- Error Box -->
+              <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" bgcolor="#fef2f2" style="border:2px solid #e11d48;">
+                <tr>
+                  <td style="padding:20px; font-size:16px; color:#333333; line-height:1.5;">
                     <strong>Se ha detectado un error que requiere atención:</strong>
-                  </p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:0 20px 20px 20px;">
+                    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="border-collapse:collapse;">
+                      <tr>
+                        <td width="30%" style="padding:8px 10px; font-weight:bold; color:#555555;">Tipo:</td>
+                        <td style="padding:8px 10px; font-weight:bold; color:#e11d48;">{{ tipo_error }}</td>
+                      </tr>
+                      <tr>
+                        <td style="padding:8px 10px; font-weight:bold; color:#555555;">Componente:</td>
+                        <td style="padding:8px 10px; font-weight:bold; color:#e11d48;">{{ componente }}</td>
+                      </tr>
+                      <tr>
+                        <td style="padding:8px 10px; font-weight:bold; color:#555555;">Descripción:</td>
+                        <td style="padding:8px 10px; color:#333333;">{{ descripcion }}</td>
+                      </tr>
+                      <tr>
+                        <td style="padding:8px 10px; font-weight:bold; color:#555555;">Hora del error:</td>
+                        <td style="padding:8px 10px; font-weight:bold; color:#e11d48;">{{ hora_error }}</td>
+                      </tr>
+                      <tr>
+                        <td style="padding:8px 10px; font-weight:bold; color:#555555;">Severidad:</td>
+                        <td style="padding:8px 10px;">
+                          {% if severidad == 'critical' -%}
+                          <span style="background-color:#dc2626; color:#ffffff; padding:4px 12px; font-size:14px; font-weight:bold; display:inline-block;">CRÍTICA</span>
+                          {% elif severidad == 'high' -%}
+                          <span style="background-color:#ea580c; color:#ffffff; padding:4px 12px; font-size:14px; font-weight:bold; display:inline-block;">ALTA</span>
+                          {% elif severidad == 'medium' -%}
+                          <span style="background-color:#ca8a04; color:#ffffff; padding:4px 12px; font-size:14px; font-weight:bold; display:inline-block;">MEDIA</span>
+                          {% else -%}
+                          <span style="background-color:#16a34a; color:#ffffff; padding:4px 12px; font-size:14px; font-weight:bold; display:inline-block;">BAJA</span>
+                          {% endif %}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding:8px 10px; font-weight:bold; color:#555555;">ID de error:</td>
+                        <td style="padding:8px 10px;">
+                          <span style="font-family:monospace; background-color:#f3f4f6; padding:2px 6px; font-size:14px;">{{ error_id }}</span>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
 
-                  <table class="info-table" role="presentation" cellspacing="0" cellpadding="0" border="0">
-                    <tr>
-                      <td class="info-label">Tipo:</td>
-                      <td class="info-value">{{ tipo_error }}</td>
-                    </tr>
-                    <tr>
-                      <td class="info-label">Componente:</td>
-                      <td class="info-value">{{ componente }}</td>
-                    </tr>
-                    <tr>
-                      <td class="info-label">Descripción:</td>
-                      <td style="color: #333;">{{ descripcion }}</td>
-                    </tr>
-                    <tr>
-                      <td class="info-label">Hora del error:</td>
-                      <td class="info-value">{{ hora_error }}</td>
-                    </tr>
-                    <tr>
-                      <td class="info-label">Severidad:</td>
-                      <td>
-                        {% if severidad == 'critical' -%}
-                        <span class="severity-critical">CRÍTICA</span>
-                        {% elif severidad == 'high' -%}
-                        <span class="severity-high">ALTA</span>
-                        {% elif severidad == 'medium' -%}
-                        <span class="severity-medium">MEDIA</span>
-                        {% else -%}
-                        <span class="severity-low">BAJA</span>
-                        {% endif %}
-                      </td>
-                    </tr>
-                    <tr>
-                      <td class="info-label">ID de error:</td>
-                      <td><span class="error-id">{{ error_id }}</span></td>
-                    </tr>
-                  </table>
-                </div>
-
-                {% if solucion_sugerida -%}
-                <div class="solution-box">
-                  <p class="message-text">
-                    <strong>💡 Posible solución:</strong>
-                  </p>
-                  <p class="message-text">
+              {% if solucion_sugerida -%}
+              <!-- Solution Box -->
+              <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" bgcolor="#f0f9ff" style="border:2px solid #0284c7; margin-top:20px;">
+                <tr>
+                  <td style="padding:20px; font-size:16px; color:#333333; line-height:1.5;">
+                    <strong>💡 Posible solución:</strong><br>
                     {{ solucion_sugerida }}
-                  </p>
-                </div>
-                {% endif %}
+                  </td>
+                </tr>
+              </table>
+              {% endif %}
 
-                {% if contacto -%}
-                <p class="message-text">
-                  <strong>Para asistencia técnica, contactar:</strong> {{ contacto }}
-                </p>
-                {% endif %}
+              {% if contacto -%}
+              <p style="margin:15px 0; font-size:16px; line-height:1.5; color:#333333;">
+                <strong>Para asistencia técnica, contactar:</strong> {{ contacto }}
+              </p>
+              {% endif %}
 
-              </td>
-            </tr>
-          </table>
+            </td>
+          </tr>
 
           <!-- Footer -->
-          <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
-            <tr>
-              <td class="footer">
-                <p class="footer-text">
-                  Este es un mensaje automático del sistema de monitoreo.<br>
-                  Generado el {{ timestamp }} por Notify API
-                </p>
-              </td>
-            </tr>
-          </table>
+          <tr>
+            <td align="center" bgcolor="#f8f9fa" style="padding:15px 20px; border-top:1px solid #dee2e6;">
+              <p style="margin:0; font-size:12px; color:#6c757d; line-height:1.4;">
+                Este es un mensaje automático del sistema de monitoreo.<br>
+                Generado el {{ timestamp }} por Notify API
+              </p>
+            </td>
+          </tr>
 
-        </div>
+        </table>
+
       </td>
     </tr>
   </table>
-</body>
 
+</body>
 </html>

@@ -43,12 +43,12 @@ TEMPLATES_BASE_PATH = TEMPLATES_DIR
 
 # Estados de tareas Celery
 TASK_STATES = {
-    "PENDING": "pending",
-    "STARTED": "processing", 
-    "SUCCESS": "success",
-    "FAILURE": "failed",
-    "RETRY": "retry",
-    "REVOKED": "cancelled"
+    "PENDING": "PENDING",
+    "STARTED": "PROCESSING", 
+    "SUCCESS": "SUCCESS",
+    "FAILURE": "FAILED",
+    "RETRY": "RETRY",
+    "REVOKED": "CANCELLED"
 }
 
 # Códigos de respuesta HTTP

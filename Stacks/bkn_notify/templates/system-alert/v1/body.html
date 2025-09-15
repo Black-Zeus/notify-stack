@@ -5,498 +5,203 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <!--[if mso]>
-    <noscript>
-        <xml>
-            <o:OfficeDocumentSettings>
-                <o:PixelsPerInch>96</o:PixelsPerInch>
-            </o:OfficeDocumentSettings>
-        </xml>
-    </noscript>
-    <![endif]-->
   <style type="text/css">
-    /* Reset */
-    table,
-    td,
-    div,
-    h1,
-    h2,
-    h3,
-    p {
-      margin: 0;
-      padding: 0;
-    }
-
-    table {
-      border-collapse: collapse;
-    }
-
-    /* Outlook compatibility */
-    .ReadMsgBody {
-      width: 100%;
-    }
-
-    .ExternalClass {
-      width: 100%;
-    }
-
-    .ExternalClass * {
-      line-height: 100%;
-    }
-
-    /* Base styles */
-    body {
-      margin: 0 !important;
-      padding: 0 !important;
-      background-color: #f4f4f4;
-      font-family: Arial, sans-serif;
-    }
-
-    /* Container */
-    .email-container {
-      max-width: 600px;
-      margin: 0 auto;
-      background-color: #ffffff;
-    }
-
-    /* Header */
-    .header {
-      background-color: #dc2626;
-      padding: 20px;
-      text-align: center;
-    }
-
-    .header h1 {
-      color: #ffffff;
-      font-size: 24px;
-      font-weight: bold;
-      margin: 0;
-    }
-
-    .alert-icon {
-      font-size: 32px;
-      margin-bottom: 10px;
-    }
-
-    /* Content */
-    .content {
-      padding: 30px 20px;
-      background-color: #f8f9fa;
-    }
-
-    .alert-box {
-      background-color: #fef2f2;
-      border: 2px solid #dc2626;
-      border-radius: 4px;
-      padding: 20px;
-      margin: 20px 0;
-    }
-
-    .metric-box {
-      background-color: #f8fafc;
-      border: 2px solid #64748b;
-      border-radius: 4px;
-      padding: 15px;
-      margin: 15px 0;
-    }
-
-    .action-box {
-      background-color: #fffbeb;
-      border: 2px solid #f59e0b;
-      border-radius: 4px;
-      padding: 20px;
-      margin: 20px 0;
-    }
-
-    .info-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin: 10px 0;
-    }
-
-    .info-table td {
-      padding: 6px 10px;
-      border-bottom: 1px solid #eee;
-      vertical-align: top;
-    }
-
-    .info-label {
-      font-weight: bold;
-      color: #555555;
-      width: 35%;
-    }
-
-    .info-value {
-      color: #dc2626;
-      font-weight: bold;
-    }
-
-    .metric-value {
-      color: #0f172a;
-      font-weight: bold;
-    }
-
-    .message-text {
-      font-size: 16px;
-      line-height: 1.5;
-      color: #333333;
-      margin: 15px 0;
-    }
-
-    .severity-critical {
-      background-color: #dc2626;
-      color: #ffffff;
-      padding: 4px 12px;
-      border-radius: 16px;
-      font-size: 14px;
-      font-weight: bold;
-      display: inline-block;
-    }
-
-    .severity-high {
-      background-color: #ea580c;
-      color: #ffffff;
-      padding: 4px 12px;
-      border-radius: 16px;
-      font-size: 14px;
-      font-weight: bold;
-      display: inline-block;
-    }
-
-    .severity-medium {
-      background-color: #ca8a04;
-      color: #ffffff;
-      padding: 4px 12px;
-      border-radius: 16px;
-      font-size: 14px;
-      font-weight: bold;
-      display: inline-block;
-    }
-
-    .usage-bar {
-      width: 100%;
-      height: 20px;
-      background-color: #e5e7eb;
-      border-radius: 10px;
-      overflow: hidden;
-      margin: 5px 0;
-    }
-
-    .usage-fill {
-      height: 100%;
-      border-radius: 10px;
-    }
-
-    .usage-critical {
-      background-color: #dc2626;
-    }
-
-    .usage-warning {
-      background-color: #f59e0b;
-    }
-
-    .usage-normal {
-      background-color: #10b981;
-    }
-
-    .metric-title {
-      font-size: 18px;
-      font-weight: bold;
-      color: #1f2937;
-      margin-bottom: 10px;
-    }
-
-    /* Footer */
-    .footer {
-      background-color: #f8f9fa;
-      padding: 15px 20px;
-      text-align: center;
-      border-top: 1px solid #dee2e6;
-    }
-
-    .footer-text {
-      font-size: 12px;
-      color: #6c757d;
-      line-height: 1.4;
-    }
-
-    /* Responsive */
-    @media only screen and (max-width: 480px) {
-      .email-container {
-        width: 100% !important;
-      }
-
-      .content {
-        padding: 20px 15px !important;
-      }
-
-      .header {
-        padding: 15px !important;
-      }
-
-      .header h1 {
-        font-size: 20px !important;
-      }
-    }
+    body, table, td {font-family: Arial, sans-serif !important;}
   </style>
+  <![endif]-->
 </head>
 
-<body>
-  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+<body style="margin:0; padding:0; background-color:#f4f4f4; font-family:Arial, sans-serif;">
+
+  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" bgcolor="#f4f4f4">
     <tr>
-      <td align="center" style="padding: 20px 0;">
-        <div class="email-container">
+      <td align="center" style="padding:20px 0;">
+
+        <!-- Container -->
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" bgcolor="#ffffff" style="border-collapse:collapse;">
 
           <!-- Header -->
-          <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
-            <tr>
-              <td class="header">
-                <h1><span class="alert-icon">🚨</span> ALERTA DEL SISTEMA</h1>
-              </td>
-            </tr>
-          </table>
+          <tr>
+            <td align="center" bgcolor="#dc2626" style="padding:20px;">
+              <h1 style="margin:0; font-size:24px; font-weight:bold; color:#ffffff;">🚨 ALERTA DEL SISTEMA</h1>
+            </td>
+          </tr>
 
           <!-- Content -->
-          <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
-            <tr>
-              <td class="content">
+          <tr>
+            <td bgcolor="#f8f9fa" style="padding:30px 20px;">
 
-                <div class="alert-box">
-                  <p class="message-text">
+              <!-- Caja principal -->
+              <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" bgcolor="#fef2f2" style="border:2px solid #dc2626;">
+                <tr>
+                  <td style="padding:20px; font-size:16px; color:#333333;">
                     <strong>Se ha detectado un problema que requiere atención:</strong>
-                  </p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:0 20px 20px 20px;">
+                    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                      <tr>
+                        <td style="padding:6px 10px; font-weight:bold; color:#555555;" width="35%">Servidor:</td>
+                        <td style="padding:6px 10px; font-weight:bold; color:#dc2626;">{{ servidor }}</td>
+                      </tr>
+                      <tr>
+                        <td style="padding:6px 10px; font-weight:bold; color:#555555;">Tipo de alerta:</td>
+                        <td style="padding:6px 10px; font-weight:bold; color:#dc2626;">{{ tipo_alerta }}</td>
+                      </tr>
+                      <tr>
+                        <td style="padding:6px 10px; font-weight:bold; color:#555555;">Severidad:</td>
+                        <td style="padding:6px 10px;">
+                          {% if severidad == 'critical' -%}
+                          <span style="background-color:#dc2626; color:#ffffff; padding:4px 12px; font-size:14px; font-weight:bold; display:inline-block;">CRÍTICA</span>
+                          {% elif severidad == 'high' -%}
+                          <span style="background-color:#ea580c; color:#ffffff; padding:4px 12px; font-size:14px; font-weight:bold; display:inline-block;">ALTA</span>
+                          {% else -%}
+                          <span style="background-color:#ca8a04; color:#ffffff; padding:4px 12px; font-size:14px; font-weight:bold; display:inline-block;">MEDIA</span>
+                          {% endif %}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding:6px 10px; font-weight:bold; color:#555555;">Detección:</td>
+                        <td style="padding:6px 10px; font-weight:bold; color:#dc2626;">{{ hora_deteccion }}</td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
 
-                  <table class="info-table" role="presentation" cellspacing="0" cellpadding="0" border="0">
-                    <tr>
-                      <td class="info-label">Servidor:</td>
-                      <td class="info-value">{{ servidor }}</td>
-                    </tr>
-                    <tr>
-                      <td class="info-label">Tipo de alerta:</td>
-                      <td class="info-value">{{ tipo_alerta }}</td>
-                    </tr>
-                    <tr>
-                      <td class="info-label">Severidad:</td>
-                      <td>
-                        {% if severidad == 'critical' -%}
-                        <span class="severity-critical">CRÍTICA</span>
-                        {% elif severidad == 'high' -%}
-                        <span class="severity-high">ALTA</span>
-                        {% else -%}
-                        <span class="severity-medium">MEDIA</span>
-                        {% endif %}
-                      </td>
-                    </tr>
-                    <tr>
-                      <td class="info-label">Detección:</td>
-                      <td class="info-value">{{ hora_deteccion }}</td>
-                    </tr>
-                  </table>
-                </div>
+              {% if uso_disco -%}
+              <!-- Disco -->
+              <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" bgcolor="#f8fafc" style="border:2px solid #64748b; margin-top:15px;">
+                <tr>
+                  <td style="padding:15px; font-size:16px; font-weight:bold; color:#1f2937;">💾 Espacio en Disco</td>
+                </tr>
+                <tr>
+                  <td style="padding:0 15px 15px 15px;">
+                    <table role="presentation" width="100%">
+                      <tr>
+                        <td style="padding:6px 10px; font-weight:bold; color:#555;">Uso actual:</td>
+                        <td style="padding:6px 10px; font-weight:bold; color:#0f172a;">{{ uso_disco }}%</td>
+                      </tr>
+                      {% if espacio_libre -%}
+                      <tr>
+                        <td style="padding:6px 10px; font-weight:bold; color:#555;">Espacio libre:</td>
+                        <td style="padding:6px 10px; font-weight:bold; color:#0f172a;">{{ espacio_libre }}</td>
+                      </tr>
+                      {% endif %}
+                      {% if punto_montaje -%}
+                      <tr>
+                        <td style="padding:6px 10px; font-weight:bold; color:#555;">Punto de montaje:</td>
+                        <td style="padding:6px 10px; font-weight:bold; color:#0f172a;">{{ punto_montaje }}</td>
+                      </tr>
+                      {% endif %}
+                    </table>
+                    <div style="width:100%; height:20px; background:#e5e7eb; border-radius:10px; margin-top:5px;">
+                      <div style="height:20px; border-radius:10px; width:{{ uso_disco }}%; {% if uso_disco|int >= 90 %}background:#dc2626;{% elif uso_disco|int >= 80 %}background:#f59e0b;{% else %}background:#10b981;{% endif %}"></div>
+                    </div>
+                  </td>
+                </tr>
+              </table>
+              {% endif %}
 
-                {% if uso_disco -%}
-                <div class="metric-box">
-                  <div class="metric-title">💾 Espacio en Disco</div>
-                  <table class="info-table" role="presentation" cellspacing="0" cellpadding="0" border="0">
-                    <tr>
-                      <td class="info-label">Uso actual:</td>
-                      <td class="metric-value">{{ uso_disco }}%</td>
-                    </tr>
-                    {% if espacio_libre -%}
-                    <tr>
-                      <td class="info-label">Espacio libre:</td>
-                      <td class="metric-value">{{ espacio_libre }}</td>
-                    </tr>
-                    {% endif %}
-                    {% if punto_montaje -%}
-                    <tr>
-                      <td class="info-label">Punto de montaje:</td>
-                      <td class="metric-value">{{ punto_montaje }}</td>
-                    </tr>
-                    {% endif %}
-                  </table>
-                  <div class="usage-bar">
-                    <div class="usage-fill {% if uso_disco|int >= 90 %}usage-critical{% elif uso_disco|int >= 80 %}usage-warning{% else %}usage-normal{% endif %}" style="width: {{ uso_disco }}%;"></div>
-                  </div>
-                </div>
-                {% endif %}
+              {% if uso_memoria -%}
+              <!-- Memoria -->
+              <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" bgcolor="#f8fafc" style="border:2px solid #64748b; margin-top:15px;">
+                <tr>
+                  <td style="padding:15px; font-size:16px; font-weight:bold; color:#1f2937;">🧠 Uso de Memoria</td>
+                </tr>
+                <tr>
+                  <td style="padding:0 15px 15px 15px;">
+                    <table role="presentation" width="100%">
+                      <tr>
+                        <td style="padding:6px 10px; font-weight:bold; color:#555;">Memoria usada:</td>
+                        <td style="padding:6px 10px; font-weight:bold; color:#0f172a;">{{ uso_memoria }}%</td>
+                      </tr>
+                      {% if memoria_total -%}
+                      <tr>
+                        <td style="padding:6px 10px; font-weight:bold; color:#555;">RAM total:</td>
+                        <td style="padding:6px 10px; font-weight:bold; color:#0f172a;">{{ memoria_total }}</td>
+                      </tr>
+                      {% endif %}
+                      {% if memoria_disponible -%}
+                      <tr>
+                        <td style="padding:6px 10px; font-weight:bold; color:#555;">RAM disponible:</td>
+                        <td style="padding:6px 10px; font-weight:bold; color:#0f172a;">{{ memoria_disponible }}</td>
+                      </tr>
+                      {% endif %}
+                    </table>
+                    <div style="width:100%; height:20px; background:#e5e7eb; border-radius:10px; margin-top:5px;">
+                      <div style="height:20px; border-radius:10px; width:{{ uso_memoria }}%; {% if uso_memoria|int >= 90 %}background:#dc2626;{% elif uso_memoria|int >= 80 %}background:#f59e0b;{% else %}background:#10b981;{% endif %}"></div>
+                    </div>
+                  </td>
+                </tr>
+              </table>
+              {% endif %}
 
-                {% if uso_memoria -%}
-                <div class="metric-box">
-                  <div class="metric-title">🧠 Uso de Memoria</div>
-                  <table class="info-table" role="presentation" cellspacing="0" cellpadding="0" border="0">
-                    <tr>
-                      <td class="info-label">Memoria usada:</td>
-                      <td class="metric-value">{{ uso_memoria }}%</td>
-                    </tr>
-                    {% if memoria_total -%}
-                    <tr>
-                      <td class="info-label">RAM total:</td>
-                      <td class="metric-value">{{ memoria_total }}</td>
-                    </tr>
-                    {% endif %}
-                    {% if memoria_disponible -%}
-                    <tr>
-                      <td class="info-label">RAM disponible:</td>
-                      <td class="metric-value">{{ memoria_disponible }}</td>
-                    </tr>
-                    {% endif %}
-                  </table>
-                  <div class="usage-bar">
-                    <div class="usage-fill {% if uso_memoria|int >= 90 %}usage-critical{% elif uso_memoria|int >= 80 %}usage-warning{% else %}usage-normal{% endif %}" style="width: {{ uso_memoria }}%;"></div>
-                  </div>
-                </div>
-                {% endif %}
+              {% if uso_cpu -%}
+              <!-- CPU -->
+              <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" bgcolor="#f8fafc" style="border:2px solid #64748b; margin-top:15px;">
+                <tr>
+                  <td style="padding:15px; font-size:16px; font-weight:bold; color:#1f2937;">⚡ Uso de CPU</td>
+                </tr>
+                <tr>
+                  <td style="padding:0 15px 15px 15px;">
+                    <table role="presentation" width="100%">
+                      <tr>
+                        <td style="padding:6px 10px; font-weight:bold; color:#555;">CPU actual:</td>
+                        <td style="padding:6px 10px; font-weight:bold; color:#0f172a;">{{ uso_cpu }}%</td>
+                      </tr>
+                      {% if load_average -%}
+                      <tr>
+                        <td style="padding:6px 10px; font-weight:bold; color:#555;">Load average:</td>
+                        <td style="padding:6px 10px; font-weight:bold; color:#0f172a;">{{ load_average }}</td>
+                      </tr>
+                      {% endif %}
+                      {% if procesos_activos -%}
+                      <tr>
+                        <td style="padding:6px 10px; font-weight:bold; color:#555;">Procesos activos:</td>
+                        <td style="padding:6px 10px; font-weight:bold; color:#0f172a;">{{ procesos_activos }}</td>
+                      </tr>
+                      {% endif %}
+                    </table>
+                    <div style="width:100%; height:20px; background:#e5e7eb; border-radius:10px; margin-top:5px;">
+                      <div style="height:20px; border-radius:10px; width:{{ uso_cpu }}%; {% if uso_cpu|int >= 90 %}background:#dc2626;{% elif uso_cpu|int >= 80 %}background:#f59e0b;{% else %}background:#10b981;{% endif %}"></div>
+                    </div>
+                  </td>
+                </tr>
+              </table>
+              {% endif %}
 
-                {% if uso_cpu -%}
-                <div class="metric-box">
-                  <div class="metric-title">⚡ Uso de CPU</div>
-                  <table class="info-table" role="presentation" cellspacing="0" cellpadding="0" border="0">
-                    <tr>
-                      <td class="info-label">CPU actual:</td>
-                      <td class="metric-value">{{ uso_cpu }}%</td>
-                    </tr>
-                    {% if load_average -%}
-                    <tr>
-                      <td class="info-label">Load average:</td>
-                      <td class="metric-value">{{ load_average }}</td>
-                    </tr>
-                    {% endif %}
-                    {% if procesos_activos -%}
-                    <tr>
-                      <td class="info-label">Procesos activos:</td>
-                      <td class="metric-value">{{ procesos_activos }}</td>
-                    </tr>
-                    {% endif %}
-                  </table>
-                  <div class="usage-bar">
-                    <div class="usage-fill {% if uso_cpu|int >= 90 %}usage-critical{% elif uso_cpu|int >= 80 %}usage-warning{% else %}usage-normal{% endif %}" style="width: {{ uso_cpu }}%;"></div>
-                  </div>
-                </div>
-                {% endif %}
-
-                {% if servicio -%}
-                <div class="metric-box">
-                  <div class="metric-title">🔧 Servicio Afectado</div>
-                  <table class="info-table" role="presentation" cellspacing="0" cellpadding="0" border="0">
-                    <tr>
-                      <td class="info-label">Nombre:</td>
-                      <td class="metric-value">{{ servicio }}</td>
-                    </tr>
-                    {% if estado_servicio -%}
-                    <tr>
-                      <td class="info-label">Estado:</td>
-                      <td class="metric-value">{{ estado_servicio }}</td>
-                    </tr>
-                    {% endif %}
-                    {% if puerto -%}
-                    <tr>
-                      <td class="info-label">Puerto:</td>
-                      <td class="metric-value">{{ puerto }}</td>
-                    </tr>
-                    {% endif %}
-                    {% if ultimo_reinicio -%}
-                    <tr>
-                      <td class="info-label">Último reinicio:</td>
-                      <td class="metric-value">{{ ultimo_reinicio }}</td>
-                    </tr>
-                    {% endif %}
-                  </table>
-                </div>
-                {% endif %}
-
-                {% if base_datos -%}
-                <div class="metric-box">
-                  <div class="metric-title">🗄️ Base de Datos</div>
-                  <table class="info-table" role="presentation" cellspacing="0" cellpadding="0" border="0">
-                    {% if servidor_bd -%}
-                    <tr>
-                      <td class="info-label">Servidor BD:</td>
-                      <td class="metric-value">{{ servidor_bd }}</td>
-                    </tr>
-                    {% endif %}
-                    <tr>
-                      <td class="info-label">Base de datos:</td>
-                      <td class="metric-value">{{ base_datos }}</td>
-                    </tr>
-                    {% if error_bd -%}
-                    <tr>
-                      <td class="info-label">Error:</td>
-                      <td class="metric-value">{{ error_bd }}</td>
-                    </tr>
-                    {% endif %}
-                    {% if tiempo_desconexion -%}
-                    <tr>
-                      <td class="info-label">Tiempo sin conexión:</td>
-                      <td class="metric-value">{{ tiempo_desconexion }}</td>
-                    </tr>
-                    {% endif %}
-                  </table>
-                </div>
-                {% endif %}
-
-                {% if backup -%}
-                <div class="metric-box">
-                  <div class="metric-title">💿 Respaldo Fallido</div>
-                  <table class="info-table" role="presentation" cellspacing="0" cellpadding="0" border="0">
-                    {% if tipo_backup -%}
-                    <tr>
-                      <td class="info-label">Tipo de backup:</td>
-                      <td class="metric-value">{{ tipo_backup }}</td>
-                    </tr>
-                    {% endif %}
-                    {% if destino_backup -%}
-                    <tr>
-                      <td class="info-label">Destino:</td>
-                      <td class="metric-value">{{ destino_backup }}</td>
-                    </tr>
-                    {% endif %}
-                    {% if tamano_esperado -%}
-                    <tr>
-                      <td class="info-label">Tamaño esperado:</td>
-                      <td class="metric-value">{{ tamano_esperado }}</td>
-                    </tr>
-                    {% endif %}
-                    {% if error_backup -%}
-                    <tr>
-                      <td class="info-label">Error:</td>
-                      <td class="metric-value">{{ error_backup }}</td>
-                    </tr>
-                    {% endif %}
-                  </table>
-                </div>
-                {% endif %}
-
-                {% if accion_recomendada -%}
-                <div class="action-box">
-                  <p class="message-text">
-                    <strong>⚠️ Acción recomendada:</strong>
-                  </p>
-                  <p class="message-text">
+              {% if accion_recomendada -%}
+              <!-- Acción -->
+              <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" bgcolor="#fffbeb" style="border:2px solid #f59e0b; margin-top:15px;">
+                <tr>
+                  <td style="padding:20px; font-size:16px; color:#333; line-height:1.5;">
+                    <strong>⚠️ Acción recomendada:</strong><br>
                     {{ accion_recomendada }}
-                  </p>
-                </div>
-                {% endif %}
+                  </td>
+                </tr>
+              </table>
+              {% endif %}
 
-              </td>
-            </tr>
-          </table>
+            </td>
+          </tr>
 
           <!-- Footer -->
-          <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
-            <tr>
-              <td class="footer">
-                <p class="footer-text">
-                  Este es un mensaje automático del sistema de monitoreo.<br>
-                  Generado el {{ timestamp }} por Notify API
-                </p>
-              </td>
-            </tr>
-          </table>
+          <tr>
+            <td align="center" bgcolor="#f8f9fa" style="padding:15px 20px; border-top:1px solid #dee2e6;">
+              <p style="margin:0; font-size:12px; color:#6c757d; line-height:1.4;">
+                Este es un mensaje automático del sistema de monitoreo.<br>
+                Generado el {{ timestamp }} por Notify API
+              </p>
+            </td>
+          </tr>
 
-        </div>
+        </table>
+
       </td>
     </tr>
   </table>
-</body>
 
+</body>
 </html>

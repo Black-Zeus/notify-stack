@@ -29,7 +29,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY Stacks/bkn_notify/ .
 COPY Config/ ./Config/
 
-RUN mkdir -p logs templates && chown -R celery:celery /app
+# Crear directorios necesarios incluyendo beat-schedule
+RUN mkdir -p logs templates beat-schedule && chown -R celery:celery /app
 
 USER celery
 

@@ -33,12 +33,33 @@ api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    """Manejo del ciclo de vida de la aplicación"""
+    
+    # STARTUP - Configurar logging
     logging.basicConfig(
         level=getattr(logging, getattr(constants, 'LOG_LEVEL', 'INFO'), logging.INFO),
         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
     )
     logging.info(f"{constants.SERVICE_NAME} starting up")
+    
+    # STARTUP - Inicializar base de datos MySQL
+    database_ready = False
+    try:
+        from utils.database import initialize_database
+        database_ready = initialize_database()
+        if database_ready:
+            logging.info("MySQL database initialized successfully")
+        else:
+            logging.warning("MySQL database initialization failed - continuing without DB")
+    except Exception as e:
+        logging.error(f"MySQL database initialization error: {e} - continuing without DB")
+    
+    # Guardar estado de BD en app
+    app.state.database_ready = database_ready
+    
     yield
+    
+    # SHUTDOWN
     logging.info(f"{constants.SERVICE_NAME} shutting down")
 
 
@@ -71,13 +92,16 @@ def custom_openapi():
     )
     
     # Agregar configuración de seguridad
-    openapi_schema["components"]["securitySchemes"] = {
-        "APIKeyHeader": {
-            "type": "apiKey",
-            "in": "header",
-            "name": "X-API-Key",
-            "description": "API Key requerida para acceder a los endpoints"
-        }
+    if "components" not in openapi_schema:
+        openapi_schema["components"] = {}
+    if "securitySchemes" not in openapi_schema["components"]:
+        openapi_schema["components"]["securitySchemes"] = {}
+        
+    openapi_schema["components"]["securitySchemes"]["APIKeyHeader"] = {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-Key",
+        "description": "API Key requerida para acceder a los endpoints"
     }
     
     # Aplicar seguridad a todos los endpoints excepto públicos
@@ -160,6 +184,7 @@ async def root():
         "service": constants.SERVICE_NAME,
         "version": constants.API_VERSION,
         "status": "running",
+        "database_ready": getattr(app.state, "database_ready", False),
         "swagger_ui": "/swagger",
         "redoc": "/redoc",
         "openapi": "/openapi.json",

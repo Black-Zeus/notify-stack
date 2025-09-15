@@ -1,4 +1,3 @@
-# alerta-simple/v1/variables.yml
 name: "Alerta Simple"
 description: "Template básico para alertas del sistema"
 category: "alerts"
@@ -8,6 +7,7 @@ variables:
   - host
   - estado
   - hora
+  - timestamp
 
 # Secciones opcionales que aparecen en {% if variable %}
 conditionals: []
@@ -15,5 +15,6 @@ conditionals: []
 # Ejemplo de uso
 example:
   host: "web-server-01"
-  estado: "DOWN" 
+  estado: "DOWN"
   hora: "14:30"
+  timestamp: "2024-01-15 02:15:00"

@@ -253,7 +253,7 @@ class SMTPSender:
             logging.error(f"Error adding attachment {attachment.get('filename', 'unknown')}: {e}")
             raise ValueError(f"Invalid attachment: {e}")
     
-    async def _send_via_smtp(self, message: MIMEMultipart, recipients: List[str]) -> Dict[str, Any]:
+    async def _send_via_smtp_old(self, message: MIMEMultipart, recipients: List[str]) -> Dict[str, Any]:
         """
         Envía mensaje via protocolo SMTP
         """
@@ -304,6 +304,58 @@ class SMTPSender:
                 except:
                     pass
     
+    async def _send_via_smtp(self, message: MIMEMultipart, recipients: List[str]) -> Dict[str, Any]:
+        """
+        Envía mensaje via protocolo SMTP
+        """
+        smtp_client = None
+        
+        try:
+            # Crear conexión SMTP
+            if self.use_ssl:
+                # SSL directo (puerto 465)
+                context = ssl.create_default_context()
+                smtp_client = smtplib.SMTP_SSL(self.host, self.port, timeout=self.timeout, context=context)
+            else:
+                # SMTP estándar
+                smtp_client = smtplib.SMTP(self.host, self.port, timeout=self.timeout)
+                
+                # STARTTLS si está habilitado
+                if self.use_tls:
+                    smtp_client.starttls()
+            
+            # Autenticación solo si hay username/password
+            if self.username and self.password:
+                smtp_client.login(self.username, self.password)
+            
+            # Enviar mensaje
+            smtp_response = smtp_client.send_message(message, to_addrs=recipients)
+            
+            return {
+                "smtp_server": f"{self.host}:{self.port}",
+                "authentication": "successful" if (self.username and self.password) else "not_required",
+                "delivery_status": "accepted",
+                "response": str(smtp_response) if smtp_response else "250 OK"
+            }
+            
+        except smtplib.SMTPAuthenticationError as e:
+            raise Exception(f"SMTP authentication failed: {e}")
+        except smtplib.SMTPRecipientsRefused as e:
+            raise Exception(f"Recipients refused: {e}")
+        except smtplib.SMTPDataError as e:
+            raise Exception(f"SMTP data error: {e}")
+        except smtplib.SMTPException as e:
+            raise Exception(f"SMTP error: {e}")
+        except Exception as e:
+            raise Exception(f"SMTP connection error: {e}")
+        finally:
+            # Cerrar conexión
+            if smtp_client:
+                try:
+                    smtp_client.quit()
+                except:
+                    pass
+
     def get_sender_info(self) -> Dict[str, Any]:
         """
         Obtiene información del sender SMTP
@@ -326,26 +378,3 @@ class SMTPSender:
             }
         }
     
-    async def test_connection(self) -> bool:
-        """
-        Prueba conexión SMTP
-        """
-        try:
-            smtp_client = None
-            
-            if self.use_ssl:
-                context = ssl.create_default_context()
-                smtp_client = smtplib.SMTP_SSL(self.host, self.port, timeout=self.timeout, context=context)
-            else:
-                smtp_client = smtplib.SMTP(self.host, self.port, timeout=self.timeout)
-                if self.use_tls:
-                    smtp_client.starttls()
-            
-            smtp_client.login(self.username, self.password)
-            smtp_client.quit()
-            
-            return True
-            
-        except Exception as e:
-            logging.error(f"SMTP connection test failed: {e}")
-            return False

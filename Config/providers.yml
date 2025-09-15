@@ -5,6 +5,58 @@
 # Las credenciales sensibles se obtienen de variables de entorno
 
 # =============================================================================
+# DEVELOPMENT PROVIDERS
+# =============================================================================
+
+# MailPit - Proveedor principal para desarrollo
+mailpit:
+  type: "smtp"
+  name: "MailPit Development"
+  description: "Capturador de correos para desarrollo y testing"
+  
+  # Configuración de conexión
+  host: "mailpit"
+  port: 1025
+  username: ""
+  password: ""
+  
+  # Configuración de seguridad (sin TLS en desarrollo)
+  use_tls: false
+  use_ssl: false
+  verify_certificate: false
+  
+  # Configuración de headers
+  from_email: "dev@notify-system.local"
+  from_name: "Notify Dev System"
+  reply_to: "dev@notify-system.local"
+  return_path: "dev@notify-system.local"
+  
+  # Límites y timeouts
+  timeout: 15
+  max_recipients_per_message: 100
+  max_messages_per_hour: 1000
+  max_attachment_size: 25165824  # 24MB
+  
+  # Configuración operacional
+  priority: "high"
+  category: "development"
+  enabled: true
+  
+  # Características soportadas
+  features:
+    html_support: true
+    attachments: true
+    tracking: false
+    analytics: false
+    templates: false
+    
+  # Configuración de reintentos
+  retry:
+    max_attempts: 1  # Sin reintentos en desarrollo
+    backoff_factor: 1
+    initial_delay: 0
+
+# =============================================================================
 # SMTP PROVIDERS
 # =============================================================================
 
@@ -40,7 +92,7 @@ smtp_primary:
   # Configuración operacional
   priority: "high"
   category: "transactional"
-  enabled: true
+  enabled: false  # Disabled en desarrollo
   
   # Características soportadas
   features:
@@ -79,7 +131,7 @@ smtp_secondary:
   
   priority: "medium"
   category: "backup"
-  enabled: true
+  enabled: false  # Disabled en desarrollo
   
   features:
     html_support: true
@@ -109,7 +161,7 @@ smtp_bulk:
   
   priority: "medium"
   category: "bulk"
-  enabled: true
+  enabled: false  # Disabled en desarrollo
   
   features:
     html_support: true
@@ -139,7 +191,7 @@ smtp_test:
   
   priority: "low"
   category: "testing"
-  enabled: true
+  enabled: false  # Usar MailPit en su lugar
   
   features:
     html_support: true
@@ -175,7 +227,7 @@ api_sendgrid:
   # Configuración operacional
   priority: "high"
   category: "premium"
-  enabled: true
+  enabled: false  # Disabled en desarrollo
   
   # Características avanzadas
   features:
@@ -319,6 +371,14 @@ api_generic:
 
 # Grupos de proveedores para load balancing
 provider_groups:
+  # Grupo principal para desarrollo
+  development:
+    providers:
+      - name: "mailpit"
+        weight: 100
+    load_balancing: "single"
+    health_check: false
+    
   # Grupo principal para emails transaccionales
   transactional:
     providers:
@@ -387,6 +447,7 @@ cost_optimization:
   
   # Costos relativos por proveedor (1-10, 1=más barato)
   provider_costs:
+    mailpit: 0          # Gratis en desarrollo
     smtp_primary: 2
     smtp_secondary: 2
     smtp_bulk: 1
@@ -433,11 +494,11 @@ regional_settings:
 # Configuración para desarrollo
 development:
   # Proveedor por defecto en desarrollo
-  default_provider: "smtp_test"
+  default_provider: "mailpit"
   
   # Interceptar emails en desarrollo
   email_interception:
-    enabled: true
+    enabled: false  # MailPit ya intercepta todo
     redirect_to: ["dev@yourcompany.com"]
     
   # Simulación de fallos para testing
