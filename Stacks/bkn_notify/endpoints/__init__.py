@@ -7,10 +7,12 @@ from .health import router as health_router
 from .notify import router as notify_router  
 from .status import router as status_router
 from .template import router as template_router
+from .metrics import router as metrics_router
 
 __all__ = [
     "health_router",
     "notify_router", 
     "status_router",
-    "template_router"
+    "template_router",
+    "metrics_router"
 ]

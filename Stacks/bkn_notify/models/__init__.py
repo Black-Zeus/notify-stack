@@ -1,4 +1,5 @@
 """
+Stacks\bkn_notify\models\__init__.py
 Models package
 Exporta todos los modelos Pydantic del sistema de notificaciones
 """
