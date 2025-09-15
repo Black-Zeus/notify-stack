@@ -1,4 +1,3 @@
-# welcome-alert/v1/variables.yml
 name: "Mensaje de Bienvenida"
 description: "Template para dar la bienvenida a nuevos usuarios"
 category: "user-management"
@@ -8,6 +7,7 @@ variables:
   - user_name
   - company_name
   - user_email
+  - timestamp
 
 # Secciones opcionales que aparecen en {% if variable %}
 conditionals:
@@ -18,4 +18,5 @@ example:
   user_name: "Juan Pérez"
   company_name: "Empresa Tecnológica S.A."
   user_email: "juan.perez@empresa.com"
+  timestamp: "2024-01-15 09:00:00"
   activation_link: "https://app.empresa.com/activate/abc123xyz"

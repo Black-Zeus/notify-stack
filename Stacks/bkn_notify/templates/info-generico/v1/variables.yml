@@ -1,4 +1,3 @@
-# info-generico/v1/variables.yml
 name: "Información Genérica"
 description: "Template para mensajes informativos del sistema"
 category: "information"
@@ -10,6 +9,11 @@ variables:
   - categoria
   - fecha
   - remitente
+  - referencia
+  - timestamp
+
+enums:
+  prioridad: [high, medium, low]
 
 # Secciones opcionales que aparecen en {% if variable %}
 conditionals:
@@ -24,5 +28,9 @@ example:
   categoria: "mantenimiento"
   fecha: "2024-01-15"
   remitente: "Equipo de Infraestructura"
+  referencia: "TICKET-1234"
+  timestamp: "2024-01-15 02:15:00"
   datos_adicionales: "Todos los servicios están operando normalmente"
+  accion_requerida: "Revisar estado de los servicios críticos"
   enlace: "https://status.empresa.com"
+  prioridad: low

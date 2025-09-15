@@ -1,4 +1,3 @@
-# success-generico/v1/variables.yml
 name: "Operación Exitosa"
 description: "Template para notificar operaciones completadas exitosamente"
 category: "success"
@@ -11,6 +10,7 @@ variables:
   - hora_finalizacion
   - duracion
   - operacion_id
+  - timestamp
 
 # Secciones opcionales que aparecen en {% if variable %}
 conditionals:
@@ -25,5 +25,6 @@ example:
   hora_finalizacion: "2024-01-15 02:30:00"
   duracion: "45 minutos"
   operacion_id: "BKP-2024-001"
+  timestamp: "2024-01-15 02:31:00"
   resultado: "98.5GB respaldados exitosamente"
   siguiente_accion: "El próximo backup está programado para mañana a las 02:00"

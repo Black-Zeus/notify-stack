@@ -1,4 +1,3 @@
-# network-alert/v1/variables.yml
 name: "Alerta de Red/Conectividad"
 description: "Template para alertas de problemas de red y conectividad"
 category: "network"
@@ -11,32 +10,51 @@ variables:
   - hora_deteccion
   - evento_id
   - servidor_monitor
-  - servicios_impactados
-  - diagnostico
-  - accion_automatica
-  - accion_recomendada
+  - timestamp
 
 # Secciones opcionales que aparecen en {% if variable %}
 conditionals:
   - latencia_alta
   - dns_fallo
-  - endpoint_timeout
-  - conectividad_general
-  - ssl_tls
-  - cdn_problema
-  - balanceador
-  - base_datos_red
   - impacto_servicios
+  - accion_recomendada
+
+# Variables internas de secciones condicionales
+latencia_alta_vars:
+  - latencia_actual
+  - latencia_promedio
+  - umbral_latencia
+  - duracion_problema
+  - perdida_paquetes
+
+dns_fallo_vars:
+  - dominio_dns
+  - servidor_dns
+
+impacto_servicios_vars:
+  - servicios_impactados
+
+accion_recomendada_vars:
+  - accion_recomendada
 
 # Ejemplo de uso
 example:
   tipo_alerta: "latencia"
   destino_afectado: "api.empresa.com"
-  severidad: "alta"
+  severidad: "high"
   hora_deteccion: "2024-01-15 14:30:45"
   evento_id: "NET-2024-001"
   servidor_monitor: "monitor-prod-01"
+  timestamp: "2024-01-15 14:35:00"
   latencia_alta: true
   latencia_actual: 850
   latencia_promedio: 45
   umbral_latencia: 200
+  duracion_problema: "5m"
+  perdida_paquetes: 2
+  dns_fallo: true
+  dominio_dns: "ejemplo.com"
+  servidor_dns: "8.8.8.8"
+  impacto_servicios: true
+  servicios_impactados: "Portal Web, API"
+  accion_recomendada: "Escalar al equipo de red y revisar logs del firewall"

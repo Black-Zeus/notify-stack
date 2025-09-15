@@ -1,4 +1,3 @@
-# security-alert/v1/variables.yml
 name: "Alerta de Seguridad"
 description: "Template para alertas de eventos de seguridad"
 category: "security"
@@ -10,32 +9,40 @@ variables:
   - nivel_riesgo
   - hora_evento
   - evento_id
-  - accion_inmediata
-  - accion_recomendada
-  - contacto_seguridad
+  - timestamp
 
 # Secciones opcionales que aparecen en {% if variable %}
 conditionals:
   - intento_acceso
-  - password_expiry
-  - login_sospechoso
-  - api_abuse
-  - sesion_multiple
-  - cambio_privilegios
-  - archivo_malicioso
+  - accion_inmediata
+  - accion_recomendada
+  - contacto_seguridad
+
+# Variables internas de secciones condicionales
+intento_acceso_vars:
+  - ip_origen
+  - pais_origen
+
+accion_inmediata_vars:
+  - accion_inmediata
+
+accion_recomendada_vars:
+  - accion_recomendada
+
+contacto_seguridad_vars:
+  - contacto_seguridad
 
 # Ejemplo de uso
 example:
   tipo_alerta: "acceso_no_autorizado"
   usuario_afectado: "admin@empresa.com"
-  nivel_riesgo: "alto"
+  nivel_riesgo: "high"
   hora_evento: "2024-01-15 15:20:30"
   evento_id: "SEC-2024-001"
+  timestamp: "2024-01-15 15:21:00"
   intento_acceso: true
   ip_origen: "192.168.1.100"
   pais_origen: "Desconocido"
-  metodo_acceso: "SSH"
-  numero_intentos: 5
-  resultado_acceso: "Bloqueado"
   accion_inmediata: "Cambiar contraseñas inmediatamente"
+  accion_recomendada: "Habilitar MFA para todos los usuarios"
   contacto_seguridad: "security@empresa.com"

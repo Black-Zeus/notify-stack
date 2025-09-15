@@ -1,4 +1,3 @@
-# error-generico/v1/variables.yml
 name: "Error Genérico"
 description: "Template para notificar errores del sistema"
 category: "errors"
@@ -11,6 +10,7 @@ variables:
   - hora_error
   - severidad
   - error_id
+  - timestamp
 
 # Secciones opcionales que aparecen en {% if variable %}
 conditionals:
@@ -23,7 +23,8 @@ example:
   componente: "API Gateway"
   descripcion: "No se puede conectar a la base de datos principal"
   hora_error: "2024-01-15 14:30:45"
-  severidad: "alta"
+  severidad: "critical"
   error_id: "ERR-2024-001"
+  timestamp: "2024-01-15 14:31:00"
   solucion_sugerida: "Verificar conectividad de red y estado del servidor de BD"
-  contacto: "admin@empresa.com"
+  contacto: "vsoto@tecnocomp.cl"
