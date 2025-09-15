@@ -460,26 +460,4 @@ class APISender:
                 "templates": self.provider_type == 'sendgrid'
             }
         }
-    
-    async def test_connection(self) -> bool:
-        """
-        Prueba conexión API
-        """
-        try:
-            headers = {
-                "Authorization": f"Bearer {self.api_key}",
-                **self.custom_headers
-            }
-            
-            # Test endpoint específico según proveedor
-            test_endpoint = self.endpoint
-            if self.provider_type == 'sendgrid':
-                test_endpoint = f"{self.endpoint}/v3/user/account"
-            
-            async with httpx.AsyncClient(timeout=self.timeout) as client:
-                response = await client.get(test_endpoint, headers=headers)
-                return 200 <= response.status_code < 500  # 4xx = auth issue, still "connected"
-                
-        except Exception as e:
-            logging.error(f"API connection test failed: {e}")
-            return False
+   

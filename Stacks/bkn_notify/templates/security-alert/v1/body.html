@@ -5,594 +5,148 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <!--[if mso]>
-    <noscript>
-        <xml>
-            <o:OfficeDocumentSettings>
-                <o:PixelsPerInch>96</o:PixelsPerInch>
-            </o:OfficeDocumentSettings>
-        </xml>
-    </noscript>
-    <![endif]-->
   <style type="text/css">
-    /* Reset */
-    table,
-    td,
-    div,
-    h1,
-    h2,
-    h3,
-    p {
-      margin: 0;
-      padding: 0;
-    }
-
-    table {
-      border-collapse: collapse;
-    }
-
-    /* Outlook compatibility */
-    .ReadMsgBody {
-      width: 100%;
-    }
-
-    .ExternalClass {
-      width: 100%;
-    }
-
-    .ExternalClass * {
-      line-height: 100%;
-    }
-
-    /* Base styles */
-    body {
-      margin: 0 !important;
-      padding: 0 !important;
-      background-color: #f4f4f4;
-      font-family: Arial, sans-serif;
-    }
-
-    /* Container */
-    .email-container {
-      max-width: 600px;
-      margin: 0 auto;
-      background-color: #ffffff;
-    }
-
-    /* Header */
-    .header {
-      background-color: #b91c1c;
-      padding: 20px;
-      text-align: center;
-    }
-
-    .header h1 {
-      color: #ffffff;
-      font-size: 24px;
-      font-weight: bold;
-      margin: 0;
-    }
-
-    .security-icon {
-      font-size: 32px;
-      margin-bottom: 10px;
-    }
-
-    /* Content */
-    .content {
-      padding: 30px 20px;
-      background-color: #f8f9fa;
-    }
-
-    .alert-box {
-      background-color: #fef2f2;
-      border: 2px solid #b91c1c;
-      border-radius: 4px;
-      padding: 20px;
-      margin: 20px 0;
-    }
-
-    .detail-box {
-      background-color: #f8fafc;
-      border: 2px solid #64748b;
-      border-radius: 4px;
-      padding: 15px;
-      margin: 15px 0;
-    }
-
-    .urgent-box {
-      background-color: #fef2f2;
-      border: 2px solid #dc2626;
-      border-radius: 4px;
-      padding: 20px;
-      margin: 20px 0;
-      border-left: 6px solid #dc2626;
-    }
-
-    .action-box {
-      background-color: #fffbeb;
-      border: 2px solid #f59e0b;
-      border-radius: 4px;
-      padding: 20px;
-      margin: 20px 0;
-    }
-
-    .info-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin: 10px 0;
-    }
-
-    .info-table td {
-      padding: 6px 10px;
-      border-bottom: 1px solid #eee;
-      vertical-align: top;
-    }
-
-    .info-label {
-      font-weight: bold;
-      color: #555555;
-      width: 35%;
-    }
-
-    .info-value {
-      color: #b91c1c;
-      font-weight: bold;
-    }
-
-    .detail-value {
-      color: #0f172a;
-      font-weight: bold;
-    }
-
-    .message-text {
-      font-size: 16px;
-      line-height: 1.5;
-      color: #333333;
-      margin: 15px 0;
-    }
-
-    .risk-critical {
-      background-color: #dc2626;
-      color: #ffffff;
-      padding: 4px 12px;
-      border-radius: 16px;
-      font-size: 14px;
-      font-weight: bold;
-      display: inline-block;
-    }
-
-    .risk-high {
-      background-color: #ea580c;
-      color: #ffffff;
-      padding: 4px 12px;
-      border-radius: 16px;
-      font-size: 14px;
-      font-weight: bold;
-      display: inline-block;
-    }
-
-    .risk-medium {
-      background-color: #ca8a04;
-      color: #ffffff;
-      padding: 4px 12px;
-      border-radius: 16px;
-      font-size: 14px;
-      font-weight: bold;
-      display: inline-block;
-    }
-
-    .risk-low {
-      background-color: #16a34a;
-      color: #ffffff;
-      padding: 4px 12px;
-      border-radius: 16px;
-      font-size: 14px;
-      font-weight: bold;
-      display: inline-block;
-    }
-
-    .event-id {
-      font-family: monospace;
-      background-color: #f3f4f6;
-      padding: 2px 6px;
-      border-radius: 3px;
-      font-size: 14px;
-    }
-
-    .ip-address {
-      font-family: monospace;
-      background-color: #fef2f2;
-      color: #dc2626;
-      padding: 2px 6px;
-      border-radius: 3px;
-      font-weight: bold;
-    }
-
-    .detail-title {
-      font-size: 16px;
-      font-weight: bold;
-      color: #1f2937;
-      margin-bottom: 10px;
-    }
-
-    .urgent-text {
-      color: #dc2626;
-      font-weight: bold;
-      font-size: 18px;
-    }
-
-    .location-flag {
-      font-size: 16px;
-      margin-right: 5px;
-    }
-
-    /* Footer */
-    .footer {
-      background-color: #f8f9fa;
-      padding: 15px 20px;
-      text-align: center;
-      border-top: 1px solid #dee2e6;
-    }
-
-    .footer-text {
-      font-size: 12px;
-      color: #6c757d;
-      line-height: 1.4;
-    }
-
-    /* Responsive */
-    @media only screen and (max-width: 480px) {
-      .email-container {
-        width: 100% !important;
-      }
-
-      .content {
-        padding: 20px 15px !important;
-      }
-
-      .header {
-        padding: 15px !important;
-      }
-
-      .header h1 {
-        font-size: 20px !important;
-      }
-    }
+    body, table, td {font-family: Arial, sans-serif !important;}
   </style>
+  <![endif]-->
 </head>
 
-<body>
-  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+<body style="margin:0; padding:0; background-color:#f4f4f4; font-family:Arial, sans-serif;">
+
+  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" bgcolor="#f4f4f4">
     <tr>
-      <td align="center" style="padding: 20px 0;">
-        <div class="email-container">
+      <td align="center" style="padding:20px 0;">
+
+        <!-- Container -->
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" bgcolor="#ffffff" style="border-collapse:collapse;">
 
           <!-- Header -->
-          <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
-            <tr>
-              <td class="header">
-                <h1><span class="security-icon">🛡️</span> ALERTA DE SEGURIDAD</h1>
-              </td>
-            </tr>
-          </table>
+          <tr>
+            <td align="center" bgcolor="#b91c1c" style="padding:20px;">
+              <h1 style="margin:0; font-size:24px; font-weight:bold; color:#ffffff;">🛡️ ALERTA DE SEGURIDAD</h1>
+            </td>
+          </tr>
 
           <!-- Content -->
-          <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
-            <tr>
-              <td class="content">
+          <tr>
+            <td bgcolor="#f8f9fa" style="padding:30px 20px;">
 
-                <div class="alert-box">
-                  <p class="message-text">
+              <!-- Caja principal -->
+              <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" bgcolor="#fef2f2" style="border:2px solid #b91c1c;">
+                <tr>
+                  <td style="padding:20px; font-size:16px; color:#333333; line-height:1.5;">
                     <strong>Se ha detectado un evento de seguridad que requiere atención:</strong>
-                  </p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:0 20px 20px 20px;">
+                    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                      <tr>
+                        <td style="padding:6px 10px; font-weight:bold; color:#555555;" width="35%">Tipo de alerta:</td>
+                        <td style="padding:6px 10px; font-weight:bold; color:#b91c1c;">{{ tipo_alerta }}</td>
+                      </tr>
+                      <tr>
+                        <td style="padding:6px 10px; font-weight:bold; color:#555555;">Usuario afectado:</td>
+                        <td style="padding:6px 10px; font-weight:bold; color:#b91c1c;">{{ usuario_afectado }}</td>
+                      </tr>
+                      <tr>
+                        <td style="padding:6px 10px; font-weight:bold; color:#555555;">Nivel de riesgo:</td>
+                        <td style="padding:6px 10px;">
+                          {% if nivel_riesgo == 'critical' -%}
+                          <span style="background-color:#dc2626; color:#ffffff; padding:4px 12px; font-size:14px; font-weight:bold; display:inline-block;">CRÍTICO</span>
+                          {% elif nivel_riesgo == 'high' -%}
+                          <span style="background-color:#ea580c; color:#ffffff; padding:4px 12px; font-size:14px; font-weight:bold; display:inline-block;">ALTO</span>
+                          {% elif nivel_riesgo == 'medium' -%}
+                          <span style="background-color:#ca8a04; color:#ffffff; padding:4px 12px; font-size:14px; font-weight:bold; display:inline-block;">MEDIO</span>
+                          {% else -%}
+                          <span style="background-color:#16a34a; color:#ffffff; padding:4px 12px; font-size:14px; font-weight:bold; display:inline-block;">BAJO</span>
+                          {% endif %}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding:6px 10px; font-weight:bold; color:#555555;">Hora del evento:</td>
+                        <td style="padding:6px 10px; font-weight:bold; color:#b91c1c;">{{ hora_evento }}</td>
+                      </tr>
+                      <tr>
+                        <td style="padding:6px 10px; font-weight:bold; color:#555555;">ID del evento:</td>
+                        <td style="padding:6px 10px;"><span style="font-family:monospace; background-color:#f3f4f6; padding:2px 6px; font-size:14px;">{{ evento_id }}</span></td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
 
-                  <table class="info-table" role="presentation" cellspacing="0" cellpadding="0" border="0">
-                    <tr>
-                      <td class="info-label">Tipo de alerta:</td>
-                      <td class="info-value">{{ tipo_alerta }}</td>
-                    </tr>
-                    <tr>
-                      <td class="info-label">Usuario afectado:</td>
-                      <td class="info-value">{{ usuario_afectado }}</td>
-                    </tr>
-                    <tr>
-                      <td class="info-label">Nivel de riesgo:</td>
-                      <td>
-                        {% if nivel_riesgo == 'critical' -%}
-                        <span class="risk-critical">CRÍTICO</span>
-                        {% elif nivel_riesgo == 'high' -%}
-                        <span class="risk-high">ALTO</span>
-                        {% elif nivel_riesgo == 'medium' -%}
-                        <span class="risk-medium">MEDIO</span>
-                        {% else -%}
-                        <span class="risk-low">BAJO</span>
-                        {% endif %}
-                      </td>
-                    </tr>
-                    <tr>
-                      <td class="info-label">Hora del evento:</td>
-                      <td class="info-value">{{ hora_evento }}</td>
-                    </tr>
-                    <tr>
-                      <td class="info-label">ID del evento:</td>
-                      <td><span class="event-id">{{ evento_id }}</span></td>
-                    </tr>
-                  </table>
-                </div>
+              {% if intento_acceso -%}
+              <!-- Intento de acceso no autorizado -->
+              <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" bgcolor="#f8fafc" style="border:2px solid #64748b; margin-top:15px;">
+                <tr>
+                  <td style="padding:15px; font-size:16px; font-weight:bold; color:#1f2937;">🚫 Intento de Acceso No Autorizado</td>
+                </tr>
+                <tr>
+                  <td style="padding:0 15px 15px 15px;">
+                    <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0">
+                      <tr>
+                        <td style="padding:6px 10px; font-weight:bold; color:#555555;">IP de origen:</td>
+                        <td style="padding:6px 10px;"><span style="font-family:monospace; background-color:#fef2f2; color:#dc2626; padding:2px 6px; font-weight:bold;">{{ ip_origen }}</span></td>
+                      </tr>
+                      {% if pais_origen -%}
+                      <tr>
+                        <td style="padding:6px 10px; font-weight:bold; color:#555555;">País/Región:</td>
+                        <td style="padding:6px 10px; font-weight:bold; color:#0f172a;">🌍 {{ pais_origen }}</td>
+                      </tr>
+                      {% endif %}
+                    </table>
+                  </td>
+                </tr>
+              </table>
+              {% endif %}
 
-                {% if intento_acceso -%}
-                <div class="detail-box">
-                  <div class="detail-title">🚫 Intento de Acceso No Autorizado</div>
-                  <table class="info-table" role="presentation" cellspacing="0" cellpadding="0" border="0">
-                    <tr>
-                      <td class="info-label">IP de origen:</td>
-                      <td><span class="ip-address">{{ ip_origen }}</span></td>
-                    </tr>
-                    {% if pais_origen -%}
-                    <tr>
-                      <td class="info-label">País/Región:</td>
-                      <td class="detail-value"><span class="location-flag">🌍</span>{{ pais_origen }}</td>
-                    </tr>
-                    {% endif %}
-                    {% if metodo_acceso -%}
-                    <tr>
-                      <td class="info-label">Método de acceso:</td>
-                      <td class="detail-value">{{ metodo_acceso }}</td>
-                    </tr>
-                    {% endif %}
-                    {% if endpoint_atacado -%}
-                    <tr>
-                      <td class="info-label">Endpoint atacado:</td>
-                      <td class="detail-value">{{ endpoint_atacado }}</td>
-                    </tr>
-                    {% endif %}
-                    {% if numero_intentos -%}
-                    <tr>
-                      <td class="info-label">Número de intentos:</td>
-                      <td class="detail-value">{{ numero_intentos }}</td>
-                    </tr>
-                    {% endif %}
-                    {% if resultado_acceso -%}
-                    <tr>
-                      <td class="info-label">Resultado:</td>
-                      <td class="detail-value">{{ resultado_acceso }}</td>
-                    </tr>
-                    {% endif %}
-                  </table>
-                </div>
-                {% endif %}
-
-                {% if password_expiry -%}
-                <div class="detail-box">
-                  <div class="detail-title">🔑 Contraseña Próxima a Vencer</div>
-                  <table class="info-table" role="presentation" cellspacing="0" cellpadding="0" border="0">
-                    <tr>
-                      <td class="info-label">Días para vencimiento:</td>
-                      <td class="detail-value" style="color: {% if dias_vencimiento|int <= 3 %}#dc2626{% elif dias_vencimiento|int <= 7 %}#f59e0b{% else %}#16a34a{% endif %}; font-weight: bold;">{{ dias_vencimiento }} días</td>
-                    </tr>
-                    {% if fecha_vencimiento -%}
-                    <tr>
-                      <td class="info-label">Fecha de vencimiento:</td>
-                      <td class="detail-value">{{ fecha_vencimiento }}</td>
-                    </tr>
-                    {% endif %}
-                    {% if ultimo_cambio_password -%}
-                    <tr>
-                      <td class="info-label">Último cambio:</td>
-                      <td class="detail-value">{{ ultimo_cambio_password }}</td>
-                    </tr>
-                    {% endif %}
-                    {% if politica_password -%}
-                    <tr>
-                      <td class="info-label">Política aplicada:</td>
-                      <td class="detail-value">{{ politica_password }}</td>
-                    </tr>
-                    {% endif %}
-                  </table>
-                </div>
-                {% endif %}
-
-                {% if login_sospechoso -%}
-                <div class="detail-box">
-                  <div class="detail-title">🌐 Acceso desde Ubicación Inusual</div>
-                  <table class="info-table" role="presentation" cellspacing="0" cellpadding="0" border="0">
-                    <tr>
-                      <td class="info-label">IP de acceso:</td>
-                      <td><span class="ip-address">{{ ip_acceso }}</span></td>
-                    </tr>
-                    {% if ubicacion_acceso -%}
-                    <tr>
-                      <td class="info-label">Ubicación:</td>
-                      <td class="detail-value"><span class="location-flag">📍</span>{{ ubicacion_acceso }}</td>
-                    </tr>
-                    {% endif %}
-                    {% if dispositivo -%}
-                    <tr>
-                      <td class="info-label">Dispositivo:</td>
-                      <td class="detail-value">{{ dispositivo }}</td>
-                    </tr>
-                    {% endif %}
-                    {% if ubicacion_habitual -%}
-                    <tr>
-                      <td class="info-label">Ubicación habitual:</td>
-                      <td class="detail-value">{{ ubicacion_habitual }}</td>
-                    </tr>
-                    {% endif %}
-                    {% if distancia_km -%}
-                    <tr>
-                      <td class="info-label">Distancia:</td>
-                      <td class="detail-value">{{ distancia_km }} km</td>
-                    </tr>
-                    {% endif %}
-                    {% if vpn_detectada -%}
-                    <tr>
-                      <td class="info-label">VPN detectada:</td>
-                      <td class="detail-value">{{ vpn_detectada }}</td>
-                    </tr>
-                    {% endif %}
-                  </table>
-                </div>
-                {% endif %}
-
-                {% if api_abuse -%}
-                <div class="detail-box">
-                  <div class="detail-title">⚡ Abuso de API Detectado</div>
-                  <table class="info-table" role="presentation" cellspacing="0" cellpadding="0" border="0">
-                    {% if api_key -%}
-                    <tr>
-                      <td class="info-label">API Key:</td>
-                      <td class="detail-value">{{ api_key }}</td>
-                    </tr>
-                    {% endif %}
-                    {% if api_endpoint -%}
-                    <tr>
-                      <td class="info-label">Endpoint:</td>
-                      <td class="detail-value">{{ api_endpoint }}</td>
-                    </tr>
-                    {% endif %}
-                    {% if requests_minuto -%}
-                    <tr>
-                      <td class="info-label">Requests/minuto:</td>
-                      <td class="detail-value">{{ requests_minuto }}</td>
-                    </tr>
-                    {% endif %}
-                    {% if limite_excedido -%}
-                    <tr>
-                      <td class="info-label">Límite excedido:</td>
-                      <td class="detail-value">{{ limite_excedido }}</td>
-                    </tr>
-                    {% endif %}
-                  </table>
-                </div>
-                {% endif %}
-
-                {% if sesion_multiple -%}
-                <div class="detail-box">
-                  <div class="detail-title">👥 Sesiones Múltiples Simultáneas</div>
-                  <table class="info-table" role="presentation" cellspacing="0" cellpadding="0" border="0">
-                    <tr>
-                      <td class="info-label">Sesiones activas:</td>
-                      <td class="detail-value">{{ sesiones_activas }}</td>
-                    </tr>
-                    {% if ubicaciones_sesiones -%}
-                    <tr>
-                      <td class="info-label">Ubicaciones:</td>
-                      <td class="detail-value">{{ ubicaciones_sesiones }}</td>
-                    </tr>
-                    {% endif %}
-                    {% if dispositivos_sesiones -%}
-                    <tr>
-                      <td class="info-label">Dispositivos:</td>
-                      <td class="detail-value">{{ dispositivos_sesiones }}</td>
-                    </tr>
-                    {% endif %}
-                  </table>
-                </div>
-                {% endif %}
-
-                {% if cambio_privilegios -%}
-                <div class="detail-box">
-                  <div class="detail-title">⚖️ Cambio de Privilegios</div>
-                  <table class="info-table" role="presentation" cellspacing="0" cellpadding="0" border="0">
-                    {% if privilegios_anteriores -%}
-                    <tr>
-                      <td class="info-label">Privilegios anteriores:</td>
-                      <td class="detail-value">{{ privilegios_anteriores }}</td>
-                    </tr>
-                    {% endif %}
-                    {% if privilegios_nuevos -%}
-                    <tr>
-                      <td class="info-label">Nuevos privilegios:</td>
-                      <td class="detail-value">{{ privilegios_nuevos }}</td>
-                    </tr>
-                    {% endif %}
-                    {% if modificado_por -%}
-                    <tr>
-                      <td class="info-label">Modificado por:</td>
-                      <td class="detail-value">{{ modificado_por }}</td>
-                    </tr>
-                    {% endif %}
-                  </table>
-                </div>
-                {% endif %}
-
-                {% if archivo_malicioso -%}
-                <div class="detail-box">
-                  <div class="detail-title">🦠 Archivo Malicioso Detectado</div>
-                  <table class="info-table" role="presentation" cellspacing="0" cellpadding="0" border="0">
-                    {% if nombre_archivo -%}
-                    <tr>
-                      <td class="info-label">Archivo:</td>
-                      <td class="detail-value">{{ nombre_archivo }}</td>
-                    </tr>
-                    {% endif %}
-                    {% if tipo_amenaza -%}
-                    <tr>
-                      <td class="info-label">Tipo de amenaza:</td>
-                      <td class="detail-value">{{ tipo_amenaza }}</td>
-                    </tr>
-                    {% endif %}
-                    {% if ubicacion_archivo -%}
-                    <tr>
-                      <td class="info-label">Ubicación:</td>
-                      <td class="detail-value">{{ ubicacion_archivo }}</td>
-                    </tr>
-                    {% endif %}
-                    {% if accion_tomada -%}
-                    <tr>
-                      <td class="info-label">Acción tomada:</td>
-                      <td class="detail-value">{{ accion_tomada }}</td>
-                    </tr>
-                    {% endif %}
-                  </table>
-                </div>
-                {% endif %}
-
-                {% if accion_inmediata -%}
-                <div class="urgent-box">
-                  <p class="urgent-text">
-                    🚨 ACCIÓN INMEDIATA REQUERIDA
-                  </p>
-                  <p class="message-text">
+              {% if accion_inmediata -%}
+              <!-- Acción inmediata -->
+              <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" bgcolor="#fef2f2" style="border:2px solid #dc2626; border-left:6px solid #dc2626; margin-top:15px;">
+                <tr>
+                  <td style="padding:20px; font-size:18px; font-weight:bold; color:#dc2626;">🚨 ACCIÓN INMEDIATA REQUERIDA</td>
+                </tr>
+                <tr>
+                  <td style="padding:0 20px 20px 20px; font-size:16px; color:#333333; line-height:1.5;">
                     {{ accion_inmediata }}
-                  </p>
-                </div>
-                {% endif %}
+                  </td>
+                </tr>
+              </table>
+              {% endif %}
 
-                {% if accion_recomendada -%}
-                <div class="action-box">
-                  <p class="message-text">
-                    <strong>⚠️ Acciones recomendadas:</strong>
-                  </p>
-                  <p class="message-text">
+              {% if accion_recomendada -%}
+              <!-- Acciones recomendadas -->
+              <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" bgcolor="#fffbeb" style="border:2px solid #f59e0b; margin-top:15px;">
+                <tr>
+                  <td style="padding:20px; font-size:16px; color:#333333; line-height:1.5;">
+                    <strong>⚠️ Acciones recomendadas:</strong><br>
                     {{ accion_recomendada }}
-                  </p>
-                </div>
-                {% endif %}
+                  </td>
+                </tr>
+              </table>
+              {% endif %}
 
-              </td>
-            </tr>
-          </table>
+            </td>
+          </tr>
 
           <!-- Footer -->
-          <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
-            <tr>
-              <td class="footer">
-                <p class="footer-text">
-                  Este es un mensaje automático del sistema de seguridad.<br>
-                  {% if contacto_seguridad -%}
-                  Para reportar incidentes: {{ contacto_seguridad }}<br>
-                  {% endif %}
-                  Generado el {{ timestamp }} por Notify API
-                </p>
-              </td>
-            </tr>
-          </table>
+          <tr>
+            <td align="center" bgcolor="#f8f9fa" style="padding:15px 20px; border-top:1px solid #dee2e6;">
+              <p style="margin:0; font-size:12px; color:#6c757d; line-height:1.4;">
+                Este es un mensaje automático del sistema de seguridad.<br>
+                {% if contacto_seguridad -%}
+                Para reportar incidentes: {{ contacto_seguridad }}<br>
+                {% endif %}
+                Generado el {{ timestamp }} por Notify API
+              </p>
+            </td>
+          </tr>
 
-        </div>
+        </table>
       </td>
     </tr>
   </table>
-</body>
 
+</body>
 </html>

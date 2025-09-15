@@ -151,15 +151,21 @@ class NotifyRequest(BaseModel):
     
     @field_validator('template_id')
     @classmethod
-    def validate_template_id(cls, v):
-        """Valida formato de template ID"""
-        if v is None:
+    def validate_template_format(cls, v):
+        """Valida y normaliza formato del template ID"""
+        if not v:
             return v
-        
-        # Formato esperado: nombre/version (ej: "alerta-simple/v1")
+            
         import re
+        
+        # Convertir punto a slash (cert-summary.v1 -> cert-summary/v1)
+        if '.' in v and 'v' in v:
+            # Buscar patrón name.vN y convertir a name/vN
+            v = re.sub(r'\.v(\d+)$', r'/v\1', v)
+        
+        # Validar formato final
         if not re.match(r'^[a-zA-Z0-9\-_]+/v\d+$', v):
-            raise ValueError("template_id must follow format: template-name/vN (e.g., 'alert-simple/v1')")
+            raise ValueError("template_id must follow format: template-name/vN")
         
         return v
     

@@ -5,336 +5,132 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <!--[if mso]>
-    <noscript>
-        <xml>
-            <o:OfficeDocumentSettings>
-                <o:PixelsPerInch>96</o:PixelsPerInch>
-            </o:OfficeDocumentSettings>
-        </xml>
-    </noscript>
-    <![endif]-->
   <style type="text/css">
-    /* Reset */
-    table,
-    td,
-    div,
-    h1,
-    h2,
-    h3,
-    p {
-      margin: 0;
-      padding: 0;
-    }
-
-    table {
-      border-collapse: collapse;
-    }
-
-    /* Outlook compatibility */
-    .ReadMsgBody {
-      width: 100%;
-    }
-
-    .ExternalClass {
-      width: 100%;
-    }
-
-    .ExternalClass * {
-      line-height: 100%;
-    }
-
-    /* Base styles */
-    body {
-      margin: 0 !important;
-      padding: 0 !important;
-      background-color: #f4f4f4;
-      font-family: Arial, sans-serif;
-    }
-
-    /* Container */
-    .email-container {
-      max-width: 600px;
-      margin: 0 auto;
-      background-color: #ffffff;
-    }
-
-    /* Header */
-    .header {
-      background-color: #0ea5e9;
-      padding: 20px;
-      text-align: center;
-    }
-
-    .header h1 {
-      color: #ffffff;
-      font-size: 24px;
-      font-weight: bold;
-      margin: 0;
-    }
-
-    .info-icon {
-      font-size: 32px;
-      margin-bottom: 10px;
-    }
-
-    /* Content */
-    .content {
-      padding: 30px 20px;
-      background-color: #f8f9fa;
-    }
-
-    .info-box {
-      background-color: #f0f9ff;
-      border: 2px solid #0ea5e9;
-      border-radius: 4px;
-      padding: 20px;
-      margin: 20px 0;
-    }
-
-    .details-box {
-      background-color: #f8fafc;
-      border: 2px solid #64748b;
-      border-radius: 4px;
-      padding: 20px;
-      margin: 20px 0;
-    }
-
-    .action-box {
-      background-color: #fef3c7;
-      border: 2px solid #f59e0b;
-      border-radius: 4px;
-      padding: 20px;
-      margin: 20px 0;
-    }
-
-    .info-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin: 15px 0;
-    }
-
-    .info-table td {
-      padding: 8px 10px;
-      border-bottom: 1px solid #eee;
-      vertical-align: top;
-    }
-
-    .info-label {
-      font-weight: bold;
-      color: #555555;
-      width: 25%;
-    }
-
-    .info-value {
-      color: #0ea5e9;
-      font-weight: bold;
-    }
-
-    .message-text {
-      font-size: 16px;
-      line-height: 1.5;
-      color: #333333;
-      margin: 15px 0;
-    }
-
-    .category-badge {
-      background-color: #0ea5e9;
-      color: #ffffff;
-      padding: 4px 12px;
-      border-radius: 16px;
-      font-size: 14px;
-      font-weight: bold;
-      display: inline-block;
-    }
-
-    .priority-high {
-      background-color: #dc2626;
-      color: #ffffff;
-      padding: 4px 12px;
-      border-radius: 16px;
-      font-size: 14px;
-      font-weight: bold;
-      display: inline-block;
-    }
-
-    .priority-medium {
-      background-color: #f59e0b;
-      color: #ffffff;
-      padding: 4px 12px;
-      border-radius: 16px;
-      font-size: 14px;
-      font-weight: bold;
-      display: inline-block;
-    }
-
-    .priority-low {
-      background-color: #10b981;
-      color: #ffffff;
-      padding: 4px 12px;
-      border-radius: 16px;
-      font-size: 14px;
-      font-weight: bold;
-      display: inline-block;
-    }
-
-    .link-button {
-      background-color: #0ea5e9;
-      color: #ffffff;
-      padding: 10px 20px;
-      text-decoration: none;
-      border-radius: 4px;
-      display: inline-block;
-      font-weight: bold;
-      margin: 10px 0;
-    }
-
-    /* Footer */
-    .footer {
-      background-color: #f8f9fa;
-      padding: 15px 20px;
-      text-align: center;
-      border-top: 1px solid #dee2e6;
-    }
-
-    .footer-text {
-      font-size: 12px;
-      color: #6c757d;
-      line-height: 1.4;
-    }
-
-    /* Responsive */
-    @media only screen and (max-width: 480px) {
-      .email-container {
-        width: 100% !important;
-      }
-
-      .content {
-        padding: 20px 15px !important;
-      }
-
-      .header {
-        padding: 15px !important;
-      }
-
-      .header h1 {
-        font-size: 20px !important;
-      }
-    }
+    body, table, td {font-family: Arial, sans-serif !important;}
   </style>
+  <![endif]-->
 </head>
 
-<body>
-  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+<body style="margin:0; padding:0; background-color:#f4f4f4; font-family:Arial, sans-serif;">
+
+  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" bgcolor="#f4f4f4">
     <tr>
-      <td align="center" style="padding: 20px 0;">
-        <div class="email-container">
+      <td align="center" style="padding:20px 0;">
+
+        <!-- Container -->
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" bgcolor="#ffffff" style="border-collapse:collapse;">
 
           <!-- Header -->
-          <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
-            <tr>
-              <td class="header">
-                <h1><span class="info-icon">ℹ️</span> INFORMACIÓN DEL SISTEMA</h1>
-              </td>
-            </tr>
-          </table>
+          <tr>
+            <td align="center" bgcolor="#0ea5e9" style="padding:20px;">
+              <h1 style="margin:0; font-size:24px; font-weight:bold; color:#ffffff;">ℹ️ INFORMACIÓN DEL SISTEMA</h1>
+            </td>
+          </tr>
 
           <!-- Content -->
-          <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
-            <tr>
-              <td class="content">
+          <tr>
+            <td bgcolor="#f8f9fa" style="padding:30px 20px;">
 
-                <div class="info-box">
-                  <p class="message-text">
+              <!-- Info Box -->
+              <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" bgcolor="#f0f9ff" style="border:2px solid #0ea5e9;">
+                <tr>
+                  <td style="padding:20px; font-size:16px; color:#333333; line-height:1.5;">
                     <strong>{{ titulo }}</strong>
                     {% if prioridad -%}
-                    {% if prioridad == 'high' -%}
-                    <span class="priority-high">ALTA</span>
-                    {% elif prioridad == 'medium' -%}
-                    <span class="priority-medium">MEDIA</span>
-                    {% else -%}
-                    <span class="priority-low">BAJA</span>
+                      {% if prioridad == 'high' -%}
+                        <span style="background-color:#dc2626; color:#ffffff; padding:4px 12px; font-size:14px; font-weight:bold; display:inline-block;">ALTA</span>
+                      {% elif prioridad == 'medium' -%}
+                        <span style="background-color:#f59e0b; color:#ffffff; padding:4px 12px; font-size:14px; font-weight:bold; display:inline-block;">MEDIA</span>
+                      {% else -%}
+                        <span style="background-color:#10b981; color:#ffffff; padding:4px 12px; font-size:14px; font-weight:bold; display:inline-block;">BAJA</span>
+                      {% endif %}
                     {% endif %}
-                    {% endif %}
-                  </p>
-
-                  <p class="message-text">
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:20px; font-size:16px; line-height:1.5; color:#333333;">
                     {{ mensaje }}
-                  </p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:0 20px 20px 20px;">
+                    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="border-collapse:collapse;">
+                      <tr>
+                        <td width="25%" style="padding:8px 10px; font-weight:bold; color:#555555;">Categoría:</td>
+                        <td><span style="background-color:#0ea5e9; color:#ffffff; padding:4px 12px; font-size:14px; font-weight:bold; display:inline-block;">{{ categoria }}</span></td>
+                      </tr>
+                      <tr>
+                        <td style="padding:8px 10px; font-weight:bold; color:#555555;">Fecha:</td>
+                        <td style="padding:8px 10px; font-weight:bold; color:#0ea5e9;">{{ fecha }}</td>
+                      </tr>
+                      <tr>
+                        <td style="padding:8px 10px; font-weight:bold; color:#555555;">Remitente:</td>
+                        <td style="padding:8px 10px; font-weight:bold; color:#0ea5e9;">{{ remitente }}</td>
+                      </tr>
+                      {% if referencia -%}
+                      <tr>
+                        <td style="padding:8px 10px; font-weight:bold; color:#555555;">Referencia:</td>
+                        <td style="font-family:monospace; background-color:#f3f4f6; padding:2px 6px; font-size:14px;">{{ referencia }}</td>
+                      </tr>
+                      {% endif %}
+                    </table>
+                  </td>
+                </tr>
+              </table>
 
-                  <table class="info-table" role="presentation" cellspacing="0" cellpadding="0" border="0">
-                    <tr>
-                      <td class="info-label">Categoría:</td>
-                      <td><span class="category-badge">{{ categoria }}</span></td>
-                    </tr>
-                    <tr>
-                      <td class="info-label">Fecha:</td>
-                      <td class="info-value">{{ fecha }}</td>
-                    </tr>
-                    <tr>
-                      <td class="info-label">Remitente:</td>
-                      <td class="info-value">{{ remitente }}</td>
-                    </tr>
-                    {% if referencia -%}
-                    <tr>
-                      <td class="info-label">Referencia:</td>
-                      <td style="font-family: monospace; background-color: #f3f4f6; padding: 2px 6px; border-radius: 3px;">{{ referencia }}</td>
-                    </tr>
-                    {% endif %}
-                  </table>
-                </div>
-
-                {% if datos_adicionales -%}
-                <div class="details-box">
-                  <p class="message-text">
-                    <strong>📋 Información adicional:</strong>
-                  </p>
-                  <p class="message-text">
+              {% if datos_adicionales -%}
+              <!-- Details Box -->
+              <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" bgcolor="#f8fafc" style="border:2px solid #64748b; margin-top:20px;">
+                <tr>
+                  <td style="padding:20px; font-size:16px; color:#333333; line-height:1.5;">
+                    <strong>📋 Información adicional:</strong><br>
                     {{ datos_adicionales }}
-                  </p>
-                </div>
-                {% endif %}
+                  </td>
+                </tr>
+              </table>
+              {% endif %}
 
-                {% if accion_requerida -%}
-                <div class="action-box">
-                  <p class="message-text">
-                    <strong>⚠️ Acción requerida:</strong>
-                  </p>
-                  <p class="message-text">
+              {% if accion_requerida -%}
+              <!-- Action Box -->
+              <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" bgcolor="#fef3c7" style="border:2px solid #f59e0b; margin-top:20px;">
+                <tr>
+                  <td style="padding:20px; font-size:16px; color:#333333; line-height:1.5;">
+                    <strong>⚠️ Acción requerida:</strong><br>
                     {{ accion_requerida }}
-                  </p>
-                </div>
-                {% endif %}
+                  </td>
+                </tr>
+              </table>
+              {% endif %}
 
-                {% if enlace -%}
-                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
-                  <tr>
-                    <td align="center">
-                      <a href="{{ enlace }}" class="link-button">Más información</a>
-                    </td>
-                  </tr>
-                </table>
-                {% endif %}
+              {% if enlace -%}
+              <!-- CTA Button -->
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin-top:20px;">
+                <tr>
+                  <td align="center">
+                    <a href="{{ enlace }}" style="background-color:#0ea5e9; color:#ffffff; padding:10px 20px; text-decoration:none; font-weight:bold; display:inline-block;">Más información</a>
+                  </td>
+                </tr>
+              </table>
+              {% endif %}
 
-              </td>
-            </tr>
-          </table>
+            </td>
+          </tr>
 
           <!-- Footer -->
-          <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
-            <tr>
-              <td class="footer">
-                <p class="footer-text">
-                  Mensaje informativo del sistema.<br>
-                  Generado el {{ timestamp }} por {{ remitente }}
-                </p>
-              </td>
-            </tr>
-          </table>
+          <tr>
+            <td align="center" bgcolor="#f8f9fa" style="padding:15px 20px; border-top:1px solid #dee2e6;">
+              <p style="margin:0; font-size:12px; color:#6c757d; line-height:1.4;">
+                Mensaje informativo del sistema.<br>
+                Generado el {{ timestamp }} por {{ remitente }}
+              </p>
+            </td>
+          </tr>
 
-        </div>
+        </table>
+
       </td>
     </tr>
   </table>
-</body>
 
+</body>
 </html>
