@@ -14,7 +14,8 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from models.database_models import (
     Notification, NotificationLog, NotificationAttachment, 
-    ProviderStats, NotificationStatus, NotificationPriority
+    ProviderStats, NotificationStatus, NotificationPriority,
+    get_priority_from_string  # ✅ AGREGADO: Import de la función helper
 )
 from utils.database import get_db_session
 
@@ -40,20 +41,8 @@ class DatabaseService:
         
         try:
             with get_db_session() as db:
-                # Convertir priority string a enum si es necesario
-                priority_enum = None
-                if priority:
-                    priority_lower = priority.lower()
-                    if priority_lower == "low":
-                        priority_enum = NotificationPriority.LOW
-                    elif priority_lower == "medium":
-                        priority_enum = NotificationPriority.MEDIUM
-                    elif priority_lower == "high":
-                        priority_enum = NotificationPriority.HIGH
-                    else:
-                        priority_enum = NotificationPriority.MEDIUM  # Default
-                else:
-                    priority_enum = NotificationPriority.MEDIUM  # Default
+                # ✅ CORREGIDO: Usar la función helper que maneja correctamente el enum
+                priority_enum = get_priority_from_string(priority)
                 
                 notification = Notification(
                     message_id=message_id,

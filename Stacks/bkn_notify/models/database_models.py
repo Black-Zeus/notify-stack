@@ -19,12 +19,12 @@ Base = declarative_base()
 
 
 class NotificationStatus(str, Enum):
-    """Estados posibles de una notificación"""
-    PENDING = "pending"
-    PROCESSING = "processing"
-    SENT = "sent"
-    FAILED = "failed"
-    REJECTED = "rejected"
+    """Estados posibles de una notificación - ✅ CORREGIDO: valores en UPPERCASE"""
+    PENDING = "PENDING"          # Era "pending"
+    PROCESSING = "PROCESSING"    # Era "processing"
+    SENT = "SENT"               # Era "sent"
+    FAILED = "FAILED"           # Era "failed" 
+    REJECTED = "REJECTED"       # Era "rejected"
 
 
 class NotificationPriority(str, Enum):
@@ -288,16 +288,16 @@ def get_status_from_string(status_str: str) -> NotificationStatus:
     if not status_str:
         return NotificationStatus.PENDING
     
-    status_lower = status_str.lower()
-    if status_lower == "pending":
+    status_lower = status_str.upper()
+    if status_lower == "PENDING":
         return NotificationStatus.PENDING
-    elif status_lower == "processing":
+    elif status_lower == "PROCESSING":
         return NotificationStatus.PROCESSING
-    elif status_lower == "sent":
+    elif status_lower == "SENT":
         return NotificationStatus.SENT
-    elif status_lower == "failed":
+    elif status_lower == "FAILED":
         return NotificationStatus.FAILED
-    elif status_lower == "rejected":
+    elif status_lower == "REJECTED":
         return NotificationStatus.REJECTED
     else:
         return NotificationStatus.PENDING  # Default

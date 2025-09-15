@@ -87,7 +87,7 @@ class AuditService:
         return DatabaseService.add_notification_log(
             message_id=message_id,
             event_type="task_queued",
-            event_status="pending",
+            event_status="PENDING",
             event_message=f"Task queued for provider {provider}",
             details_json=details,
             component="api",
@@ -270,7 +270,7 @@ class AuditService:
         return DatabaseService.add_notification_log(
             message_id=message_id,
             event_type="retry_scheduled",
-            event_status="pending",
+            event_status="PENDING",
             event_message=f"Retry {retry_attempt}/{max_retries} scheduled in {retry_delay_seconds}s",
             details_json=details,
             component="celery"

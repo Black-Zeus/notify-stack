@@ -48,7 +48,7 @@ CREATE TABLE IF NOT EXISTS notifications (
     celery_task_id VARCHAR(255),
     
     -- Estados
-    status ENUM('pending', 'processing', 'sent', 'failed', 'rejected') DEFAULT 'pending',
+    status ENUM('PENDING', 'PROCESSING', 'SENT', 'FAILED', 'REJECTED') DEFAULT 'PENDING',
     retry_count INT UNSIGNED DEFAULT 0,
     max_retries INT UNSIGNED DEFAULT 3,
     
