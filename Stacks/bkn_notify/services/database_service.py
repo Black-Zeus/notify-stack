@@ -44,6 +44,8 @@ class DatabaseService:
                 # ✅ CORREGIDO: Usar la función helper que maneja correctamente el enum
                 priority_enum = get_priority_from_string(priority)
                 
+                logger.info(f"Started notification registration: {message_id}")
+                
                 notification = Notification(
                     message_id=message_id,
                     to_email=to_email,
@@ -61,6 +63,7 @@ class DatabaseService:
                 db.refresh(notification)
                 
                 logger.info(f"Created notification: {message_id}")
+                logger.info(notification)
                 return notification
                 
         except SQLAlchemyError as e:

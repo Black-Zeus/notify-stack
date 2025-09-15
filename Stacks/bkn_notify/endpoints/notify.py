@@ -98,6 +98,19 @@ async def send_notification(
             cc_emails_json = request.cc if request.cc else None
             bcc_emails_json = request.bcc if request.bcc else None
             
+            # ✅ FIX: Validar y procesar template_id correctamente
+            template_version = None
+            if request.template_id:
+                if '.' in request.template_id:
+                    template_version = request.template_id.split(".", 1)[1]
+                elif '/' in request.template_id:
+                    template_version = request.template_id.split("/", 1)[1]
+                else:
+                    template_version = "N/A"
+            
+            # ✅ DEBUG: Agregar logging para detectar conversión
+            logging.info(f"DEBUG - ANTES de create_notification: '{request}'")
+            
             # Crear registro con TODOS los campos requeridos
             db_notification = DatabaseService.create_notification(
                 message_id=message_id,
@@ -110,10 +123,12 @@ async def send_notification(
                 # Contenido - CAMPOS QUE FALTABAN
                 subject=request.subject,                    # ✅ AGREGADO
                 body_text=request.body_text,               # ✅ AGREGADO
-                # body_html no se guarda como solicitaste
+                body_html=request.body_html,               # ✅ AGREGADO
                 
                 # Template info  
                 template_id=request.template_id,
+                template_version=template_version,         # ✅ FIX: usar variable validada
+                
                 params_json=request.vars,
                 
                 # Configuración - CAMPOS QUE FALTABAN  
