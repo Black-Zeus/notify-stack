@@ -366,6 +366,94 @@ api_generic:
     initial_delay: 60
 
 # =============================================================================
+# TWILIO PROVIDERS
+# =============================================================================
+
+# Twilio SMS
+twilio_sms:
+  type: "twilio"
+  provider_type: "sms"
+  name: "Twilio SMS"
+  description: "Proveedor SMS via Twilio API"
+  
+  # Configuración de API
+  account_sid: "${TWILIO_ACCOUNT_SID}"
+  auth_token: "${TWILIO_AUTH_TOKEN}"
+  from_number: "${TWILIO_FROM_NUMBER}"
+  
+  # Límites SMS
+  timeout: 30
+  max_message_length: 1600
+  max_messages_per_hour: 1000
+  
+  # Configuración operacional
+  priority: "high"
+  category: "sms"
+  enabled: true  # Disabled por defecto
+  
+  # Características soportadas
+  features:
+    html_support: false
+    attachments: false
+    tracking: true
+    delivery_reports: true
+    
+  # Configuración de reintentos
+  retry:
+    max_attempts: 3
+    backoff_factor: 1.5
+    initial_delay: 30
+
+# Twilio WhatsApp
+twilio_whatsapp:
+  type: "twilio"
+  provider_type: "whatsapp"
+  name: "Twilio WhatsApp"
+  description: "Proveedor WhatsApp via Twilio API"
+  
+  # Configuración de API
+  account_sid: "${TWILIO_ACCOUNT_SID}"
+  auth_token: "${TWILIO_AUTH_TOKEN}"
+  from_number: "${TWILIO_WHATSAPP_FROM}"
+  
+  # Límites WhatsApp
+  timeout: 45
+  max_message_length: 4096
+  max_media_count: 10
+  max_media_size: 16777216  # 16MB
+  max_messages_per_hour: 500
+  
+  # Configuración operacional
+  priority: "high"
+  category: "whatsapp"
+  enabled: true  # Disabled por defecto
+  
+  # Características soportadas
+  features:
+    html_support: false
+    attachments: true
+    media_support: true
+    tracking: true
+    delivery_reports: true
+    read_receipts: true
+    
+  # Tipos de media soportados
+  supported_media_types:
+    - "image/jpeg"
+    - "image/png" 
+    - "image/gif"
+    - "application/pdf"
+    - "audio/mpeg"
+    - "video/mp4"
+    - "text/plain"
+    
+  # Configuración de reintentos
+  retry:
+    max_attempts: 3
+    backoff_factor: 2
+    initial_delay: 60
+
+# =============================================================================
 # PROVIDER GROUPS & LOAD BALANCING
 # =============================================================================
 
@@ -454,6 +542,8 @@ cost_optimization:
     api_sendgrid: 4
     api_ses: 3
     api_mailgun: 4
+    twilio_sms: 5       # SMS tiene costo por mensaje
+    twilio_whatsapp: 6  # WhatsApp más caro que SMS
     
   # Límites de costo
   cost_limits:

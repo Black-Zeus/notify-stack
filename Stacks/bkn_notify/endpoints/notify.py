@@ -25,7 +25,7 @@ from services.database_service import DatabaseService
 router = APIRouter()
 
 
-@router.post("/notify", response_model=NotifyResponse, status_code=HTTP_202_ACCEPTED)
+@router.post("/notify_mail", response_model=NotifyResponse, status_code=HTTP_202_ACCEPTED)
 async def send_notification(
     request: NotifyRequest,
     http_request: Request,
@@ -245,6 +245,90 @@ async def send_notification(
             status_code=500,
             detail="Internal server error processing notification"
         )
+
+@router.post("/notify_twilio", response_model=NotifyResponse, status_code=HTTP_202_ACCEPTED)
+async def send_twilio_notification(
+    request: NotifyRequest,
+    http_request: Request,
+    redis_client = Depends(get_redis_client)
+):
+    """
+    Envía notificación vía Twilio (SMS o WhatsApp)
+    """
+    message_id = str(uuid.uuid4())
+    request_id = getattr(http_request.state, 'request_id', str(uuid.uuid4()))
+    idempotency_key = http_request.headers.get(IDEMPOTENCY_HEADER)
+
+    # Manejar idempotencia
+    if idempotency_key:
+        cached = await handle_idempotency(redis_client, idempotency_key, message_id)
+        if cached:
+            return cached
+
+    # Validar payload
+    await validate_request(request)
+
+    # Renderizar template si corresponde
+    final_body_text = request.body_text
+    if request.template_id:
+        rendered = render_template(request.template_id, request.vars or {})
+        final_body_text = rendered.get("body_text", "")
+
+    # Determinar provider: sms o whatsapp
+    if request.routing_hint == "whatsapp":
+        provider = "twilio_whatsapp"
+    else:
+        provider = "twilio_sms"
+
+    # Armar payload para Celery
+    task_payload = {
+        "message_id": message_id,
+        "request_id": request_id,
+        "to": request.to,
+        "body_text": final_body_text,
+        "provider": provider,
+        "vars": request.vars,
+        "timestamp": datetime.utcnow().isoformat()
+    }
+
+    # Encolar en Celery
+    celery_task = send_notification_task.delay(task_payload)
+    celery_task_id = str(celery_task.id)
+
+    # Guardar en BD (igual que en notify_mail)
+    DatabaseService.create_notification(
+        message_id=message_id,
+        to_email=request.to,
+        subject="",
+        body_text=final_body_text,
+        provider=provider,
+        template_id=request.template_id,
+        routing_hint=request.routing_hint,
+        priority=request.priority,
+        celery_task_id=celery_task_id,
+        idempotency_key=idempotency_key
+    )
+
+    # Cache idempotente
+    if idempotency_key:
+        await cache_idempotent_response(redis_client, idempotency_key, {
+            "message_id": message_id,
+            "request_id": request_id,
+            "status": "accepted",
+            "provider": provider,
+            "celery_task_id": celery_task_id,
+            "queued_at": datetime.utcnow().isoformat()
+        })
+
+    return NotifyResponse(
+        message_id=message_id,
+        request_id=request_id,
+        status="accepted",
+        provider=provider,
+        celery_task_id=celery_task_id,
+        queued_at=datetime.utcnow().isoformat()
+    )
+
 
 
 async def handle_idempotency(redis_client, idempotency_key: str, message_id: str):

@@ -1,0 +1,12 @@
+🚨 ALERTA: {{ servidor }}
+
+Estado: {{ estado|default('CRITICO') }}
+Tiempo: {{ timestamp|default('N/A') }}
+
+{{ mensaje|default('Sistema requiere atencion inmediata') }}
+
+{% if url -%}
+Mas info: {{ url }}
+{% endif -%}
+
+- Sistema Notificaciones

@@ -170,7 +170,7 @@ def validate_providers_config(providers: Dict[str, Any]) -> Dict[str, Any]:
                 continue
             
             provider_type = config.get("type")
-            if provider_type not in ["smtp", "api"]:
+            if provider_type not in ["smtp", "api", "twilio"]:
                 logging.error(f"Provider {name}: invalid type '{provider_type}'")
                 continue
             
@@ -187,6 +187,18 @@ def validate_providers_config(providers: Dict[str, Any]) -> Dict[str, Any]:
                     logging.error(f"Provider {name}: missing required API fields")
                     continue
             
+            elif provider_type == "twilio":
+                required_fields = ["account_sid", "auth_token", "from_number"]
+                if not all(field in config for field in required_fields):
+                    logging.error(f"Provider {name}: missing required Twilio fields")
+                    continue
+                    
+                # Validar provider_type específico de Twilio
+                twilio_provider_type = config.get("provider_type")
+                if twilio_provider_type not in ["sms", "whatsapp"]:
+                    logging.error(f"Provider {name}: invalid Twilio provider_type '{twilio_provider_type}'")
+                    continue
+            
             # Agregar configuración válida
             validated[name] = config
             logging.debug(f"Provider {name} validated successfully")
@@ -196,7 +208,6 @@ def validate_providers_config(providers: Dict[str, Any]) -> Dict[str, Any]:
             continue
     
     return validated
-
 
 def validate_policy_config(policy: Dict[str, Any]) -> Dict[str, Any]:
     """

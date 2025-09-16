@@ -121,45 +121,41 @@ def load_template_files(template_id: str) -> Dict[str, str]:
         Dict con content de archivos: {"subject": "...", "body_text": "...", "body_html": "..."}
     """
     
-    try:
-        template_path = os.path.join(TEMPLATES_DIR, template_id)
+    if not template_id:
+        raise ValueError("Template ID is required")
+    
+    template_path = get_template_path(template_id)
+    if not os.path.exists(template_path):
+        raise FileNotFoundError(f"Template not found: {template_id}")
+    
+    template_files = {}
+    
+    # Mapeo de archivos de template a keys del resultado
+    file_mapping = {
+        "subject.txt": "subject",
+        "body.txt": "body_text", 
+        "body.html": "body_html",
+        "sms.txt": "sms_text",
+        "whatsapp.txt": "whatsapp_text"
+    }
+    
+    for filename, result_key in file_mapping.items():
+        file_path = os.path.join(template_path, filename)
         
-        if not os.path.exists(template_path):
-            raise FileNotFoundError(f"Template not found: {template_id}")
-        
-        if not os.path.isdir(template_path):
-            raise ValueError(f"Template path is not a directory: {template_id}")
-        
-        template_files = {}
-        
-        # Cargar subject.txt
-        subject_file = os.path.join(template_path, "subject.txt")
-        if os.path.exists(subject_file):
-            with open(subject_file, 'r', encoding='utf-8') as f:
-                template_files["subject"] = f.read().strip()
-        
-        # Cargar body.txt
-        body_file = os.path.join(template_path, "body.txt")
-        if os.path.exists(body_file):
-            with open(body_file, 'r', encoding='utf-8') as f:
-                template_files["body_text"] = f.read()
-        
-        # Cargar body.html
-        html_file = os.path.join(template_path, "body.html")
-        if os.path.exists(html_file):
-            with open(html_file, 'r', encoding='utf-8') as f:
-                template_files["body_html"] = f.read()
-        
-        if not template_files:
-            raise ValueError(f"No template files found in: {template_id}")
-        
-        logging.debug(f"Loaded template files for {template_id}: {list(template_files.keys())}")
-        return template_files
-        
-    except Exception as e:
-        logging.error(f"Error loading template {template_id}: {e}")
-        raise
-
+        if os.path.exists(file_path):
+            try:
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    template_files[result_key] = f.read()
+                logging.debug(f"Loaded template file: {filename}")
+            except Exception as e:
+                logging.error(f"Error loading template file {filename}: {e}")
+                # Continuar con otros archivos
+    
+    if not template_files:
+        raise ValueError(f"No template files found for {template_id}")
+    
+    logging.info(f"Template files loaded: {template_id} ({len(template_files)} files)")
+    return template_files
 
 def compile_template(template_content: str, template_name: str) -> Template:
     """

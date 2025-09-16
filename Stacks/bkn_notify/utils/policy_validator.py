@@ -9,23 +9,30 @@ from typing import List, Dict, Any
 from email_validator import validate_email, EmailNotValidError
 
 from .config_loader import load_policy_config
-from constants import MAX_RECIPIENTS, MAX_ATTACHMENTS, MAX_ATTACHMENT_SIZE
-
+from constants import MAX_RECIPIENTS, MAX_ATTACHMENTS, MAX_ATTACHMENT_SIZE, SMS_MAX_LENGTH, WHATSAPP_MAX_LENGTH, WHATSAPP_MAX_MEDIA
+from services.twilio_service import TwilioService
 
 async def validate_request(request) -> None:
     """
-    Valida request contra todas las políticas configuradas
-    Raises ValueError si alguna política es violada
+    Valida request contra políticas configuradas según el canal (mail, sms, whatsapp)
     """
-    
-    # Cargar políticas
     policy = load_policy_config()
-    
-    # Validaciones básicas
-    await validate_recipients(request.to, request.cc, request.bcc, policy)
-    await validate_content_limits(request, policy)
-    await validate_whitelist(request.to, request.cc, request.bcc, policy)
-    await validate_attachments(request.attachments, policy)
+    channel = getattr(request, "routing_hint", "mail").lower()
+
+    if channel == "mail":
+        await validate_recipients(request.to, request.cc, request.bcc, policy)
+        await validate_whitelist(request.to, request.cc, request.bcc, policy)
+        await validate_content_limits(request, policy)
+        await validate_attachments(request.attachments, policy)
+
+    elif channel == "sms":
+        await validate_sms_request(request, policy)
+
+    elif channel == "whatsapp":
+        await validate_whatsapp_request(request, policy)
+
+    else:
+        raise ValueError(f"Unsupported channel: {channel}")
     
     logging.debug(f"Request validation passed for {len(request.to)} recipients")
 
@@ -274,3 +281,43 @@ def get_validation_summary(policy: Dict[str, Any] = None) -> Dict[str, Any]:
             "enabled": policy.get("rate_limit", {}).get("enabled", False)
         }
     }
+    
+    
+async def validate_sms_request(request, policy):
+    if not request.to:
+        raise ValueError("SMS requires 'to' field")
+
+    # Validar número
+    service = TwilioService("twilio_sms")
+    service.validate_phone_number(request.to if isinstance(request.to, str) else request.to[0])
+
+    if not request.body_text:
+        raise ValueError("SMS requires 'body_text'")
+    if len(request.body_text) > SMS_MAX_LENGTH:
+        raise ValueError(f"SMS body too long: {len(request.body_text)} (max: {SMS_MAX_LENGTH})")
+
+    if request.attachments:
+        raise ValueError("Attachments are not supported in SMS")
+    
+
+async def validate_whatsapp_request(request, policy):
+    if not request.to:
+        raise ValueError("WhatsApp requires 'to' field")
+
+    service = TwilioService("twilio_whatsapp")
+    service.format_whatsapp_number(request.to if isinstance(request.to, str) else request.to[0])
+
+    if not request.body_text and not request.attachments:
+        raise ValueError("WhatsApp requires either 'body_text' or 'media'")
+
+    if request.body_text and len(request.body_text) > WHATSAPP_MAX_LENGTH:
+        raise ValueError(f"WhatsApp body too long: {len(request.body_text)} (max: {WHATSAPP_MAX_LENGTH})")
+
+    if request.attachments:
+        if len(request.attachments) > WHATSAPP_MAX_MEDIA:
+            raise ValueError(f"Too many media files: {len(request.attachments)} (max: {WHATSAPP_MAX_MEDIA})")
+        for media in request.attachments:
+            if not isinstance(media, dict) or not media.get("url"):
+                raise ValueError("Each WhatsApp media item must have a valid 'url'")
+            if not media["url"].startswith(("http://", "https://")):
+                raise ValueError(f"Invalid media URL: {media['url']}")

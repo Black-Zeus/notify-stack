@@ -365,7 +365,6 @@ async def _prepare_email_content_async(payload: Dict[str, Any]) -> Dict[str, Opt
         "body_html": body_html,
     }
 
-
 async def _send_email_async(
     payload: Dict[str, Any],
     rendered: Dict[str, Optional[str]],
@@ -416,6 +415,26 @@ async def _send_email_async(
             custom_headers=custom_headers,
         )
         return {"channel": "api", **result}
+
+    elif channel == "twilio":
+        # Soporte para canal Twilio (SMS/WhatsApp)
+        from .twilio_sms_sender import TwilioSMSSender
+        from .twilio_whatsapp_sender import TwilioWhatsAppSender
+        
+        provider_type = provider_config.get("provider_type", "sms")
+        
+        if provider_type == "sms":
+            sender = TwilioSMSSender()
+            result = await sender.send(payload)
+            return {"channel": "twilio_sms", **result}
+            
+        elif provider_type == "whatsapp":
+            sender = TwilioWhatsAppSender()
+            result = await sender.send(payload)
+            return {"channel": "twilio_whatsapp", **result}
+            
+        else:
+            raise ValueError(f"Unsupported Twilio provider type: {provider_type}")
 
     raise ValueError(f"Unsupported provider type: {channel}")
 
