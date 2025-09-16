@@ -107,7 +107,12 @@ def custom_openapi():
     # Aplicar seguridad a todos los endpoints excepto públicos
     for path, path_item in openapi_schema["paths"].items():
         # Endpoints públicos que no requieren autenticación
-        if path in ["/", "/api/info", "/api/healthz", "/api/readyz", "/api/templates", "/api/templates/{template_id}/info"]:
+        public_endpoints = [
+            "/", "/api/info", "/api/healthz", "/api/readyz", 
+            "/api/templates", "/api/templates/{template_id}/info"
+        ]
+        
+        if path in public_endpoints:
             continue
             
         for method, operation in path_item.items():
@@ -149,19 +154,23 @@ try:
 except ImportError:
     logging.warning("Authentication middleware not available - API will be open")
 
-# 🚀 Registrar routers (importaciones absolutas)
+# 🚀 Registrar routers - TODOS DE LA MISMA MANERA
 try:
     from endpoints.health import router as health_router
     from endpoints.notify import router as notify_router
     from endpoints.status import router as status_router
     from endpoints.template import router as template_router
+    from endpoints.metrics import router as metrics_router
 
     app.include_router(health_router, prefix="/api", tags=["Health"])
     app.include_router(notify_router, prefix="/api", tags=["Notifications"])
     app.include_router(status_router, prefix="/api", tags=["Status"])
     app.include_router(template_router, prefix="/api", tags=["Templates"])
+    app.include_router(metrics_router, prefix="/api", tags=["Metrics"])
 
-    routers_loaded = ["health", "notify", "status", "template"]
+    routers_loaded = ["health", "notify", "status", "template", "metrics"]
+    logging.info("All routers loaded successfully")
+
 except Exception as e:
     logging.error(f"Error cargando routers: {e}", exc_info=True)
     routers_loaded = []
@@ -180,6 +189,25 @@ async def global_exception_handler(request: Request, exc: Exception):
 
 @app.get("/")
 async def root():
+    # Base endpoints
+    base_endpoints = {
+        "notifications": "/api/notify",
+        "templates": "/api/templates",
+        "health": "/api/healthz",
+        "status": "/api/notify/{message_id}/status"
+    }
+    
+    # Agregar endpoints de métricas si están disponibles
+    if "metrics" in routers_loaded:
+        metrics_endpoints = {
+            "metrics_providers": "/api/metrics/providers",
+            "metrics_status": "/api/metrics/status", 
+            "metrics_performance": "/api/metrics/performance",
+            "metrics_summary": "/api/metrics/summary",
+            "metrics_health": "/api/metrics/health"
+        }
+        base_endpoints.update(metrics_endpoints)
+    
     return {
         "service": constants.SERVICE_NAME,
         "version": constants.API_VERSION,
@@ -189,11 +217,13 @@ async def root():
         "redoc": "/redoc",
         "openapi": "/openapi.json",
         "routers_loaded": routers_loaded,
-        "endpoints": {
-            "notifications": "/api/notify",
-            "templates": "/api/templates",
-            "health": "/api/healthz",
-            "status": "/api/notify/{message_id}/status"
+        "endpoints": base_endpoints,
+        "features": {
+            "notifications": True,
+            "templates": True,
+            "status_tracking": True,
+            "metrics": "metrics" in routers_loaded,
+            "database_metrics": getattr(app.state, "database_ready", False) and "metrics" in routers_loaded
         }
     }
 
@@ -202,5 +232,4 @@ if __name__ == "__main__":
     port = int(os.getenv("PORT", 8000))
     host = os.getenv("HOST", "0.0.0.0")
     debug = os.getenv("DEBUG", "false").lower() == "true"
-    # 👇 Mantener coherencia: ejecutar por módulo (main:app)
     uvicorn.run("main:app", host=host, port=port, reload=debug, log_config=None)
