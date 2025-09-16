@@ -1,6 +1,7 @@
 """
 Notify endpoint - Core del sistema de notificaciones
 CORREGIDO: Renderiza templates ANTES del registro en BD para completar todos los campos
+ACTUALIZADO: Usa TwilioNotifyRequest para endpoint /notify_twilio
 """
 
 import uuid
@@ -15,7 +16,7 @@ from constants import (
     IDEMPOTENCY_HEADER, REQUEST_ID_HEADER, REDIS_IDEMPOTENCY_PREFIX
 )
 from models.notify_request import NotifyRequest, NotifyResponse
-from models.twilio_request import TwilioNotifyRequest
+from models.twilio_request import TwilioNotifyRequest  # ✅ NUEVO IMPORT
 from utils.redis_client import get_redis_client
 from utils.policy_validator import validate_request
 from utils.routing_engine import apply_routing
@@ -247,89 +248,196 @@ async def send_notification(
             detail="Internal server error processing notification"
         )
 
+
 @router.post("/notify_twilio", response_model=NotifyResponse, status_code=HTTP_202_ACCEPTED)
 async def send_twilio_notification(
-    request: TwilioNotifyRequest,
+    request: TwilioNotifyRequest,  # ✅ CAMBIADO: Usar TwilioNotifyRequest
     http_request: Request,
     redis_client = Depends(get_redis_client)
 ):
     """
     Envía notificación vía Twilio (SMS o WhatsApp)
+    
+    - Valida números de teléfono en formato internacional
+    - Renderiza template SI se usa template_id
+    - Determina proveedor automáticamente (SMS/WhatsApp)
+    - Maneja idempotencia
+    - Registra en BD y encola en Celery
     """
     message_id = str(uuid.uuid4())
     request_id = getattr(http_request.state, 'request_id', str(uuid.uuid4()))
     idempotency_key = http_request.headers.get(IDEMPOTENCY_HEADER)
 
-    # Manejar idempotencia
-    if idempotency_key:
-        cached = await handle_idempotency(redis_client, idempotency_key, message_id)
-        if cached:
-            return cached
+    try:
+        # Manejar idempotencia
+        if idempotency_key:
+            cached_response = await handle_idempotency(
+                redis_client, idempotency_key, message_id
+            )
+            if cached_response:
+                logging.info(f"Idempotent Twilio request returned cached response: {idempotency_key}")
+                return cached_response
 
-    # Validar payload
-    await validate_request(request)
+        # ✅ VALIDACIÓN: TwilioNotifyRequest ya valida formato de números
+        # No necesita validate_request adicional porque usa validadores específicos
 
-    # Renderizar template si corresponde
-    final_body_text = request.body_text
-    if request.template_id:
-        rendered = render_template(request.template_id, request.vars or {})
-        final_body_text = rendered.get("body_text", "")
+        # Renderizar template si corresponde
+        final_body_text = request.body_text
+        if request.template_id:
+            try:
+                logging.info(f"Rendering Twilio template {request.template_id}")
+                rendered_content = render_template(request.template_id, request.vars or {})
+                final_body_text = rendered_content.get("body_text", "")
+                logging.info(f"Twilio template rendered: text_len={len(final_body_text)}")
+            except Exception as e:
+                logging.error(f"Twilio template rendering failed for {request.template_id}: {e}")
+                raise HTTPException(
+                    status_code=HTTP_400_BAD_REQUEST,
+                    detail=f"Template rendering failed: {str(e)}"
+                )
 
-    # Determinar provider: sms o whatsapp
-    if request.routing_hint == "whatsapp":
-        provider = "twilio_whatsapp"
-    else:
-        provider = "twilio_sms"
+        # ✅ MEJORADO: Determinar provider basado en configuración
+        provider = request.provider
+        if not provider:
+            # Auto-determinar basado en routing_hint
+            if request.routing_hint in ["whatsapp", "urgent", "high_priority"]:
+                provider = "twilio_whatsapp"
+            else:
+                provider = "twilio_sms"
+        
+        logging.info(f"Twilio provider selected: {provider}")
 
-    # Armar payload para Celery
-    task_payload = {
-        "message_id": message_id,
-        "request_id": request_id,
-        "to": request.to,
-        "body_text": final_body_text,
-        "provider": provider,
-        "vars": request.vars,
-        "timestamp": datetime.utcnow().isoformat()
-    }
+        # ✅ MEJORADO: Preparar destinatarios para BD (convertir a formato compatible)
+        # Para BD necesitamos string, para Twilio necesitamos lista de números
+        to_phone_list = request.to
+        to_phone_primary = to_phone_list[0] if to_phone_list else ""
+        
+        # Obtener información adicional del request HTTP
+        source_ip = http_request.client.host if http_request.client else None
+        user_agent = http_request.headers.get("user-agent")
+        api_key = http_request.headers.get("X-API-Key")
+        
+        # Hash de API key para auditoría
+        api_key_hash = None
+        if api_key:
+            api_key_hash = hashlib.sha256(api_key.encode()).hexdigest()[:16]
 
-    # Encolar en Celery
-    celery_task = send_notification_task.delay(task_payload)
-    celery_task_id = str(celery_task.id)
-
-    # Guardar en BD (igual que en notify_mail)
-    DatabaseService.create_notification(
-        message_id=message_id,
-        to_email=request.to,
-        subject="",
-        body_text=final_body_text,
-        provider=provider,
-        template_id=request.template_id,
-        routing_hint=request.routing_hint,
-        priority=request.priority,
-        celery_task_id=celery_task_id,
-        idempotency_key=idempotency_key
-    )
-
-    # Cache idempotente
-    if idempotency_key:
-        await cache_idempotent_response(redis_client, idempotency_key, {
+        # ✅ MEJORADO: Registrar en BD con información completa
+        try:
+            template_version = None
+            if request.template_id:
+                if '/' in request.template_id:
+                    parts = request.template_id.split('/', 2)
+                    if len(parts) >= 2:
+                        template_version = parts[1]
+                elif '.' in request.template_id:
+                    parts = request.template_id.split('.', 2)
+                    if len(parts) >= 2:
+                        template_version = parts[1]
+                else:
+                    template_version = "v1"
+            
+            logging.info(f"Registering Twilio notification in database: {message_id}")
+            
+            db_notification = DatabaseService.create_notification(
+                message_id=message_id,
+                to_email=to_phone_primary,  # Usar el primer número como "email"
+                cc_emails=None,  # No aplica para Twilio
+                bcc_emails=None,  # No aplica para Twilio
+                subject="",  # SMS/WhatsApp no tienen subject
+                body_text=final_body_text,
+                body_html="",  # No aplica para Twilio
+                template_id=request.template_id,
+                template_version=template_version,
+                params_json=request.vars,
+                provider=provider,
+                routing_hint=request.routing_hint,
+                priority=getattr(request, 'priority', 'MEDIUM'),
+                idempotency_key=idempotency_key,
+                source_ip=source_ip,
+                user_agent=user_agent,
+                api_key_hash=api_key_hash
+            )
+            
+            if not db_notification:
+                logging.error(f"Failed to create Twilio notification record: {message_id}")
+                raise HTTPException(
+                    status_code=500,
+                    detail="Failed to register Twilio notification"
+                )
+                
+            logging.info(f"Twilio notification registered successfully: {message_id}")
+            
+        except Exception as db_error:
+            logging.error(f"Twilio database registration error for {message_id}: {db_error}")
+            # Continuar con el envío aunque falle el registro
+        
+        # ✅ MEJORADO: Armar payload específico para Celery Twilio
+        task_payload = {
             "message_id": message_id,
             "request_id": request_id,
-            "status": "accepted",
+            "to": request.to,  # Lista de números de teléfono
+            "body_text": final_body_text,
             "provider": provider,
-            "celery_task_id": celery_task_id,
-            "queued_at": datetime.utcnow().isoformat()
-        })
+            "template_id": request.template_id,
+            "vars": request.vars,
+            "routing_hint": request.routing_hint,
+            "custom_options": request.custom_options,
+            "timestamp": datetime.utcnow().isoformat(),
+            "notification_type": "twilio"  # ✅ Flag para distinguir en Celery worker
+        }
 
-    return NotifyResponse(
-        message_id=message_id,
-        request_id=request_id,
-        status="accepted",
-        provider=provider,
-        celery_task_id=celery_task_id,
-        queued_at=datetime.utcnow().isoformat()
-    )
+        # Encolar tarea en Celery
+        celery_task = send_notification_task.delay(task_payload)
+        celery_task_id = str(celery_task.id)
+        
+        logging.info(f"Twilio notification queued: {message_id} -> {celery_task_id}")
 
+        # Actualizar el registro con el celery_task_id
+        try:
+            DatabaseService.update_notification_status(
+                message_id=message_id,
+                status="PROCESSING",
+                celery_task_id=celery_task_id
+            )
+            logging.info(f"Updated Twilio notification with celery_task_id: {message_id} -> {celery_task_id}")
+        except Exception as update_error:
+            logging.error(f"Failed to update Twilio celery_task_id for {message_id}: {update_error}")
+
+        # ✅ MEJORADO: Cache idempotente específico
+        if idempotency_key:
+            response_data = {
+                "message_id": message_id,
+                "request_id": request_id,
+                "status": "accepted",
+                "provider": provider,
+                "celery_task_id": celery_task_id,
+                "notification_type": "twilio",
+                "recipient_count": len(request.to),
+                "queued_at": datetime.utcnow().isoformat()
+            }
+            await cache_idempotent_response(redis_client, idempotency_key, response_data)
+
+        # ✅ RESPUESTA: Usar el mismo modelo NotifyResponse
+        return NotifyResponse(
+            message_id=message_id,
+            request_id=request_id,
+            status="accepted",
+            provider=provider,
+            celery_task_id=celery_task_id,
+            queued_at=datetime.utcnow().isoformat()
+        )
+        
+    except HTTPException:
+        # Re-lanzar HTTPExceptions sin modificar
+        raise
+        
+    except Exception as e:
+        logging.error(f"Unexpected error in Twilio notify endpoint: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail="Internal server error processing Twilio notification"
+        )
 
 
 async def handle_idempotency(redis_client, idempotency_key: str, message_id: str):
