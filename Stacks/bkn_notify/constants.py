@@ -95,3 +95,37 @@ WHATSAPP_MAX_MEDIA = int(os.getenv("WHATSAPP_MAX_MEDIA", "10"))  # Max media att
 
 # Twilio timeouts
 TWILIO_DEFAULT_TIMEOUT = int(os.getenv("TWILIO_TIMEOUT", "30"))  # 30 seconds
+
+# =============================================================================
+# NUEVAS CONSTANTES PARA SMS/WHATSAPP - AGREGADAS DE FORMA SEGURA
+# =============================================================================
+
+# Límites adicionales SMS/WhatsApp (conservadores para no romper nada)
+MAX_SMS_RECIPIENTS = int(os.getenv("MAX_SMS_RECIPIENTS", "10"))  # Límite conservador
+MAX_WHATSAPP_RECIPIENTS = int(os.getenv("MAX_WHATSAPP_RECIPIENTS", "10"))
+
+# Credenciales Twilio (solo ENV vars, sin defaults para seguridad)
+TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID")
+TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN")
+TWILIO_SMS_FROM = os.getenv("TWILIO_SMS_FROM")
+TWILIO_WHATSAPP_FROM = os.getenv("TWILIO_WHATSAPP_FROM")
+
+# Canales soportados (extensión segura)
+SUPPORTED_CHANNELS = ["email", "sms", "whatsapp"]
+DEFAULT_CHANNEL = "email"  # Mantiene comportamiento actual por defecto
+
+# Estados adicionales para SMS/WhatsApp (sin cambiar TASK_STATES existente)
+SMS_TWILIO_STATES = {
+    "QUEUED": "QUEUED",
+    "SENDING": "SENDING", 
+    "SENT": "SENT",
+    "DELIVERED": "DELIVERED",
+    "UNDELIVERED": "UNDELIVERED"
+}
+
+# Headers adicionales para multi-canal
+CHANNEL_HEADER = "X-Channel"  # Opcional, no rompe requests existentes
+
+# Prefijos Redis adicionales (no cambian los existentes)
+REDIS_SMS_PREFIX = f"{REDIS_KEY_PREFIX}sms:"
+REDIS_WHATSAPP_PREFIX = f"{REDIS_KEY_PREFIX}whatsapp:"

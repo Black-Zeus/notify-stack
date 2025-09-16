@@ -5,36 +5,41 @@ Valida requests contra políticas de seguridad y límites
 
 import re
 import logging
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from email_validator import validate_email, EmailNotValidError
 
 from .config_loader import load_policy_config
-from constants import MAX_RECIPIENTS, MAX_ATTACHMENTS, MAX_ATTACHMENT_SIZE, SMS_MAX_LENGTH, WHATSAPP_MAX_LENGTH, WHATSAPP_MAX_MEDIA
-from services.twilio_service import TwilioService
+from constants import MAX_RECIPIENTS, MAX_ATTACHMENTS, MAX_ATTACHMENT_SIZE
+
 
 async def validate_request(request) -> None:
     """
-    Valida request contra políticas configuradas según el canal (mail, sms, whatsapp)
+    Valida request contra todas las políticas configuradas
+    Raises ValueError si alguna política es violada
     """
-    policy = load_policy_config()
-    channel = getattr(request, "routing_hint", "mail").lower()
-
-    if channel == "mail":
-        await validate_recipients(request.to, request.cc, request.bcc, policy)
-        await validate_whitelist(request.to, request.cc, request.bcc, policy)
-        await validate_content_limits(request, policy)
-        await validate_attachments(request.attachments, policy)
-
-    elif channel == "sms":
-        await validate_sms_request(request, policy)
-
-    elif channel == "whatsapp":
-        await validate_whatsapp_request(request, policy)
-
-    else:
-        raise ValueError(f"Unsupported channel: {channel}")
     
-    logging.debug(f"Request validation passed for {len(request.to)} recipients")
+    # Cargar políticas
+    policy = load_policy_config()
+    
+    # Validaciones básicas para EMAIL
+    if hasattr(request, 'to'):  # Email request
+        await validate_recipients(request.to, request.cc, request.bcc, policy)
+        await validate_content_limits(request, policy)
+        await validate_whitelist(request.to, request.cc, request.bcc, policy)
+        await validate_attachments(request.attachments, policy)
+        await validate_template_access(getattr(request, 'template_id', None), policy)
+        
+        logging.debug(f"Email validation passed for {len(request.to)} recipients")
+    
+    # Validaciones para SMS/WhatsApp
+    elif hasattr(request, 'phone'):  # SMS/WhatsApp request
+        await validate_phone_numbers([request.phone], policy)
+        await validate_sms_content_limits(request, policy)
+        
+        logging.debug(f"SMS/WhatsApp validation passed for {request.phone}")
+    
+    else:
+        raise ValueError("Unknown request type - missing 'to' (email) or 'phone' (SMS/WhatsApp)")
 
 
 async def validate_recipients(to: List[str], cc: List[str] = None, bcc: List[str] = None, policy: Dict[str, Any] = None) -> None:
@@ -84,6 +89,41 @@ async def validate_recipients(to: List[str], cc: List[str] = None, bcc: List[str
     logging.debug(f"Recipients validation passed: {len(unique_recipients)} unique emails")
 
 
+async def validate_phone_numbers(phones: List[str], policy: Dict[str, Any] = None) -> None:
+    """
+    Valida números telefónicos para SMS/WhatsApp
+    """
+    if not policy:
+        policy = load_policy_config()
+    
+    sms_limits = policy.get("sms", {}).get("limits", {})
+    max_phone_recipients = sms_limits.get("max_recipients", 10)  # SMS es más limitado que email
+    
+    if len(phones) > max_phone_recipients:
+        raise ValueError(f"Too many SMS/WhatsApp recipients: {len(phones)} (max: {max_phone_recipients})")
+    
+    for phone in phones:
+        if not phone or not phone.strip():
+            raise ValueError("Empty phone number found")
+        
+        # Validación básica de formato E.164
+        clean_phone = phone.strip()
+        if clean_phone.startswith('whatsapp:'):
+            clean_phone = clean_phone.replace('whatsapp:', '')
+        
+        if not clean_phone.startswith('+'):
+            raise ValueError(f"Phone number must be in E.164 format (+1234567890): {phone}")
+        
+        if len(clean_phone) < 8 or len(clean_phone) > 15:
+            raise ValueError(f"Invalid phone number length: {phone}")
+        
+        # Verificar solo números después del +
+        if not clean_phone[1:].isdigit():
+            raise ValueError(f"Phone number contains invalid characters: {phone}")
+    
+    logging.debug(f"Phone numbers validation passed: {len(phones)} numbers")
+
+
 async def validate_whitelist(to: List[str], cc: List[str] = None, bcc: List[str] = None, policy: Dict[str, Any] = None) -> None:
     """
     Valida destinatarios contra whitelist de dominios si está habilitada
@@ -125,7 +165,7 @@ async def validate_whitelist(to: List[str], cc: List[str] = None, bcc: List[str]
 
 async def validate_content_limits(request, policy: Dict[str, Any] = None) -> None:
     """
-    Valida límites de contenido (subject, body, etc.)
+    Valida límites de contenido (subject, body, etc.) para EMAIL
     """
     if not policy:
         policy = load_policy_config()
@@ -133,28 +173,66 @@ async def validate_content_limits(request, policy: Dict[str, Any] = None) -> Non
     limits = policy.get("limits", {})
     
     # Validar subject
-    if request.subject:
+    if hasattr(request, 'subject') and request.subject:
         max_subject_length = limits.get("max_subject_length", 998)  # RFC 2822 limit
         if len(request.subject) > max_subject_length:
             raise ValueError(f"Subject too long: {len(request.subject)} chars (max: {max_subject_length})")
     
     # Validar body_text
-    if request.body_text:
+    if hasattr(request, 'body_text') and request.body_text:
         max_body_length = limits.get("max_body_length", 1048576)  # 1MB
         if len(request.body_text) > max_body_length:
             raise ValueError(f"Text body too long: {len(request.body_text)} chars (max: {max_body_length})")
     
     # Validar body_html
-    if request.body_html:
+    if hasattr(request, 'body_html') and request.body_html:
         max_body_length = limits.get("max_body_length", 1048576)  # 1MB
         if len(request.body_html) > max_body_length:
             raise ValueError(f"HTML body too long: {len(request.body_html)} chars (max: {max_body_length})")
     
-    # Validar que hay contenido
-    if not request.template_id and not request.body_text and not request.body_html:
-        raise ValueError("Either template_id or body content (text/html) is required")
+    # Validar que hay contenido para email
+    if hasattr(request, 'to'):  # Es request de email
+        template_id = getattr(request, 'template_id', None)
+        body_text = getattr(request, 'body_text', None)
+        body_html = getattr(request, 'body_html', None)
+        
+        if not template_id and not body_text and not body_html:
+            raise ValueError("Either template_id or body content (text/html) is required")
     
     logging.debug("Content limits validation passed")
+
+
+async def validate_sms_content_limits(request, policy: Dict[str, Any] = None) -> None:
+    """
+    Valida límites de contenido para SMS/WhatsApp
+    """
+    if not policy:
+        policy = load_policy_config()
+    
+    sms_limits = policy.get("sms", {}).get("limits", {})
+    
+    # Validar contenido del mensaje
+    message = getattr(request, 'message', '')
+    if not message or not message.strip():
+        # Verificar si usa template
+        template_name = getattr(request, 'template_name', None)
+        if not template_name:
+            raise ValueError("Either message or template_name is required for SMS/WhatsApp")
+    else:
+        # Validar longitud según el canal
+        channel = getattr(request, 'channel', 'sms')
+        
+        if channel == 'sms':
+            max_length = sms_limits.get("max_sms_length", 1600)
+        elif channel == 'whatsapp':
+            max_length = sms_limits.get("max_whatsapp_length", 4096)
+        else:
+            max_length = 1600  # Default SMS
+        
+        if len(message) > max_length:
+            raise ValueError(f"{channel.upper()} message too long: {len(message)} chars (max: {max_length})")
+    
+    logging.debug(f"SMS/WhatsApp content validation passed")
 
 
 async def validate_attachments(attachments: List[Dict] = None, policy: Dict[str, Any] = None) -> None:
@@ -214,7 +292,7 @@ async def validate_attachments(attachments: List[Dict] = None, policy: Dict[str,
     logging.debug(f"Attachments validation passed: {len(attachments)} files, {total_size} bytes")
 
 
-async def validate_template_access(template_id: str, policy: Dict[str, Any] = None) -> None:
+async def validate_template_access(template_id: str = None, policy: Dict[str, Any] = None) -> None:
     """
     Valida acceso a templates (si hay restricciones configuradas)
     """
@@ -240,84 +318,66 @@ async def validate_template_access(template_id: str, policy: Dict[str, Any] = No
     logging.debug(f"Template access validation passed: {template_id}")
 
 
-async def validate_rate_limit(sender_info: Dict[str, Any], policy: Dict[str, Any] = None) -> None:
+async def validate_rate_limit(
+    sender_info: Dict[str, Any], 
+    channel: str = "email",
+    policy: Dict[str, Any] = None
+) -> None:
     """
-    Valida rate limiting (implementación básica)
+    Valida rate limiting por canal (email/sms/whatsapp)
     TODO: Integrar con Redis para rate limiting real
     """
     if not policy:
         policy = load_policy_config()
     
-    rate_limit_config = policy.get("rate_limit", {})
+    # Configuración por canal
+    if channel == "email":
+        rate_limit_config = policy.get("rate_limit", {})
+    else:
+        rate_limit_config = policy.get("sms", {}).get("rate_limit", {})
+    
     if not rate_limit_config.get("enabled", False):
         return
     
-    # Placeholder para implementación futura
-    # Aquí se integraría con Redis para tracking de rates
-    logging.debug("Rate limit validation (placeholder)")
+    # Placeholder para implementación real con Redis
+    # TODO: Implementar contadores por IP/API key en Redis
+    logging.debug(f"Rate limit validation passed (placeholder) for channel: {channel}")
 
 
-def get_validation_summary(policy: Dict[str, Any] = None) -> Dict[str, Any]:
+async def validate_security_headers(headers: Dict[str, str], policy: Dict[str, Any] = None) -> None:
     """
-    Retorna resumen de políticas configuradas
+    Valida headers de seguridad requeridos
     """
     if not policy:
         policy = load_policy_config()
     
-    return {
-        "whitelist": {
-            "enabled": policy.get("whitelist", {}).get("enabled", False),
-            "domains_count": len(policy.get("whitelist", {}).get("domains", []))
-        },
-        "limits": {
-            "max_recipients": policy.get("limits", {}).get("max_recipients", MAX_RECIPIENTS),
-            "max_attachments": policy.get("limits", {}).get("max_attachments", MAX_ATTACHMENTS),
-            "max_attachment_size": policy.get("limits", {}).get("max_attachment_size", MAX_ATTACHMENT_SIZE)
-        },
-        "templates": {
-            "restrictions_enabled": bool(policy.get("templates", {}).get("allowed_templates"))
-        },
-        "rate_limit": {
-            "enabled": policy.get("rate_limit", {}).get("enabled", False)
-        }
-    }
+    security_config = policy.get("security", {})
+    required_headers = security_config.get("required_headers", [])
     
+    for header in required_headers:
+        if header not in headers:
+            raise ValueError(f"Required security header missing: {header}")
     
-async def validate_sms_request(request, policy):
-    if not request.to:
-        raise ValueError("SMS requires 'to' field")
+    logging.debug("Security headers validation passed")
 
-    # Validar número
-    service = TwilioService("twilio_sms")
-    service.validate_phone_number(request.to if isinstance(request.to, str) else request.to[0])
 
-    if not request.body_text:
-        raise ValueError("SMS requires 'body_text'")
-    if len(request.body_text) > SMS_MAX_LENGTH:
-        raise ValueError(f"SMS body too long: {len(request.body_text)} (max: {SMS_MAX_LENGTH})")
-
-    if request.attachments:
-        raise ValueError("Attachments are not supported in SMS")
+async def validate_channel_permissions(
+    channel: str, 
+    api_key: str = None, 
+    policy: Dict[str, Any] = None
+) -> None:
+    """
+    Valida permisos por canal (email/sms/whatsapp) según API key
+    """
+    if not policy:
+        policy = load_policy_config()
     
-
-async def validate_whatsapp_request(request, policy):
-    if not request.to:
-        raise ValueError("WhatsApp requires 'to' field")
-
-    service = TwilioService("twilio_whatsapp")
-    service.format_whatsapp_number(request.to if isinstance(request.to, str) else request.to[0])
-
-    if not request.body_text and not request.attachments:
-        raise ValueError("WhatsApp requires either 'body_text' or 'media'")
-
-    if request.body_text and len(request.body_text) > WHATSAPP_MAX_LENGTH:
-        raise ValueError(f"WhatsApp body too long: {len(request.body_text)} (max: {WHATSAPP_MAX_LENGTH})")
-
-    if request.attachments:
-        if len(request.attachments) > WHATSAPP_MAX_MEDIA:
-            raise ValueError(f"Too many media files: {len(request.attachments)} (max: {WHATSAPP_MAX_MEDIA})")
-        for media in request.attachments:
-            if not isinstance(media, dict) or not media.get("url"):
-                raise ValueError("Each WhatsApp media item must have a valid 'url'")
-            if not media["url"].startswith(("http://", "https://")):
-                raise ValueError(f"Invalid media URL: {media['url']}")
+    channel_config = policy.get("channels", {})
+    
+    # Verificar si el canal está habilitado
+    enabled_channels = channel_config.get("enabled", ["email"])
+    if channel not in enabled_channels:
+        raise ValueError(f"Channel '{channel}' is not enabled. Available: {enabled_channels}")
+    
+    # TODO: Validar permisos específicos por API key si está configurado
+    logging.debug(f"Channel permissions validation passed: {channel}")
