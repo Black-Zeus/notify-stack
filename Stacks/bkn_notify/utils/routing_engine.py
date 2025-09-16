@@ -15,7 +15,7 @@ async def apply_routing(request) -> Dict[str, Any]:
     Aplica reglas de routing para seleccionar proveedor
     
     Prioridad:
-    1. Provider específico en request.provider (si es válido)
+    1. Provider específico en request.provider (si es válido y habilitado)
     2. Routing hint en request.routing_hint
     3. Reglas configuradas en policy.yml
     4. Provider por defecto
@@ -25,19 +25,19 @@ async def apply_routing(request) -> Dict[str, Any]:
     """
     
     policy = load_policy_config()
-    providers = load_providers_config()
+    providers = load_providers_config()  # Ya filtrado por enabled=true
     
     if not providers:
-        raise ValueError("No email providers configured")
+        raise ValueError("No email providers configured or enabled")
     
     routing_config = policy.get("routing", {})
     default_provider = routing_config.get("default_provider")
     
-    # Verificar que hay un provider por defecto válido
+    # Verificar que hay un provider por defecto válido y habilitado
     if not default_provider or default_provider not in providers:
         # Usar el primer provider disponible como fallback
         default_provider = next(iter(providers.keys()))
-        logging.warning(f"Default provider not configured, using: {default_provider}")
+        logging.warning(f"Default provider not configured or disabled, using: {default_provider}")
     
     selected_provider = None
     routing_reason = "default"
@@ -46,11 +46,12 @@ async def apply_routing(request) -> Dict[str, Any]:
         # 1. Provider específico solicitado
         if request.provider:
             if request.provider in providers:
+                # ✅ Provider existe Y está habilitado (config_loader ya filtró)
                 selected_provider = request.provider
                 routing_reason = "explicit_request"
                 logging.debug(f"Using explicit provider: {request.provider}")
             else:
-                logging.warning(f"Requested provider '{request.provider}' not found, applying routing rules")
+                logging.warning(f"Requested provider '{request.provider}' not found or disabled, applying routing rules")
         
         # 2. Routing hint
         if not selected_provider and request.routing_hint:
@@ -73,20 +74,32 @@ async def apply_routing(request) -> Dict[str, Any]:
             selected_provider = default_provider
             routing_reason = "default"
         
-        # Verificar que el provider seleccionado está disponible
+        # Verificar que el provider seleccionado está disponible y habilitado
         provider_config = providers.get(selected_provider)
         if not provider_config:
-            logging.error(f"Selected provider '{selected_provider}' not found in config")
+            logging.error(f"Selected provider '{selected_provider}' not found or disabled")
             # Fallback al primer provider disponible
             selected_provider = next(iter(providers.keys()))
             provider_config = providers[selected_provider]
             routing_reason = "fallback"
         
+        # ✅ Validación adicional: verificar enabled en el config específico
+        if not provider_config.get("enabled", True):
+            logging.warning(f"Provider '{selected_provider}' is disabled, searching for alternative")
+            # Buscar primer proveedor habilitado
+            for alt_name, alt_config in providers.items():
+                if alt_config.get("enabled", True):
+                    selected_provider = alt_name
+                    provider_config = alt_config
+                    routing_reason = "enabled_fallback"
+                    break
+        
         result = {
             "provider": selected_provider,
             "routing_reason": routing_reason,
             "provider_config": provider_config,
-            "provider_type": provider_config.get("type", "smtp")
+            "provider_type": provider_config.get("type", "smtp"),
+            "provider_enabled": provider_config.get("enabled", True)
         }
         
         logging.info(f"Routing decision: {selected_provider} (reason: {routing_reason})")
@@ -94,14 +107,19 @@ async def apply_routing(request) -> Dict[str, Any]:
         
     except Exception as e:
         logging.error(f"Routing engine error: {e}")
-        # Fallback seguro
-        fallback_provider = next(iter(providers.keys()))
-        return {
-            "provider": fallback_provider,
-            "routing_reason": "error_fallback",
-            "provider_config": providers[fallback_provider],
-            "provider_type": providers[fallback_provider].get("type", "smtp")
-        }
+        # Fallback seguro: buscar cualquier proveedor habilitado
+        for fallback_name, fallback_config in providers.items():
+            if fallback_config.get("enabled", True):
+                return {
+                    "provider": fallback_name,
+                    "routing_reason": "error_fallback",
+                    "provider_config": fallback_config,
+                    "provider_type": fallback_config.get("type", "smtp"),
+                    "provider_enabled": True
+                }
+        
+        # Si no hay proveedores habilitados, error crítico
+        raise ValueError("No enabled providers available for routing")
 
 
 async def apply_routing_hint(hint: str, providers: Dict[str, Any], routing_config: Dict[str, Any]) -> Optional[str]:
@@ -122,7 +140,7 @@ async def apply_routing_hint(hint: str, providers: Dict[str, Any], routing_confi
         if suggested_provider in providers:
             return suggested_provider
         else:
-            logging.warning(f"Hint mapped provider '{suggested_provider}' not found")
+            logging.warning(f"Hint mapped provider '{suggested_provider}' not found or disabled")
     
     # Hints predefinidos si no hay mapping
     default_hints = {
@@ -163,7 +181,7 @@ async def apply_routing_rules(request, providers: Dict[str, Any], routing_config
                     "rule_name": rule.get("name", "unnamed")
                 }
             else:
-                logging.warning(f"Rule '{rule.get('name')}' specifies invalid provider: {provider}")
+                logging.warning(f"Rule '{rule.get('name')}' specifies invalid or disabled provider: {provider}")
     
     return None
 
@@ -269,20 +287,20 @@ def _evaluate_numeric_condition(value: int, condition: str) -> bool:
 
 def _find_provider_by_priority(providers: Dict[str, Any], priority: str) -> Optional[str]:
     """
-    Encuentra proveedor por prioridad configurada
+    Encuentra proveedor por prioridad configurada (solo habilitados)
     """
     for name, config in providers.items():
-        if config.get("priority") == priority:
+        if config.get("priority") == priority and config.get("enabled", True):
             return name
     return None
 
 
 def _find_provider_by_type(providers: Dict[str, Any], provider_type: str) -> Optional[str]:
     """
-    Encuentra proveedor por tipo/categoría
+    Encuentra proveedor por tipo/categoría (solo habilitados)
     """
     for name, config in providers.items():
-        if config.get("category") == provider_type:
+        if config.get("category") == provider_type and config.get("enabled", True):
             return name
     return None
 
@@ -293,16 +311,27 @@ def get_routing_summary() -> Dict[str, Any]:
     """
     try:
         policy = load_policy_config()
-        providers = load_providers_config()
+        providers = load_providers_config()  # Solo habilitados
         routing_config = policy.get("routing", {})
         
         return {
             "providers_available": list(providers.keys()),
+            "providers_enabled_count": len(providers),
             "default_provider": routing_config.get("default_provider"),
+            "default_provider_enabled": routing_config.get("default_provider") in providers,
             "rules_count": len(routing_config.get("rules", [])),
             "hint_mappings": routing_config.get("hint_mapping", {}),
             "providers_by_type": {
                 name: config.get("type", "smtp") 
+                for name, config in providers.items()
+            },
+            "providers_status": {
+                name: {
+                    "type": config.get("type", "smtp"),
+                    "enabled": config.get("enabled", True),
+                    "priority": config.get("priority"),
+                    "category": config.get("category")
+                }
                 for name, config in providers.items()
             }
         }

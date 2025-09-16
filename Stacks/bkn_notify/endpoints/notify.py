@@ -15,6 +15,7 @@ from constants import (
     IDEMPOTENCY_HEADER, REQUEST_ID_HEADER, REDIS_IDEMPOTENCY_PREFIX
 )
 from models.notify_request import NotifyRequest, NotifyResponse
+from models.twilio_request import TwilioNotifyRequest
 from utils.redis_client import get_redis_client
 from utils.policy_validator import validate_request
 from utils.routing_engine import apply_routing
@@ -248,7 +249,7 @@ async def send_notification(
 
 @router.post("/notify_twilio", response_model=NotifyResponse, status_code=HTTP_202_ACCEPTED)
 async def send_twilio_notification(
-    request: NotifyRequest,
+    request: TwilioNotifyRequest,
     http_request: Request,
     redis_client = Depends(get_redis_client)
 ):
