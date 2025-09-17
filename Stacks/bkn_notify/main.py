@@ -161,14 +161,16 @@ try:
     from endpoints.status import router as status_router
     from endpoints.template import router as template_router
     from endpoints.metrics import router as metrics_router
+    from endpoints.admin import router as admin_router
 
     app.include_router(health_router, prefix="/api", tags=["Health"])
     app.include_router(notify_router, prefix="/api", tags=["Notifications"])
     app.include_router(status_router, prefix="/api", tags=["Status"])
     app.include_router(template_router, prefix="/api", tags=["Templates"])
     app.include_router(metrics_router, prefix="/api", tags=["Metrics"])
+    app.include_router(admin_router, prefix="/api", tags=["Admin"])
 
-    routers_loaded = ["health", "notify", "status", "template", "metrics"]
+    routers_loaded = ["health", "notify", "status", "template", "metrics", "admin"]
     logging.info("All routers loaded successfully")
 
 except Exception as e:
@@ -208,6 +210,16 @@ async def root():
         }
         base_endpoints.update(metrics_endpoints)
     
+    # Agregar endpoints de admin si están disponibles
+    if "admin" in routers_loaded:
+        admin_endpoints = {
+            "admin_providers": "/api/admin/providers",
+            "admin_templates": "/api/admin/templates",
+            "admin_config": "/api/admin/config",
+            "admin_health": "/api/admin/health"
+        }
+        base_endpoints.update(admin_endpoints)
+    
     return {
         "service": constants.SERVICE_NAME,
         "version": constants.API_VERSION,
@@ -223,7 +235,8 @@ async def root():
             "templates": True,
             "status_tracking": True,
             "metrics": "metrics" in routers_loaded,
-            "database_metrics": getattr(app.state, "database_ready", False) and "metrics" in routers_loaded
+            "database_metrics": getattr(app.state, "database_ready", False) and "metrics" in routers_loaded,
+            "admin_panel": "admin" in routers_loaded
         }
     }
 

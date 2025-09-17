@@ -1,57 +1,37 @@
 """
-Config loader utility
-Carga y cache de archivos de configuración YAML
+Carga y validación de configuraciones
 """
-
 import os
-import yaml
 import logging
-import re
+import yaml
 from typing import Dict, Any, Optional
-from pathlib import Path
 
-from constants import CONFIG_FILE, PROVIDERS_FILE, POLICY_FILE
+# Rutas de archivos de configuración
+CONFIG_DIR = "/app/Config"
+CONFIG_FILE = os.path.join(CONFIG_DIR, "config.yml")
+PROVIDERS_FILE = os.path.join(CONFIG_DIR, "providers.yml")
+POLICY_FILE = os.path.join(CONFIG_DIR, "policy.yml")
+SECRETS_FILE = os.path.join(CONFIG_DIR, "secrets.env")
 
-# Cache global de configuraciones
-_config_cache: Dict[str, Any] = {}
+# Cache de configuraciones
+_config_cache = {}
 
 
-def expand_env_vars(content: str) -> str:
+def load_yaml_file(filepath: str) -> Dict[str, Any]:
     """
-    Expande variables de entorno en formato ${VAR_NAME}
-    """
-    def replace_var(match):
-        var_name = match.group(1)
-        return os.getenv(var_name, match.group(0))  # Retorna original si no existe
-    
-    return re.sub(r'\$\{([^}]+)\}', replace_var, content)
-
-
-def load_yaml_file(file_path: str) -> Dict[str, Any]:
-    """
-    Carga archivo YAML con manejo de errores y expansión de variables de entorno
+    Carga archivo YAML de forma segura
     """
     try:
-        if not os.path.exists(file_path):
-            logging.warning(f"Config file not found: {file_path}")
-            return {}
-        
-        with open(file_path, 'r', encoding='utf-8') as file:
-            content = file.read()
-            
-            # Expandir variables de entorno ${VAR_NAME}
-            content = expand_env_vars(content)
-            
-            data = yaml.safe_load(content) or {}
-            logging.debug(f"Loaded config from {file_path}")
-            return data
-            
+        with open(filepath, 'r', encoding='utf-8') as f:
+            content = yaml.safe_load(f) or {}
+        logging.debug(f"Loaded YAML file: {filepath}")
+        return content
+    except FileNotFoundError:
+        logging.warning(f"Config file not found: {filepath}")
+        return {}
     except yaml.YAMLError as e:
-        logging.error(f"YAML parsing error in {file_path}: {e}")
-        raise ValueError(f"Invalid YAML format in {file_path}: {e}")
-    except Exception as e:
-        logging.error(f"Failed to load config {file_path}: {e}")
-        raise
+        logging.error(f"Invalid YAML in {filepath}: {e}")
+        return {}
 
 
 def load_config(force_reload: bool = False) -> Dict[str, Any]:
@@ -144,7 +124,7 @@ def load_policy_config(force_reload: bool = False) -> Dict[str, Any]:
 
 def validate_providers_config(providers: Dict[str, Any]) -> Dict[str, Any]:
     """
-    Valida configuración de proveedores
+    Valida configuración de proveedores y filtra los deshabilitados
     """
     if not providers:
         logging.warning("No providers configured")
@@ -169,27 +149,57 @@ def validate_providers_config(providers: Dict[str, Any]) -> Dict[str, Any]:
                 logging.error(f"Provider {name}: invalid config format")
                 continue
             
+            # VALIDACIÓN CRÍTICA: Verificar enabled flag
+            if not config.get("enabled", True):
+                logging.info(f"Provider {name}: disabled, skipping")
+                continue
+            
             provider_type = config.get("type")
-            if provider_type not in ["smtp", "api"]:
+            if provider_type not in ["smtp", "api", "twilio"]:
                 logging.error(f"Provider {name}: invalid type '{provider_type}'")
                 continue
             
             # Validación específica por tipo
             if provider_type == "smtp":
-                required_fields = ["host", "port", "username", "password"]
+                required_fields = ["host", "port"]
                 if not all(field in config for field in required_fields):
                     logging.error(f"Provider {name}: missing required SMTP fields")
                     continue
             
             elif provider_type == "api":
-                required_fields = ["endpoint", "api_key"]
+                # Verificar si es un proveedor Twilio
+                twilio_provider_type = config.get("provider_type", "")
+                
+                if twilio_provider_type in ["twilio_sms", "twilio_whatsapp"]:
+                    # Validación específica para Twilio
+                    required_fields = ["account_sid", "auth_token", "from_number"]
+                    if not all(field in config for field in required_fields):
+                        logging.error(f"Provider {name}: missing required Twilio fields")
+                        continue
+                    logging.debug(f"Provider {name}: Twilio provider validated successfully")
+                else:
+                    # Validación para API genéricas (SendGrid, SES, etc.)
+                    required_fields = ["endpoint"]
+                    if not all(field in config for field in required_fields):
+                        logging.error(f"Provider {name}: missing required API fields")
+                        continue
+            
+            elif provider_type == "twilio":
+                # Mantener para compatibilidad con configuraciones que usen type: "twilio"
+                required_fields = ["account_sid", "auth_token", "from_number"]
                 if not all(field in config for field in required_fields):
-                    logging.error(f"Provider {name}: missing required API fields")
+                    logging.error(f"Provider {name}: missing required Twilio fields")
+                    continue
+                    
+                # Validar provider_type específico de Twilio
+                twilio_provider_type = config.get("provider_type")
+                if twilio_provider_type not in ["sms", "whatsapp", "twilio_sms", "twilio_whatsapp"]:
+                    logging.error(f"Provider {name}: invalid Twilio provider_type '{twilio_provider_type}'")
                     continue
             
-            # Agregar configuración válida
+            # Agregar configuración válida Y HABILITADA
             validated[name] = config
-            logging.debug(f"Provider {name} validated successfully")
+            logging.debug(f"Provider {name} validated and enabled successfully")
             
         except Exception as e:
             logging.error(f"Error validating provider {name}: {e}")
@@ -282,10 +292,17 @@ def get_default_policy() -> Dict[str, Any]:
 
 def get_provider_config(provider_name: str) -> Optional[Dict[str, Any]]:
     """
-    Obtiene configuración de un proveedor específico
+    Obtiene configuración de un proveedor específico (solo si está habilitado)
     """
     providers = load_providers_config()
     return providers.get(provider_name)
+
+
+def get_enabled_providers() -> Dict[str, Any]:
+    """
+    Obtiene solo los proveedores habilitados
+    """
+    return load_providers_config()  # Ya filtrado por enabled=true
 
 
 def reload_all_configs():
@@ -315,5 +332,5 @@ def get_config_info() -> Dict[str, Any]:
         },
         "cached_configs": list(_config_cache.keys()),
         "providers_count": len(load_providers_config()),
-        "last_loaded": "dynamic"  # TODO: agregar timestamps si es necesario
+        "last_loaded": "dynamic"
     }

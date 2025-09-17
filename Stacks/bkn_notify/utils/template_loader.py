@@ -1,5 +1,5 @@
 """
-Template loader utility
+Template loader utility - CORREGIDO
 Carga y maneja plantillas Jinja2 desde filesystem
 """
 
@@ -50,17 +50,73 @@ def get_jinja_environment() -> Environment:
     return _jinja_env
 
 
+def email_safe_filter(text: str) -> str:
+    """
+    Filtro para hacer texto seguro para email
+    """
+    if not text:
+        return ""
+    
+    # Remover caracteres problemáticos para email
+    safe_text = str(text).replace('\x00', '').replace('\r', '\n')
+    return safe_text
+
+
+def truncate_smart_filter(text: str, length: int = 100, suffix: str = "...") -> str:
+    """
+    Filtro para truncar texto de forma inteligente
+    """
+    if not text or len(text) <= length:
+        return text
+    
+    # Truncar en palabra completa si es posible
+    truncated = text[:length]
+    last_space = truncated.rfind(' ')
+    
+    if last_space > length * 0.8:  # Si el espacio está cerca del final
+        truncated = truncated[:last_space]
+    
+    return truncated + suffix
+
+
+def get_template_path(template_id: str) -> str:
+    """
+    ✅ FUNCIÓN AGREGADA: Convierte template_id a ruta del directorio
+    
+    Args:
+        template_id: ID en formato "template-name/version" o "template-name.version"
+    
+    Returns:
+        Ruta completa al directorio del template
+    """
+    try:
+        # Normalizar template_id: convertir puntos a barras
+        if '.' in template_id and '/' not in template_id:
+            # Formato: "alerta-simple.v1" -> "alerta-simple/v1"
+            template_id = template_id.replace('.', '/', 1)
+        
+        # Construir ruta completa
+        template_path = os.path.join(TEMPLATES_DIR, template_id)
+        
+        # Verificar que existe
+        if not os.path.exists(template_path):
+            raise FileNotFoundError(f"Template directory not found: {template_path}")
+        
+        if not os.path.isdir(template_path):
+            raise ValueError(f"Template path is not a directory: {template_path}")
+        
+        logging.debug(f"Template path resolved: {template_id} -> {template_path}")
+        return template_path
+        
+    except Exception as e:
+        logging.error(f"Error resolving template path for {template_id}: {e}")
+        raise
+
+
 def get_available_templates() -> List[Dict[str, Any]]:
     """
     Lista todos los templates disponibles en el filesystem
-    
-    Retorna lista de dicts con info de cada template:
-    - template_id: ID del template
-    - version: versión
-    - files: archivos disponibles (subject.txt, body.txt, body.html)
-    - path: ruta completa
     """
-    
     templates = []
     
     try:
@@ -112,23 +168,18 @@ def get_available_templates() -> List[Dict[str, Any]]:
 
 def load_template_files(template_id: str) -> Dict[str, str]:
     """
-    Carga archivos de un template específico
+    ✅ CORREGIDO: Carga archivos de un template específico usando get_template_path
     
     Args:
-        template_id: ID del template (ej: "alerta-simple/v1")
+        template_id: ID del template (ej: "alerta-simple/v1" o "alerta-simple.v1")
     
     Returns:
-        Dict con content de archivos: {"subject": "...", "body_text": "...", "body_html": "..."}
+        Dict con contenido de archivos: {"subject": "...", "body_text": "...", "body_html": "..."}
     """
     
     try:
-        template_path = os.path.join(TEMPLATES_DIR, template_id)
-        
-        if not os.path.exists(template_path):
-            raise FileNotFoundError(f"Template not found: {template_id}")
-        
-        if not os.path.isdir(template_path):
-            raise ValueError(f"Template path is not a directory: {template_id}")
+        # ✅ USAR: get_template_path para resolver la ruta
+        template_path = get_template_path(template_id)
         
         template_files = {}
         
@@ -144,7 +195,7 @@ def load_template_files(template_id: str) -> Dict[str, str]:
             with open(body_file, 'r', encoding='utf-8') as f:
                 template_files["body_text"] = f.read()
         
-        # Cargar body.html
+        # Cargar body.html (opcional)
         html_file = os.path.join(template_path, "body.html")
         if os.path.exists(html_file):
             with open(html_file, 'r', encoding='utf-8') as f:
@@ -191,10 +242,10 @@ def compile_template(template_content: str, template_name: str) -> Template:
 
 def render_template(template_id: str, variables: Dict[str, Any]) -> Dict[str, str]:
     """
-    Renderiza template completo con variables
+    ✅ CORREGIDO: Renderiza template completo con variables
     
     Args:
-        template_id: ID del template (ej: "alerta-simple/v1")
+        template_id: ID del template (ej: "alerta-simple/v1" o "alerta-simple.v1")
         variables: Dict con variables para el template
     
     Returns:
@@ -242,79 +293,54 @@ def validate_template_syntax(template_id: str) -> Dict[str, Any]:
         for file_type, content in template_files.items():
             try:
                 compile_template(content, f"{template_id}:{file_type}")
-                validation_results[file_type] = {"valid": True, "error": None}
+                validation_results[file_type] = {
+                    "valid": True,
+                    "error": None
+                }
             except Exception as e:
-                validation_results[file_type] = {"valid": False, "error": str(e)}
+                validation_results[file_type] = {
+                    "valid": False,
+                    "error": str(e)
+                }
         
         return validation_results
         
     except Exception as e:
-        return {"error": f"Failed to validate template: {e}"}
+        logging.error(f"Error validating template {template_id}: {e}")
+        raise
 
 
 def clear_template_cache():
     """
     Limpia cache de templates compilados
-    Útil para hot-reload durante desarrollo
     """
     global _template_cache
     _template_cache.clear()
     logging.info("Template cache cleared")
 
 
-# Filtros personalizados para Jinja2
-
-def email_safe_filter(text: str) -> str:
+def get_template_variables(template_id: str) -> List[str]:
     """
-    Filtro para hacer texto seguro para emails
-    Remueve caracteres problemáticos
-    """
-    if not text:
-        return ""
+    ✅ BONUS: Extrae variables utilizadas en un template
     
-    # Remover caracteres de control
-    import re
-    clean_text = re.sub(r'[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]', '', str(text))
-    
-    return clean_text
-
-
-def truncate_smart_filter(text: str, length: int = 100, suffix: str = "...") -> str:
+    Returns:
+        Lista de nombres de variables encontradas en el template
     """
-    Filtro para truncar texto de manera inteligente
-    Corta en espacios cuando es posible
-    """
-    if not text or len(text) <= length:
-        return str(text)
     
-    truncated = text[:length]
-    
-    # Buscar último espacio para cortar palabra completa
-    last_space = truncated.rfind(' ')
-    if last_space > length * 0.7:  # Solo si el espacio está en los últimos 30%
-        truncated = truncated[:last_space]
-    
-    return truncated + suffix
-
-
-def get_template_info(template_id: str) -> Dict[str, Any]:
-    """
-    Obtiene información detallada de un template
-    """
     try:
         template_files = load_template_files(template_id)
-        validation = validate_template_syntax(template_id)
+        variables_found = set()
         
-        return {
-            "template_id": template_id,
-            "files": list(template_files.keys()),
-            "file_sizes": {k: len(v) for k, v in template_files.items()},
-            "validation": validation,
-            "path": os.path.join(TEMPLATES_DIR, template_id)
-        }
+        # Usar regex simple para encontrar variables {{ variable }}
+        import re
+        variable_pattern = r'\{\{\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*\}\}'
+        
+        for file_type, content in template_files.items():
+            matches = re.findall(variable_pattern, content)
+            variables_found.update(matches)
+        
+        return sorted(list(variables_found))
         
     except Exception as e:
-        return {
-            "template_id": template_id,
-            "error": str(e)
-        }
+        logging.error(f"Error extracting variables from template {template_id}: {e}")
+        return []

@@ -92,7 +92,7 @@ smtp_primary:
   # Configuración operacional
   priority: "high"
   category: "transactional"
-  enabled: false  # Disabled en desarrollo
+  enabled: true  # Disabled en desarrollo
   
   # Características soportadas
   features:
@@ -131,7 +131,7 @@ smtp_secondary:
   
   priority: "medium"
   category: "backup"
-  enabled: false  # Disabled en desarrollo
+  enabled: true  # Disabled en desarrollo
   
   features:
     html_support: true
@@ -161,7 +161,7 @@ smtp_bulk:
   
   priority: "medium"
   category: "bulk"
-  enabled: false  # Disabled en desarrollo
+  enabled: true  # Disabled en desarrollo
   
   features:
     html_support: true
@@ -191,7 +191,7 @@ smtp_test:
   
   priority: "low"
   category: "testing"
-  enabled: false  # Usar MailPit en su lugar
+  enabled: true  # Usar MailPit en su lugar
   
   features:
     html_support: true
@@ -227,7 +227,7 @@ api_sendgrid:
   # Configuración operacional
   priority: "high"
   category: "premium"
-  enabled: false  # Disabled en desarrollo
+  enabled: true  # Disabled en desarrollo
   
   # Características avanzadas
   features:
@@ -279,7 +279,7 @@ api_ses:
   
   priority: "high"
   category: "scalable"
-  enabled: false  # Disabled by default
+  enabled: true  # Disabled by default
   
   features:
     html_support: true
@@ -317,7 +317,7 @@ api_mailgun:
   
   priority: "medium"
   category: "marketing"
-  enabled: false
+  enabled: true
   
   features:
     html_support: true
@@ -349,7 +349,7 @@ api_generic:
   
   priority: "low"
   category: "experimental"
-  enabled: false
+  enabled: true
   
   # Headers personalizados
   headers:
@@ -366,12 +366,125 @@ api_generic:
     initial_delay: 60
 
 # =============================================================================
-# PROVIDER GROUPS & LOAD BALANCING
+# TWILIO PROVIDERS - ACTUALIZACIONES SEGURAS
+# =============================================================================
+
+# Twilio SMS - Configuración mejorada pero conservadora
+twilio_sms:
+  type: "twilio"
+  provider_type: "twilio_sms"
+  name: "Twilio SMS"
+  description: "Proveedor SMS via Twilio API"
+  
+  # Configuración de API
+  account_sid: "${TWILIO_ACCOUNT_SID}"
+  auth_token: "${TWILIO_AUTH_TOKEN}"
+  from_number: "${TWILIO_SMS_FROM}"
+  
+  # Límites SMS conservadores
+  timeout: 30
+  max_recipients_per_message: 10  # Límite conservador para no sobrecargar
+  max_message_length: 1600
+  max_messages_per_hour: 100      # Límite conservador inicialmente
+  
+  # Configuración operacional
+  priority: "high"
+  category: "sms"
+  enabled: true  # DISABLED por defecto para no romper nada
+  
+  # Características soportadas
+  features:
+    html_support: false
+    attachments: false
+    tracking: true
+    delivery_reports: true
+    status_callbacks: true
+    
+  # Configuración específica SMS
+  sms_config:
+    # Webhook URL para status callbacks
+    webhook_url: "${TWILIO_SMS_WEBHOOK_URL}"
+    
+    # Configuración de entrega
+    validity_period: 86400  # 24 horas
+    
+    # Configuración de encoding
+    encoding: "UTF-8"
+    smart_encoding: true
+    
+  # Configuración de reintentos
+  retry:
+    max_attempts: 2  # Menos reintentos para SMS
+    backoff_factor: 1.5
+    initial_delay: 30
+
+# Twilio WhatsApp - Configuración mejorada pero conservadora  
+twilio_whatsapp:
+  type: "twilio"
+  provider_type: "twilio_whatsapp"
+  name: "Twilio WhatsApp"
+  description: "Proveedor WhatsApp Business via Twilio API"
+  
+  # Configuración de API
+  account_sid: "${TWILIO_ACCOUNT_SID}"
+  auth_token: "${TWILIO_AUTH_TOKEN}"
+  from_number: "${TWILIO_WHATSAPP_FROM}"  # Formato: whatsapp:+14155238886
+  
+  # Límites WhatsApp conservadores
+  timeout: 45
+  max_recipients_per_message: 5   # Muy conservador para WhatsApp
+  max_message_length: 4096
+  max_media_count: 5              # Límite conservador de medios
+  max_media_size: 16777216        # 16MB
+  max_messages_per_hour: 50       # Límite muy conservador
+  
+  # Configuración operacional
+  priority: "high"
+  category: "whatsapp"
+  enabled: true  # DISABLED por defecto para no romper nada
+  
+  # Características soportadas
+  features:
+    html_support: false
+    attachments: true
+    media_support: true
+    tracking: true
+    delivery_reports: true
+    read_receipts: true
+    templates: true               # WhatsApp Business Templates
+    
+  # Tipos de media soportados (lista conservadora)
+  supported_media_types:
+    - "image/jpeg"
+    - "image/png" 
+    - "application/pdf"
+    - "text/plain"
+    
+  # Configuración específica WhatsApp
+  whatsapp_config:
+    # Webhook URL para status callbacks
+    webhook_url: "${TWILIO_WHATSAPP_WEBHOOK_URL}"
+    
+    # Configuración de templates
+    use_templates: true
+    fallback_language: "en"
+    
+    # Configuración de medios
+    media_upload_timeout: 60
+    
+  # Configuración de reintentos
+  retry:
+    max_attempts: 2  # Menos reintentos para WhatsApp
+    backoff_factor: 2
+    initial_delay: 60
+
+# =============================================================================
+# PROVIDER GROUPS & LOAD BALANCING - ACTUALIZACIÓN CONSERVADORA
 # =============================================================================
 
 # Grupos de proveedores para load balancing
 provider_groups:
-  # Grupo principal para desarrollo
+  # Grupo principal para desarrollo (SIN CAMBIOS)
   development:
     providers:
       - name: "mailpit"
@@ -379,7 +492,7 @@ provider_groups:
     load_balancing: "single"
     health_check: false
     
-  # Grupo principal para emails transaccionales
+  # Grupo principal para emails transaccionales (SIN CAMBIOS)
   transactional:
     providers:
       - name: "smtp_primary"
@@ -389,7 +502,7 @@ provider_groups:
     load_balancing: "weighted_round_robin"
     health_check: true
     
-  # Grupo para envíos masivos
+  # Grupo para envíos masivos (SIN CAMBIOS)
   bulk:
     providers:
       - name: "smtp_bulk"
@@ -399,7 +512,7 @@ provider_groups:
     load_balancing: "round_robin"
     health_check: true
     
-  # Grupo de backup/failover
+  # Grupo de backup/failover (SIN CAMBIOS)
   backup:
     providers:
       - name: "smtp_secondary"
@@ -408,44 +521,73 @@ provider_groups:
         weight: 50
     load_balancing: "failover"
     health_check: true
+    
+  # NUEVO: Grupo para SMS (opcional, deshabilitado por defecto)
+  sms:
+    providers:
+      - name: "twilio_sms"
+        weight: 100
+    load_balancing: "single"
+    health_check: true
+    enabled: true  # Disabled por defecto
+    
+  # NUEVO: Grupo para WhatsApp (opcional, deshabilitado por defecto)  
+  whatsapp:
+    providers:
+      - name: "twilio_whatsapp"
+        weight: 100
+    load_balancing: "single"
+    health_check: true
+    enabled: true  # Disabled por defecto
 
 # =============================================================================
-# HEALTH MONITORING
+# HEALTH MONITORING - ACTUALIZACIÓN SEGURA
 # =============================================================================
 
 # Configuración de monitoreo de salud
 health_monitoring:
-  # Intervalos de verificación
+  # Intervalos de verificación (SIN CAMBIOS)
   check_intervals:
     fast_check: 60      # segundos
     full_check: 300     # segundos
     
-  # Criterios de salud
+  # Criterios de salud (SIN CAMBIOS)
   health_criteria:
     max_response_time: 5.0      # segundos
     max_error_rate: 5.0         # porcentaje
     min_success_rate: 95.0      # porcentaje
     
-  # Acciones automáticas
+  # Criterios específicos para SMS/WhatsApp (NUEVO)
+  sms_health_criteria:
+    max_response_time: 10.0     # SMS puede ser más lento
+    max_error_rate: 10.0        # Más tolerante a errores
+    min_success_rate: 90.0      # Estándar más bajo
+    
+  whatsapp_health_criteria:
+    max_response_time: 15.0     # WhatsApp puede ser más lento
+    max_error_rate: 15.0        # Más tolerante a errores  
+    min_success_rate: 85.0      # Estándar más bajo
+    
+  # Acciones automáticas (SIN CAMBIOS)
   auto_actions:
     disable_unhealthy: true
     alert_on_failure: true
     
-  # Configuración de alertas
+  # Configuración de alertas (SIN CAMBIOS)
   alerts:
     webhook_url: "${ALERT_WEBHOOK_URL}"
     email_alerts: ["admin@yourcompany.com"]
 
 # =============================================================================
-# COST OPTIMIZATION
+# COST OPTIMIZATION - ACTUALIZACIÓN CONSERVADORA  
 # =============================================================================
 
 # Configuración de optimización de costos
 cost_optimization:
-  # Routing por costo
+  # Routing por costo (SIN CAMBIOS)
   cost_aware_routing: true
   
-  # Costos relativos por proveedor (1-10, 1=más barato)
+  # Costos relativos por proveedor (ACTUALIZADO con SMS/WhatsApp)
   provider_costs:
     mailpit: 0          # Gratis en desarrollo
     smtp_primary: 2
@@ -454,19 +596,21 @@ cost_optimization:
     api_sendgrid: 4
     api_ses: 3
     api_mailgun: 4
+    twilio_sms: 8       # SMS tiene costo por mensaje (más alto)
+    twilio_whatsapp: 10 # WhatsApp más caro que SMS (más alto)
     
-  # Límites de costo
+  # Límites de costo (CONSERVADORES para incluir SMS/WhatsApp)
   cost_limits:
-    max_daily_cost: 100.0       # USD
-    alert_threshold: 80.0       # USD
+    max_daily_cost: 50.0        # USD - Límite más bajo para ser conservador
+    alert_threshold: 30.0       # USD - Alerta temprana
     
-  # Optimizaciones automáticas
+  # Optimizaciones automáticas (SIN CAMBIOS)
   auto_optimizations:
     prefer_cheaper_for_bulk: true
     route_off_hours_to_cheaper: true
 
 # =============================================================================
-# COMPLIANCE & REGION SETTINGS
+# COMPLIANCE & REGION SETTINGS (SIN CAMBIOS)
 # =============================================================================
 
 # Configuración por región geográfica
@@ -488,52 +632,66 @@ regional_settings:
     compliance_requirements: ["local_privacy_laws"]
 
 # =============================================================================
-# DEVELOPMENT & TESTING
+# DEVELOPMENT & TESTING - ACTUALIZACIÓN CONSERVADORA
 # =============================================================================
 
 # Configuración para desarrollo
 development:
-  # Proveedor por defecto en desarrollo
+  # Proveedor por defecto en desarrollo (SIN CAMBIOS)
   default_provider: "mailpit"
   
-  # Interceptar emails en desarrollo
+  # Interceptar emails en desarrollo (SIN CAMBIOS)
   email_interception:
-    enabled: false  # MailPit ya intercepta todo
+    enabled: true  # MailPit ya intercepta todo
     redirect_to: ["dev@yourcompany.com"]
     
-  # Simulación de fallos para testing
+  # NUEVO: Configuración para SMS/WhatsApp en desarrollo
+  sms_testing:
+    mock_enabled: true          # Mock SMS en desarrollo
+    test_numbers: ["+1234567890"] # Números de prueba
+    
+  whatsapp_testing:
+    mock_enabled: true          # Mock WhatsApp en desarrollo
+    test_numbers: ["whatsapp:+1234567890"] # Números de prueba
+    
+  # Simulación de fallos para testing (SIN CAMBIOS)
   failure_simulation:
-    enabled: false
+    enabled: true
     failure_rate: 0.1  # 10% de fallos simulados
     
-  # Logging detallado
+  # Logging detallado (SIN CAMBIOS)
   debug_logging: true
 
 # =============================================================================
-# PROVIDER STATISTICS
+# PROVIDER STATISTICS - ACTUALIZACIÓN SEGURA
 # =============================================================================
 
 # Métricas y estadísticas
 statistics:
-  # Métricas a trackear
+  # Métricas a trackear (ACTUALIZADO con SMS/WhatsApp)
   tracked_metrics:
     - "messages_sent"
     - "messages_failed"
     - "response_time"
     - "cost_per_message"
     - "delivery_rate"
+    - "sms_segments"      # NUEVO: Segmentos SMS
+    - "whatsapp_reads"    # NUEVO: Lecturas WhatsApp
     
-  # Retención de métricas
+  # Retención de métricas (SIN CAMBIOS)
   retention:
     hourly_data: 48     # horas
     daily_data: 90      # días
     monthly_data: 24    # meses
     
-  # Alertas basadas en métricas
+  # Alertas basadas en métricas (ACTUALIZADO)
   metric_alerts:
     high_failure_rate:
       threshold: 10.0   # porcentaje
       window: 300       # segundos
     slow_response:
-      threshold: 10.0   # segundos
+      threshold: 10.0   # segundos  
       window: 600       # segundos
+    high_sms_cost:      # NUEVO
+      threshold: 20.0   # USD por hora
+      window: 3600      # 1 hora

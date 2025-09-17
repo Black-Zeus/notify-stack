@@ -1,0 +1,24 @@
+🚨 *ALERTA DE SISTEMA*
+
+*Servidor:* {{ servidor }}
+*Estado:* {{ estado|default('CRÍTICO') }}
+*Fecha:* {{ timestamp|default('N/A') }}
+
+{{ mensaje|default('El sistema requiere atención inmediata. Revisar logs y tomar acción correctiva.') }}
+
+{% if detalles -%}
+*Detalles adicionales:*
+{{ detalles }}
+
+{% endif -%}
+{% if url -%}
+🔗 *Más información:* {{ url }}
+
+{% endif -%}
+{% if contacto -%}
+📞 *Contacto:* {{ contacto }}
+
+{% endif -%}
+---
+_Notificación automática del sistema_
+_No responder a este mensaje_

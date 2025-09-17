@@ -1,4 +1,5 @@
 """
+Stacks\bkn_notify\endpoints\__init__.py
 Endpoints del sistema Notify API
 Routers organizados por funcionalidad
 """
@@ -8,11 +9,13 @@ from .notify import router as notify_router
 from .status import router as status_router
 from .template import router as template_router
 from .metrics import router as metrics_router
+from .admin import router as admin_router
 
 __all__ = [
     "health_router",
     "notify_router", 
     "status_router",
     "template_router",
-    "metrics_router"
+    "metrics_router",
+    "admin_router"
 ]

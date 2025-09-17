@@ -1,4 +1,5 @@
 -- =============================================================================
+-- Database/init/00_create_user.sql
 -- NOTIFY-STACK - Usuario y permisos MySQL
 -- =============================================================================
 -- Se ejecuta ANTES del script de tablas para garantizar permisos correctos
