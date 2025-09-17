@@ -1,10 +1,11 @@
 """
+Stacks/bkn_notify/services/database_service.py
 Database Service - Operaciones CRUD para notificaciones
 Capa de abstracción para operaciones de base de datos
 """
 
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from typing import Optional, List, Dict, Any, Tuple
 from uuid import uuid4
 
@@ -450,3 +451,280 @@ class DatabaseService:
         except SQLAlchemyError as e:
             logger.error(f"Error getting notification by task_id {celery_task_id}: {e}")
             return None
+        
+    # ✅ NUEVOS MÉTODOS PARA PROVIDER_STATS
+
+    @staticmethod
+    def update_provider_stats(
+        provider: str,
+        stat_type: str,  # "sent", "failed", "rejected"
+        processing_time_ms: Optional[int] = None,
+        stat_date: Optional[date] = None,
+        stat_hour: Optional[int] = None
+    ) -> bool:
+        """
+        Actualiza estadísticas de proveedor incrementando contadores
+        
+        Args:
+            provider: Nombre del proveedor
+            stat_type: Tipo de estadística ("sent", "failed", "rejected")
+            processing_time_ms: Tiempo de procesamiento en milisegundos
+            stat_date: Fecha específica (default: hoy)
+            stat_hour: Hora específica (default: hora actual)
+        """
+        from datetime import date
+        
+        if not stat_date:
+            stat_date = date.today()
+        if stat_hour is None:
+            stat_hour = datetime.now().hour
+            
+        try:
+            with get_db_session() as db:
+                # Buscar registro existente
+                stats = db.query(ProviderStats).filter(
+                    and_(
+                        ProviderStats.provider == provider,
+                        ProviderStats.stat_date == stat_date,
+                        ProviderStats.stat_hour == stat_hour
+                    )
+                ).first()
+                
+                # Crear si no existe
+                if not stats:
+                    stats = ProviderStats(
+                        provider=provider,
+                        stat_date=stat_date,
+                        stat_hour=stat_hour,
+                        total_sent=0,
+                        total_failed=0,
+                        total_rejected=0,
+                        avg_processing_time_ms=None,
+                        max_processing_time_ms=None
+                    )
+                    db.add(stats)
+                
+                # Incrementar contadores según tipo
+                if stat_type == "sent":
+                    stats.total_sent += 1
+                elif stat_type == "failed":
+                    stats.total_failed += 1
+                elif stat_type == "rejected":
+                    stats.total_rejected += 1
+                else:
+                    logger.warning(f"Unknown stat_type: {stat_type}")
+                    return False
+                
+                # Actualizar métricas de tiempo si se proporciona
+                if processing_time_ms is not None:
+                    # Calcular nuevo promedio
+                    total_messages = stats.total_sent + stats.total_failed + stats.total_rejected
+                    if total_messages > 1 and stats.avg_processing_time_ms:
+                        # Promedio ponderado
+                        stats.avg_processing_time_ms = int(
+                            ((stats.avg_processing_time_ms * (total_messages - 1)) + processing_time_ms) / total_messages
+                        )
+                    else:
+                        stats.avg_processing_time_ms = processing_time_ms
+                    
+                    # Actualizar máximo
+                    if not stats.max_processing_time_ms or processing_time_ms > stats.max_processing_time_ms:
+                        stats.max_processing_time_ms = processing_time_ms
+                
+                db.commit()
+                logger.debug(f"Updated {provider} stats: {stat_type} +1 (date={stat_date}, hour={stat_hour})")
+                return True
+                
+        except SQLAlchemyError as e:
+            logger.error(f"Error updating provider stats for {provider}: {e}")
+            return False
+
+    @staticmethod
+    def get_provider_stats_detailed(
+        provider: Optional[str] = None,
+        date_from: Optional[date] = None,
+        date_to: Optional[date] = None,
+        group_by_hour: bool = False
+    ) -> List[Dict[str, Any]]:
+        """
+        Obtiene estadísticas detalladas de proveedores desde provider_stats
+        
+        Args:
+            provider: Filtrar por proveedor específico
+            date_from: Fecha inicio
+            date_to: Fecha fin
+            group_by_hour: Si agrupar por hora o solo por día
+        """
+        from datetime import date
+        
+        try:
+            with get_db_session() as db:
+                if group_by_hour:
+                    # Estadísticas por hora
+                    query = db.query(
+                        ProviderStats.provider,
+                        ProviderStats.stat_date,
+                        ProviderStats.stat_hour,
+                        func.sum(ProviderStats.total_sent).label('total_sent'),
+                        func.sum(ProviderStats.total_failed).label('total_failed'),
+                        func.sum(ProviderStats.total_rejected).label('total_rejected'),
+                        func.avg(ProviderStats.avg_processing_time_ms).label('avg_processing_time_ms'),
+                        func.max(ProviderStats.max_processing_time_ms).label('max_processing_time_ms')
+                    ).group_by(
+                        ProviderStats.provider,
+                        ProviderStats.stat_date,
+                        ProviderStats.stat_hour
+                    )
+                else:
+                    # Estadísticas por día
+                    query = db.query(
+                        ProviderStats.provider,
+                        ProviderStats.stat_date,
+                        func.sum(ProviderStats.total_sent).label('total_sent'),
+                        func.sum(ProviderStats.total_failed).label('total_failed'),
+                        func.sum(ProviderStats.total_rejected).label('total_rejected'),
+                        func.avg(ProviderStats.avg_processing_time_ms).label('avg_processing_time_ms'),
+                        func.max(ProviderStats.max_processing_time_ms).label('max_processing_time_ms')
+                    ).group_by(
+                        ProviderStats.provider,
+                        ProviderStats.stat_date
+                    )
+                
+                # Aplicar filtros
+                if provider:
+                    query = query.filter(ProviderStats.provider == provider)
+                if date_from:
+                    query = query.filter(ProviderStats.stat_date >= date_from)
+                if date_to:
+                    query = query.filter(ProviderStats.stat_date <= date_to)
+                
+                # Ordenar por fecha
+                query = query.order_by(ProviderStats.stat_date.desc())
+                
+                results = query.all()
+                
+                stats_list = []
+                for r in results:
+                    total = r.total_sent + r.total_failed + r.total_rejected
+                    success_rate = round((r.total_sent / total * 100), 2) if total > 0 else 0
+                    
+                    stat_item = {
+                        "provider": r.provider,
+                        "stat_date": r.stat_date.isoformat(),
+                        "total_sent": r.total_sent,
+                        "total_failed": r.total_failed,
+                        "total_rejected": r.total_rejected,
+                        "total_messages": total,
+                        "success_rate": success_rate,
+                        "avg_processing_time_ms": round(r.avg_processing_time_ms, 2) if r.avg_processing_time_ms else None,
+                        "max_processing_time_ms": r.max_processing_time_ms
+                    }
+                    
+                    if group_by_hour:
+                        stat_item["stat_hour"] = r.stat_hour
+                    
+                    stats_list.append(stat_item)
+                
+                return stats_list
+                
+        except SQLAlchemyError as e:
+            logger.error(f"Error getting detailed provider stats: {e}")
+            return []
+
+    @staticmethod
+    def get_provider_stats_summary(
+        days_back: int = 7
+    ) -> List[Dict[str, Any]]:
+        """
+        Obtiene resumen de estadísticas de proveedores para los últimos N días
+        """
+        from datetime import date, timedelta
+        
+        date_from = date.today() - timedelta(days=days_back)
+        
+        try:
+            with get_db_session() as db:
+                query = db.query(
+                    ProviderStats.provider,
+                    func.sum(ProviderStats.total_sent).label('total_sent'),
+                    func.sum(ProviderStats.total_failed).label('total_failed'),
+                    func.sum(ProviderStats.total_rejected).label('total_rejected'),
+                    func.avg(ProviderStats.avg_processing_time_ms).label('avg_processing_time_ms'),
+                    func.max(ProviderStats.max_processing_time_ms).label('max_processing_time_ms')
+                ).filter(
+                    ProviderStats.stat_date >= date_from
+                ).group_by(ProviderStats.provider)
+                
+                results = query.all()
+                
+                return [
+                    {
+                        "provider": r.provider,
+                        "days_back": days_back,
+                        "total_sent": r.total_sent,
+                        "total_failed": r.total_failed,
+                        "total_rejected": r.total_rejected,
+                        "total_messages": r.total_sent + r.total_failed + r.total_rejected,
+                        "success_rate": round((r.total_sent / (r.total_sent + r.total_failed + r.total_rejected) * 100), 2) 
+                                      if (r.total_sent + r.total_failed + r.total_rejected) > 0 else 0,
+                        "avg_processing_time_ms": round(r.avg_processing_time_ms, 2) if r.avg_processing_time_ms else None,
+                        "max_processing_time_ms": r.max_processing_time_ms
+                    }
+                    for r in results
+                ]
+                
+        except SQLAlchemyError as e:
+            logger.error(f"Error getting provider stats summary: {e}")
+            return []
+
+    @staticmethod
+    def create_provider_stats_entry(
+        provider: str,
+        stat_date: Optional[date] = None,
+        stat_hour: Optional[int] = None
+    ) -> bool:
+        """
+        Crea entrada inicial de estadísticas para un proveedor/fecha/hora si no existe
+        """
+        from datetime import date
+        
+        if not stat_date:
+            stat_date = date.today()
+        if stat_hour is None:
+            stat_hour = datetime.now().hour
+        
+        try:
+            with get_db_session() as db:
+                # Verificar si ya existe
+                existing = db.query(ProviderStats).filter(
+                    and_(
+                        ProviderStats.provider == provider,
+                        ProviderStats.stat_date == stat_date,
+                        ProviderStats.stat_hour == stat_hour
+                    )
+                ).first()
+                
+                if existing:
+                    return True  # Ya existe
+                
+                # Crear nueva entrada
+                stats = ProviderStats(
+                    provider=provider,
+                    stat_date=stat_date,
+                    stat_hour=stat_hour,
+                    total_sent=0,
+                    total_failed=0,
+                    total_rejected=0,
+                    avg_processing_time_ms=None,
+                    max_processing_time_ms=None
+                )
+                
+                db.add(stats)
+                db.commit()
+                
+                logger.debug(f"Created provider stats entry: {provider} {stat_date} {stat_hour}")
+                return True
+                
+        except SQLAlchemyError as e:
+            logger.error(f"Error creating provider stats entry: {e}")
+            return False

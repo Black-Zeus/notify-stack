@@ -1,0 +1,32 @@
+⚠️ ALERTA DEL SISTEMA
+
+Servidor: {{ servidor }}
+Tipo alerta: {{ tipo_alerta.upper() }}
+Severidad: {{ severidad.upper() }}
+
+Hora detección: {{ hora_deteccion }}
+Timestamp: {{ timestamp }}
+
+{% if uso_disco %}💾 USO DE DISCO:
+• Uso actual: {{ uso_disco }}%
+• Espacio libre: {{ espacio_libre }}
+• Punto montaje: {{ punto_montaje }}
+
+{% endif %}{% if uso_memoria %}🧠 USO DE MEMORIA:
+• Uso actual: {{ uso_memoria }}%
+• Memoria total: {{ memoria_total }}
+• Memoria disponible: {{ memoria_disponible }}
+
+{% endif %}{% if uso_cpu %}⚡ USO DE CPU:
+• Uso actual: {{ uso_cpu }}%
+• Load average: {{ load_average }}
+• Procesos activos: {{ procesos_activos }}
+
+{% endif %}{% if accion_recomendada %}🛠️ ACCIÓN RECOMENDADA:
+{{ accion_recomendada }}
+
+{% endif %}⚠️ Monitorear recursos del sistema
+
+---
+Notificación automática del sistema
+No responder a este mensaje

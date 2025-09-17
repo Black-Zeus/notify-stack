@@ -1,10 +1,13 @@
 """
-Carga y validación de configuraciones
+Carga y validación de configuraciones - Updated with Variable Resolution
 """
 import os
 import logging
 import yaml
 from typing import Dict, Any, Optional
+
+# Import del nuevo resolver
+from utils.config_resolver import ConfigResolver, substitute_config_vars, debug_config_vars
 
 # Rutas de archivos de configuración
 CONFIG_DIR = "/app/Config"
@@ -16,27 +19,48 @@ SECRETS_FILE = os.path.join(CONFIG_DIR, "secrets.env")
 # Cache de configuraciones
 _config_cache = {}
 
+# Resolver global para variables
+_resolver = ConfigResolver(warn_missing=True, strict_mode=False)
 
-def load_yaml_file(filepath: str) -> Dict[str, Any]:
+
+def load_yaml_file(filepath: str, resolve_vars: bool = True) -> Dict[str, Any]:
     """
-    Carga archivo YAML de forma segura
+    Carga archivo YAML de forma segura con resolución de variables
+    
+    Args:
+        filepath: Path del archivo YAML
+        resolve_vars: Si debe procesar plantillas ${VARIABLE}
     """
     try:
         with open(filepath, 'r', encoding='utf-8') as f:
             content = yaml.safe_load(f) or {}
+        
+        # Procesar variables de entorno si está habilitado
+        if resolve_vars and content:
+            logging.debug(f"Resolving variables in: {filepath}")
+            content = _resolver.substitute_env_vars(content)
+            
+            # Debug: mostrar variables procesadas en modo debug
+            if os.getenv('DEBUG', '').lower() == 'true':
+                debug_config_vars(content, os.path.basename(filepath))
+        
         logging.debug(f"Loaded YAML file: {filepath}")
         return content
+        
     except FileNotFoundError:
         logging.warning(f"Config file not found: {filepath}")
         return {}
     except yaml.YAMLError as e:
         logging.error(f"Invalid YAML in {filepath}: {e}")
         return {}
+    except Exception as e:
+        logging.error(f"Error processing {filepath}: {e}")
+        return {}
 
 
 def load_config(force_reload: bool = False) -> Dict[str, Any]:
     """
-    Carga configuración principal (config.yml)
+    Carga configuración principal (config.yml) con variables resueltas
     """
     cache_key = "main_config"
     
@@ -44,7 +68,8 @@ def load_config(force_reload: bool = False) -> Dict[str, Any]:
         return _config_cache[cache_key]
     
     try:
-        config = load_yaml_file(CONFIG_FILE)
+        # Cargar con resolución de variables
+        config = load_yaml_file(CONFIG_FILE, resolve_vars=True)
         
         # Validaciones básicas
         if not config:
@@ -67,7 +92,7 @@ def load_config(force_reload: bool = False) -> Dict[str, Any]:
 
 def load_providers_config(force_reload: bool = False) -> Dict[str, Any]:
     """
-    Carga configuración de proveedores (providers.yml)
+    Carga configuración de proveedores (providers.yml) con variables resueltas
     """
     cache_key = "providers_config"
     
@@ -75,10 +100,16 @@ def load_providers_config(force_reload: bool = False) -> Dict[str, Any]:
         return _config_cache[cache_key]
     
     try:
-        providers = load_yaml_file(PROVIDERS_FILE)
+        # CRÍTICO: Cargar con resolución de variables habilitada
+        providers = load_yaml_file(PROVIDERS_FILE, resolve_vars=True)
         
         # Validar estructura de proveedores
         validated_providers = validate_providers_config(providers)
+        
+        # Mostrar variables faltantes si hay
+        missing_vars = _resolver.get_missing_vars()
+        if missing_vars:
+            logging.warning(f"Missing environment variables: {sorted(missing_vars)}")
         
         # Cache resultado
         _config_cache[cache_key] = validated_providers
@@ -95,7 +126,7 @@ def load_providers_config(force_reload: bool = False) -> Dict[str, Any]:
 
 def load_policy_config(force_reload: bool = False) -> Dict[str, Any]:
     """
-    Carga configuración de políticas (policy.yml)
+    Carga configuración de políticas (policy.yml) con variables resueltas
     """
     cache_key = "policy_config"
     
@@ -103,7 +134,8 @@ def load_policy_config(force_reload: bool = False) -> Dict[str, Any]:
         return _config_cache[cache_key]
     
     try:
-        policy = load_yaml_file(POLICY_FILE)
+        # Cargar con resolución de variables
+        policy = load_yaml_file(POLICY_FILE, resolve_vars=True)
         
         # Validar estructura de políticas
         validated_policy = validate_policy_config(policy)
@@ -125,6 +157,7 @@ def load_policy_config(force_reload: bool = False) -> Dict[str, Any]:
 def validate_providers_config(providers: Dict[str, Any]) -> Dict[str, Any]:
     """
     Valida configuración de proveedores y filtra los deshabilitados
+    ACTUALIZADO: Valida que las variables se resolvieron correctamente
     """
     if not providers:
         logging.warning("No providers configured")
@@ -159,6 +192,13 @@ def validate_providers_config(providers: Dict[str, Any]) -> Dict[str, Any]:
                 logging.error(f"Provider {name}: invalid type '{provider_type}'")
                 continue
             
+            # NUEVA VALIDACIÓN: Verificar que variables críticas se resolvieron
+            if provider_type in ["twilio", "api"]:
+                # Verificar que no quedan plantillas sin resolver
+                if _has_unresolved_templates(config):
+                    logging.error(f"Provider {name}: unresolved template variables")
+                    continue
+            
             # Validación específica por tipo
             if provider_type == "smtp":
                 required_fields = ["host", "port"]
@@ -176,6 +216,19 @@ def validate_providers_config(providers: Dict[str, Any]) -> Dict[str, Any]:
                     if not all(field in config for field in required_fields):
                         logging.error(f"Provider {name}: missing required Twilio fields")
                         continue
+                    
+                    # NUEVA: Validar que las credenciales no estén vacías
+                    account_sid = config.get("account_sid", "")
+                    auth_token = config.get("auth_token", "")
+                    
+                    if not account_sid or not auth_token:
+                        logging.error(f"Provider {name}: empty Twilio credentials")
+                        continue
+                    
+                    if account_sid.startswith("${") or auth_token.startswith("${"):
+                        logging.error(f"Provider {name}: unresolved Twilio credential templates")
+                        continue
+                        
                     logging.debug(f"Provider {name}: Twilio provider validated successfully")
                 else:
                     # Validación para API genéricas (SendGrid, SES, etc.)
@@ -206,6 +259,23 @@ def validate_providers_config(providers: Dict[str, Any]) -> Dict[str, Any]:
             continue
     
     return validated
+
+
+def _has_unresolved_templates(obj: Any) -> bool:
+    """
+    Verifica si quedan plantillas ${VARIABLE} sin resolver
+    """
+    import re
+    pattern = re.compile(r'\$\{[^}]+\}')
+    
+    if isinstance(obj, dict):
+        return any(_has_unresolved_templates(value) for value in obj.values())
+    elif isinstance(obj, list):
+        return any(_has_unresolved_templates(item) for item in obj)
+    elif isinstance(obj, str):
+        return bool(pattern.search(obj))
+    else:
+        return False
 
 
 def validate_policy_config(policy: Dict[str, Any]) -> Dict[str, Any]:
@@ -293,14 +363,20 @@ def get_default_policy() -> Dict[str, Any]:
 def get_provider_config(provider_name: str) -> Optional[Dict[str, Any]]:
     """
     Obtiene configuración de un proveedor específico (solo si está habilitado)
+    Las variables ya están resueltas
     """
     providers = load_providers_config()
-    return providers.get(provider_name)
+    config = providers.get(provider_name)
+    
+    if config and os.getenv('DEBUG', '').lower() == 'true':
+        logging.debug(f"Provider {provider_name} config: account_sid={config.get('account_sid', 'N/A')[:10]}...")
+    
+    return config
 
 
 def get_enabled_providers() -> Dict[str, Any]:
     """
-    Obtiene solo los proveedores habilitados
+    Obtiene solo los proveedores habilitados con variables resueltas
     """
     return load_providers_config()  # Ya filtrado por enabled=true
 
@@ -311,6 +387,9 @@ def reload_all_configs():
     """
     global _config_cache
     _config_cache.clear()
+    
+    # Limpiar variables faltantes del resolver
+    _resolver.clear_missing_vars()
     
     # Precargar configuraciones principales
     load_config(force_reload=True)
@@ -323,6 +402,7 @@ def reload_all_configs():
 def get_config_info() -> Dict[str, Any]:
     """
     Obtiene información sobre configuraciones cargadas
+    ACTUALIZADO: Incluye info sobre variables resueltas
     """
     return {
         "config_files": {
@@ -332,5 +412,47 @@ def get_config_info() -> Dict[str, Any]:
         },
         "cached_configs": list(_config_cache.keys()),
         "providers_count": len(load_providers_config()),
+        "missing_variables": sorted(_resolver.get_missing_vars()),
+        "variable_resolution": "enabled",
         "last_loaded": "dynamic"
     }
+
+
+def validate_critical_vars() -> Dict[str, Any]:
+    """
+    NUEVA: Valida variables críticas para proveedores activos
+    """
+    results = {
+        "valid": True,
+        "missing_vars": [],
+        "provider_status": {}
+    }
+    
+    providers = load_providers_config()
+    
+    for name, config in providers.items():
+        provider_type = config.get("type")
+        provider_subtype = config.get("provider_type", "")
+        
+        # Validar variables críticas por tipo de proveedor
+        missing = []
+        
+        if provider_type == "twilio" or provider_subtype in ["twilio_sms", "twilio_whatsapp"]:
+            if not config.get("account_sid"):
+                missing.append("TWILIO_ACCOUNT_SID")
+            if not config.get("auth_token"):
+                missing.append("TWILIO_AUTH_TOKEN")
+        
+        results["provider_status"][name] = {
+            "valid": len(missing) == 0,
+            "missing_vars": missing
+        }
+        
+        if missing:
+            results["valid"] = False
+            results["missing_vars"].extend(missing)
+    
+    # Remover duplicados
+    results["missing_vars"] = sorted(set(results["missing_vars"]))
+    
+    return results

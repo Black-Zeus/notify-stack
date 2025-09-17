@@ -1,0 +1,18 @@
+🔒 CERTIFICADO SSL/TLS RENOVADO EXITOSAMENTE
+
+Dominio: {{ dominio }}
+Estado: ACTIVO
+
+Fecha renovación: {{ fecha_renovacion }}
+Nueva fecha vencimiento: {{ fecha_vencimiento }}
+Emisor: {{ emisor }}
+Timestamp: {{ timestamp }}
+
+✅ Renovación completada:
+• Certificado válido y activo
+• Sin acciones requeridas
+• Próxima renovación automática programada
+
+---
+Notificación automática del sistema
+No responder a este mensaje

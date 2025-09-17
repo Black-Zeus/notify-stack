@@ -1,0 +1,23 @@
+✅ OPERACIÓN COMPLETADA EXITOSAMENTE
+
+ID Operación: {{ operacion_id }}
+Operación: {{ operacion }}
+Componente: {{ componente }}
+
+Descripción: {{ descripcion }}
+
+Hora finalización: {{ hora_finalizacion }}
+Duración: {{ duracion }}
+Timestamp: {{ timestamp }}
+
+{% if resultado %}📊 Resultado:
+{{ resultado }}
+
+{% endif %}{% if siguiente_accion %}⏭️ Siguiente acción:
+{{ siguiente_accion }}
+
+{% endif %}✅ Operación completada sin errores
+
+---
+Notificación automática del sistema
+No responder a este mensaje

@@ -1,0 +1,21 @@
+ℹ️ {{ titulo }}
+
+Mensaje: {{ mensaje }}
+
+Categoría: {{ categoria }}
+Fecha: {{ fecha }}
+Remitente: {{ remitente }}
+Referencia: {{ referencia }}
+Timestamp: {{ timestamp }}
+
+{% if datos_adicionales %}📋 Información adicional:
+{{ datos_adicionales }}
+
+{% endif %}{% if accion_requerida %}⚡ Acción requerida:
+{{ accion_requerida }}
+
+{% endif %}{% if enlace %}🔗 Enlace: {{ enlace }}
+
+{% endif %}---
+Notificación automática del sistema
+No responder a este mensaje

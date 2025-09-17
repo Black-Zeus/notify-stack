@@ -1,0 +1,5 @@
+🚨 ERROR {{ severidad.upper() }}
+Comp: {{ componente }}
+Error: {{ tipo_error }}
+ID: {{ error_id }}
+Hora: {{ hora_error[:16] }}

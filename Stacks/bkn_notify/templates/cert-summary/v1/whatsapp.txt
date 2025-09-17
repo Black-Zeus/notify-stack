@@ -1,0 +1,25 @@
+📊 RESUMEN SEMANAL CERTIFICADOS SSL
+
+Fecha verificación: {{ fecha_verificacion }}
+Total certificados monitoreados: {{ total_certificados }}
+
+📈 ESTADO GENERAL:
+✅ Válidos: {{ total_validos }}
+🔄 Renovación automática pendiente: {{ total_auto_pendientes }}
+⚠️ Renovación manual pendiente: {{ total_manual_pendientes }}
+❌ Con errores: {{ total_errores }}
+
+📋 DETALLE POR DOMINIO:
+{% for cert in certificados %}
+• {{ cert.dominio }}
+  Estado: {{ cert.estado }}
+  Vence en: {{ cert.dias_restantes }} días ({{ cert.fecha_vencimiento }})
+  Tipo: {{ cert.tipo }}
+
+{% endfor %}
+Umbral de alerta: {{ umbral_dias }} días
+{% if proxima_verificacion %}Próxima verificación: {{ proxima_verificacion }}{% endif %}
+
+---
+Notificación automática del sistema
+No responder a este mensaje

@@ -1,0 +1,27 @@
+🔐 ALERTA DE SEGURIDAD
+
+ID Evento: {{ evento_id }}
+Tipo: {{ tipo_alerta.upper() }}
+Usuario afectado: {{ usuario_afectado }}
+Nivel de riesgo: {{ nivel_riesgo.upper() }}
+
+Hora del evento: {{ hora_evento }}
+Timestamp: {{ timestamp }}
+
+{% if intento_acceso %}🌍 INTENTO DE ACCESO:
+• IP origen: {{ ip_origen }}
+• País origen: {{ pais_origen }}
+
+{% endif %}{% if accion_inmediata %}🚨 ACCIÓN INMEDIATA:
+{{ accion_inmediata }}
+
+{% endif %}{% if accion_recomendada %}💡 ACCIÓN RECOMENDADA:
+{{ accion_recomendada }}
+
+{% endif %}{% if contacto_seguridad %}📧 Contacto seguridad: {{ contacto_seguridad }}
+
+{% endif %}⚠️ ATENCIÓN: Evento de seguridad crítico - Revisar inmediatamente
+
+---
+Notificación automática del sistema
+No responder a este mensaje

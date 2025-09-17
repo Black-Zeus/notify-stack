@@ -1,0 +1,5 @@
+🌐 RED {{ severidad.upper() }}
+{{ tipo_alerta }}: {{ destino_afectado }}
+ID: {{ evento_id }}
+Hora: {{ hora_deteccion[:16] }}
+Monitor: {{ servidor_monitor }}

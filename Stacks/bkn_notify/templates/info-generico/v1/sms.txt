@@ -1,0 +1,5 @@
+ℹ️ {{ titulo }}
+{{ mensaje }}
+Cat: {{ categoria }}
+Ref: {{ referencia }}
+{{ fecha }}

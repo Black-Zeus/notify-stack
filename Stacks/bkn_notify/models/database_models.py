@@ -1,15 +1,17 @@
 """
+Stacks/bkn_notify/models/database_models.py
 Database Models - SQLAlchemy ORM
 Modelos para las tablas del sistema de notificaciones
 """
 
-from datetime import datetime
+from datetime import datetime, date
 from typing import Optional, Dict, Any, List
 from enum import Enum
 
 from sqlalchemy import (
     Column, BigInteger, String, Text, Integer, 
-    DateTime, JSON, Enum as SQLEnum, ForeignKey, Index
+    DateTime, JSON, Enum as SQLEnum, ForeignKey, Index,
+    Date, SmallInteger  # ✅ AGREGADO: Date y SmallInteger para ProviderStats
 )
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
@@ -221,47 +223,47 @@ class NotificationAttachment(Base):
 
 class ProviderStats(Base):
     """
-    Modelo para estadísticas de proveedores (tabla opcional para métricas)
+    ✅ CORREGIDO: Modelo para estadísticas de proveedores 
+    Coincide exactamente con la tabla SQL provider_stats
     """
     __tablename__ = "provider_stats"
 
-    # Primary key
-    id = Column(BigInteger, primary_key=True, autoincrement=True)
+    # ✅ NO PRIMARY KEY ID - La tabla SQL no tiene campo id
     
-    # Provider info
-    provider_name = Column(String(50), nullable=False, index=True)
-    date = Column(DateTime, nullable=False, index=True)
+    # Clave compuesta (provider + stat_date + stat_hour)
+    provider = Column(String(50), primary_key=True, nullable=False)
+    stat_date = Column(Date, primary_key=True, nullable=False)
+    stat_hour = Column(SmallInteger, primary_key=True, nullable=True)  # TINYINT UNSIGNED = SmallInteger
     
-    # Metrics
-    total_sent = Column(Integer, default=0)
-    total_failed = Column(Integer, default=0)
-    total_queued = Column(Integer, default=0)
-    avg_delivery_time_ms = Column(Integer, nullable=True)
+    # Contadores de estadísticas
+    total_sent = Column(Integer, default=0, nullable=False)
+    total_failed = Column(Integer, default=0, nullable=False)
+    total_rejected = Column(Integer, default=0, nullable=False)
     
-    # Timestamps
-    created_at = Column(DateTime, default=func.now(), nullable=False)
-    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+    # Métricas de tiempo
+    avg_processing_time_ms = Column(Integer, nullable=True)
+    max_processing_time_ms = Column(Integer, nullable=True)
 
-    # Unique constraint
+    # Índices
     __table_args__ = (
-        Index('idx_provider_date', 'provider_name', 'date', unique=True),
+        Index('idx_provider_stats_date', 'provider', 'stat_date'),
+        Index('idx_provider_stats_hour', 'provider', 'stat_date', 'stat_hour'),
     )
 
     def __repr__(self):
-        return f"<ProviderStats(provider='{self.provider_name}', date='{self.date}')>"
+        return f"<ProviderStats(provider='{self.provider}', date='{self.stat_date}', hour={self.stat_hour})>"
 
     def to_dict(self) -> Dict[str, Any]:
         """Convierte el modelo a diccionario"""
         return {
-            "id": self.id,
-            "provider_name": self.provider_name,
-            "date": self.date.isoformat() if self.date else None,
+            "provider": self.provider,
+            "stat_date": self.stat_date.isoformat() if self.stat_date else None,
+            "stat_hour": self.stat_hour,
             "total_sent": self.total_sent,
             "total_failed": self.total_failed,
-            "total_queued": self.total_queued,
-            "avg_delivery_time_ms": self.avg_delivery_time_ms,
-            "created_at": self.created_at.isoformat() if self.created_at else None,
-            "updated_at": self.updated_at.isoformat() if self.updated_at else None
+            "total_rejected": self.total_rejected,
+            "avg_processing_time_ms": self.avg_processing_time_ms,
+            "max_processing_time_ms": self.max_processing_time_ms
         }
 
 
