@@ -1,0 +1,4 @@
+⚠️ SISTEMA {{ severidad.upper() }}
+{{ servidor }}: {{ tipo_alerta }}
+Hora: {{ hora_deteccion[:16] }}
+Revisar recursos

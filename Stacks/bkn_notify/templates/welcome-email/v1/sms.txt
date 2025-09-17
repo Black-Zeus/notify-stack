@@ -1,0 +1,4 @@
+👋 Bienvenido {{ user_name }}!
+{{ company_name }} te da la bienvenida
+Email: {{ user_email }}
+{{ timestamp[:10] }}

@@ -1,0 +1,22 @@
+🚨 ERROR DEL SISTEMA
+
+ID Error: {{ error_id }}
+Severidad: {{ severidad.upper() }}
+Componente: {{ componente }}
+
+Tipo de error: {{ tipo_error }}
+Descripción: {{ descripcion }}
+
+Hora del error: {{ hora_error }}
+Timestamp: {{ timestamp }}
+
+{% if solucion_sugerida %}💡 Solución sugerida:
+{{ solucion_sugerida }}
+
+{% endif %}{% if contacto %}📧 Contacto: {{ contacto }}
+
+{% endif %}⚠️ Revisar inmediatamente según severidad del error
+
+---
+Notificación automática del sistema
+No responder a este mensaje

@@ -1,0 +1,37 @@
+
+-----
+sms.txt
+-----
+👋 Bienvenido {{ user_name }}!
+{{ company_name }} te da la bienvenida
+Email: {{ user_email }}
+{{ timestamp[:10] }}
+
+-----
+whatsapp.txt
+-----
+👋 BIENVENIDO A {{ company_name.upper() }}
+
+Hola {{ user_name }},
+
+¡Te damos la bienvenida a nuestra plataforma!
+
+Datos de tu cuenta:
+• Nombre: {{ user_name }}
+• Email: {{ user_email }}
+• Empresa: {{ company_name }}
+• Fecha registro: {{ timestamp }}
+
+{% if activation_link %}🔗 Para activar tu cuenta, haz clic aquí:
+{{ activation_link }}
+
+{% endif %}✅ Próximos pasos:
+• Completa tu perfil
+• Explora las funcionalidades
+• Contacta soporte si necesitas ayuda
+
+¡Esperamos que tengas una excelente experiencia!
+
+---
+Notificación automática del sistema
+No responder a este mensaje

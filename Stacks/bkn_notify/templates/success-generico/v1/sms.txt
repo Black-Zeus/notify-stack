@@ -1,0 +1,5 @@
+✅ ÉXITO: {{ operacion }}
+Comp: {{ componente }}
+ID: {{ operacion_id }}
+Duración: {{ duracion }}
+{{ hora_finalizacion[:16] }}

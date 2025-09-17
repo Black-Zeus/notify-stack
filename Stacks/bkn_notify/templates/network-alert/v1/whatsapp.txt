@@ -1,0 +1,31 @@
+🌐 ALERTA DE RED/CONECTIVIDAD
+
+ID Evento: {{ evento_id }}
+Tipo: {{ tipo_alerta.upper() }}
+Destino afectado: {{ destino_afectado }}
+Severidad: {{ severidad.upper() }}
+
+Hora detección: {{ hora_deteccion }}
+Servidor monitor: {{ servidor_monitor }}
+Timestamp: {{ timestamp }}
+
+{% if latencia_alta %}📊 LATENCIA ALTA:
+• Latencia actual: {{ latencia_actual }}ms
+• Latencia promedio: {{ latencia_promedio }}ms
+• Umbral configurado: {{ umbral_latencia }}ms
+• Duración del problema: {{ duracion_problema }}
+• Pérdida de paquetes: {{ perdida_paquetes }}%
+
+{% endif %}{% if dns_fallo %}🔍 FALLO DNS:
+• Dominio: {{ dominio_dns }}
+• Servidor DNS: {{ servidor_dns }}
+
+{% endif %}{% if impacto_servicios %}⚠️ SERVICIOS IMPACTADOS:
+{{ servicios_impactados }}
+
+{% endif %}{% if accion_recomendada %}🛠️ ACCIÓN RECOMENDADA:
+{{ accion_recomendada }}
+
+{% endif %}---
+Notificación automática del sistema
+No responder a este mensaje

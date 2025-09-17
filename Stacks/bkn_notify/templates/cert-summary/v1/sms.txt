@@ -1,0 +1,6 @@
+📊 CERT RESUMEN {{ fecha_verificacion[:10] }}
+Total: {{ total_certificados }}
+✅ Válidos: {{ total_validos }}
+🔄 Auto: {{ total_auto_pendientes }}
+⚠️ Manual: {{ total_manual_pendientes }}
+❌ Errores: {{ total_errores }}

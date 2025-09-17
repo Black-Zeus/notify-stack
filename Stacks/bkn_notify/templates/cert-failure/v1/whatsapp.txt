@@ -1,0 +1,21 @@
+🔒 FALLO DE CERTIFICADO SSL/TLS
+
+Dominio: {{ dominio }}
+Estado: CRÍTICO
+Fecha vencimiento: {{ fecha_vencimiento }}
+Días restantes: {{ dias_restantes }}
+
+Motivo del fallo:
+{{ motivo_fallo }}
+
+Último intento: {{ ultimo_intento }}
+Timestamp: {{ timestamp }}
+
+⚠️ Acción requerida:
+• Verificar configuración DNS
+• Renovar certificado inmediatamente
+• Contactar equipo de infraestructura
+
+---
+Notificación automática del sistema
+No responder a este mensaje

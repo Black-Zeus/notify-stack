@@ -1,0 +1,4 @@
+🚨 CERT ERROR: {{ dominio }}
+Vence: {{ fecha_vencimiento }} ({{ dias_restantes }}d)
+Fallo: {{ motivo_fallo }}
+Revisar urgente

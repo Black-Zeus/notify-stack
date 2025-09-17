@@ -1,0 +1,4 @@
+✅ CERT OK: {{ dominio }}
+Renovado: {{ fecha_renovacion }}
+Vence: {{ fecha_vencimiento }}
+Emisor: {{ emisor }}

@@ -1,0 +1,4 @@
+🔐 SEGURIDAD {{ nivel_riesgo.upper() }}
+{{ tipo_alerta }}: {{ usuario_afectado }}
+ID: {{ evento_id }}
+Hora: {{ hora_evento[:16] }}
