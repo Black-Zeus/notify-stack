@@ -7,6 +7,39 @@ services:
     container_name: bkn_notify
     env_file:
       - ./Config/secrets.env
+    environment:
+      # Configuración específica para providers DB
+      - USE_DATABASE_PROVIDERS=false # Empezar en modo YAML, cambiar a true después
+      - PROVIDERS_DUAL_MODE=true # Fallback automático habilitado
+      - PROVIDERS_DB_TIMEOUT=5 # Timeout para operaciones DB
+      - PROVIDERS_DEFAULT_ENVIRONMENT=production
+      # Cache configuration
+      - REDIS_TTL_PROVIDERS=3600 # Cache de providers por 1 hora
+      - REDIS_TTL_PROVIDERS_CONFIG=1800 # Config cache por 30 minutos
+      - REDIS_TTL_PROVIDERS_HEALTH=300 # Health cache por 5 minutos
+      - REDIS_TTL_PROVIDER_GROUPS=7200 # Groups cache por 2 horas
+      # Feature flags
+      - FEATURE_PROVIDER_GROUPS_ENABLED=true
+      - FEATURE_PROVIDER_HEALTH_CHECKS_ENABLED=true
+      - FEATURE_PROVIDER_LOAD_BALANCING_ENABLED=true
+      - FEATURE_PROVIDER_COST_TRACKING_ENABLED=false
+      # Health check configuration
+      - HEALTH_CHECK_DEFAULT_INTERVAL=5 # minutos
+      - HEALTH_CHECK_DEFAULT_TIMEOUT=30 # segundos
+      - HEALTH_CHECK_FAILURE_THRESHOLD=3
+      - HEALTH_CHECK_SUCCESS_THRESHOLD=2
+      # Performance settings
+      - PROVIDERS_MAX_LOAD_TIME_MS=50
+      - PROVIDERS_MAX_SEARCH_RESULTS=100
+      - PROVIDERS_DEFAULT_PAGE_SIZE=20
+      # Security
+      - ADMIN_PROVIDERS_ENDPOINT_ENABLED=true
+      - ADMIN_PROVIDERS_REQUIRE_AUTH=true
+      - ADMIN_PROVIDERS_AUDIT_ENABLED=true
+      # Development/Debug (cambiar en producción)
+      - DEBUG_PROVIDERS_ENABLED=false
+      - DEBUG_LOG_PROVIDER_CALLS=false
+      - DEV_MOCK_PROVIDERS_ENABLED=false
     volumes:
       - ./Config:/app/Config:ro
       - ./Stacks/bkn_notify/templates:/app/templates:ro
@@ -21,7 +54,13 @@ services:
       - "8000:8000"
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/api/healthz')"]
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import requests; requests.get('http://localhost:8000/api/healthz')",
+        ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -35,6 +74,25 @@ services:
     container_name: bkn_celery
     env_file:
       - ./Config/secrets.env
+    environment:
+      # Las mismas variables que bkn_notify para consistencia
+      - USE_DATABASE_PROVIDERS=false
+      - PROVIDERS_DUAL_MODE=true
+      - PROVIDERS_DB_TIMEOUT=5
+      - REDIS_TTL_PROVIDERS=3600
+      - REDIS_TTL_PROVIDERS_CONFIG=1800
+      - REDIS_TTL_PROVIDERS_HEALTH=300
+      # Worker specific settings
+      - FEATURE_PROVIDER_HEALTH_CHECKS_ENABLED=true
+      - HEALTH_CHECK_DEFAULT_INTERVAL=5
+      # Error handling
+      - ERROR_RETRY_EXPONENTIAL_BACKOFF=true
+      - ERROR_RETRY_MAX_DELAY_SECONDS=300
+      - CIRCUIT_BREAKER_ENABLED=true
+      - CIRCUIT_BREAKER_FAILURE_THRESHOLD=5
+      # Monitoring
+      - METRICS_PROVIDERS_ENABLED=true
+      - METRICS_COLLECTION_INTERVAL=300
     volumes:
       - ./Config:/app/Config:ro
       - ./Stacks/bkn_notify/templates:/app/templates:ro
@@ -45,13 +103,30 @@ services:
     networks:
       - backend
     restart: unless-stopped
-    command: ["celery", "-A", "services.celery_app", "worker", "--loglevel=info", "--concurrency=2"]
+    command:
+      [
+        "celery",
+        "-A",
+        "services.celery_app",
+        "worker",
+        "--loglevel=info",
+        "--concurrency=2",
+      ]
 
   bkn_celery_beat:
-    image: notify-stack/bkn_celery:1.0.0   # 👈 reutiliza la misma imagen ya construida
+    image: notify-stack/bkn_celery:1.0.0
     container_name: bkn_celery_beat
     env_file:
       - ./Config/secrets.env
+    environment:
+      # Variables para health checks programados
+      - USE_DATABASE_PROVIDERS=false
+      - PROVIDERS_DUAL_MODE=true
+      - FEATURE_PROVIDER_HEALTH_CHECKS_ENABLED=true
+      - HEALTH_CHECK_DEFAULT_INTERVAL=5
+      - HEALTH_CHECK_DEFAULT_TIMEOUT=30
+      - METRICS_PROVIDERS_ENABLED=true
+      - METRICS_COLLECTION_INTERVAL=300
     volumes:
       - ./Config:/app/Config:ro
       - ./Stacks/bkn_notify/templates:/app/templates:ro
@@ -63,7 +138,15 @@ services:
     networks:
       - backend
     restart: unless-stopped
-    command: ["celery", "-A", "services.celery_app", "beat", "--loglevel=info", "--schedule=/app/beat-schedule/celerybeat-schedule"]
+    command:
+      [
+        "celery",
+        "-A",
+        "services.celery_app",
+        "beat",
+        "--loglevel=info",
+        "--schedule=/app/beat-schedule/celerybeat-schedule",
+      ]
 
   bkn_redis:
     image: redis:7-alpine
@@ -73,26 +156,44 @@ services:
     volumes:
       - redis_data:/data
     restart: unless-stopped
-    
+
     deploy:
       resources:
         limits:
-          cpus: '0.5'
+          cpus: "0.5"
           memory: 256M
         reservations:
-          cpus: '0.1'
+          cpus: "0.1"
           memory: 64M
-    
+
     command: [
-      "redis-server", 
-      "--appendonly", "yes",
-      "--maxmemory", "200mb",
-      "--maxmemory-policy", "allkeys-lru",
-      "--save", "900", "1",
-      "--save", "300", "10",
-      "--save", "60", "10000"
-    ]
-    
+        "redis-server",
+        "--appendonly",
+        "yes",
+        "--maxmemory",
+        "200mb",
+        "--maxmemory-policy",
+        "allkeys-lru",
+        "--save",
+        "900",
+        "1",
+        "--save",
+        "300",
+        "10",
+        "--save",
+        "60",
+        "10000",
+        # Optimizaciones adicionales para cache de providers
+        "--hash-max-ziplist-entries",
+        "1000", # Optimizar hash tables
+        "--hash-max-ziplist-value",
+        "64", # Para configs pequeños
+        "--timeout",
+        "300", # Timeout de conexiones inactivas
+        "--tcp-keepalive",
+        "300", # Mantener conexiones TCP
+      ]
+
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 15s
@@ -118,21 +219,29 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '1.0'
+          cpus: "1.0"
           memory: 512M
         reservations:
-          cpus: '0.2'
+          cpus: "0.2"
           memory: 128M
 
     command: [
-      "mysqld",
-      "--character-set-server=utf8mb4",
-      "--collation-server=utf8mb4_unicode_ci",
-      "--default-authentication-plugin=mysql_native_password",
-      "--innodb-buffer-pool-size=256M",
-      "--max-connections=200",
-      "--innodb-log-file-size=128M"
-    ]
+        "mysqld",
+        "--character-set-server=utf8mb4",
+        "--collation-server=utf8mb4_unicode_ci",
+        "--default-authentication-plugin=mysql_native_password",
+        "--innodb-buffer-pool-size=256M",
+        "--max-connections=200",
+        "--innodb-log-file-size=128M",
+        # Optimizaciones adicionales para providers
+        "--query-cache-type=1", # Habilitar query cache
+        "--query-cache-size=32M", # Cache para consultas frecuentes de providers
+        "--tmp-table-size=64M", # Tablas temporales más grandes
+        "--max-heap-table-size=64M", # Memory tables para cache
+        "--innodb-lock-wait-timeout=50", # Timeout para locks
+        "--wait-timeout=28800", # 8 horas timeout conexión
+        "--interactive-timeout=28800", # Timeout interactivo
+      ]
 
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
@@ -140,7 +249,6 @@ services:
       timeout: 10s
       retries: 5
       start_period: 30s
-
 
   mailpit:
     image: axllent/mailpit:latest
@@ -154,16 +262,29 @@ services:
       - "8025:8025"
       - "1025:1025"
     restart: unless-stopped
-    
-    command: [
-      "--database", "/data/mailpit.db",
-      "--listen", "0.0.0.0:8025",
-      "--smtp", "0.0.0.0:1025",
-      "--max", "5000"
-    ]
-    
+
+    command:
+      [
+        "--database",
+        "/data/mailpit.db",
+        "--listen",
+        "0.0.0.0:8025",
+        "--smtp",
+        "0.0.0.0:1025",
+        "--max",
+        "5000",
+      ]
+
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8025/api/v1/info"]
+      test:
+        [
+          "CMD",
+          "wget",
+          "--quiet",
+          "--tries=1",
+          "--spider",
+          "http://localhost:8025/api/v1/info",
+        ]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -182,9 +303,17 @@ services:
     ports:
       - "80:80"
     restart: unless-stopped
-    
+
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      test:
+        [
+          "CMD",
+          "wget",
+          "--quiet",
+          "--tries=1",
+          "--spider",
+          "http://localhost/health",
+        ]
       interval: 30s
       timeout: 5s
       retries: 3

@@ -728,3 +728,578 @@ class DatabaseService:
         except SQLAlchemyError as e:
             logger.error(f"Error creating provider stats entry: {e}")
             return False
+        
+# =============================================================================
+# NUEVOS MÉTODOS PARA PROVIDERS - Agregar al final de DatabaseService
+# =============================================================================
+
+@staticmethod
+def get_all_providers() -> List[Dict[str, Any]]:
+    """Obtiene todos los proveedores desde base de datos"""
+    try:
+        with get_db_session() as db:
+            from models.provider_models import Provider
+            
+            providers = db.query(Provider).all()
+            return [provider.to_dict() for provider in providers]
+            
+    except SQLAlchemyError as e:
+        logger.error(f"Error getting all providers: {e}")
+        return []
+
+@staticmethod
+def get_active_providers() -> List[Dict[str, Any]]:
+    """Obtiene solo proveedores activos y saludables desde base de datos"""
+    try:
+        with get_db_session() as db:
+            from models.provider_models import Provider
+            
+            providers = db.query(Provider).filter(
+                and_(
+                    Provider.enabled == True,
+                    Provider.is_healthy == True
+                )
+            ).order_by(Provider.priority.asc()).all()
+            
+            return [provider.to_dict() for provider in providers]
+            
+    except SQLAlchemyError as e:
+        logger.error(f"Error getting active providers: {e}")
+        return []
+
+@staticmethod
+def get_provider_by_key(provider_key: str) -> Optional[Dict[str, Any]]:
+    """Obtiene proveedor por su clave única desde base de datos"""
+    try:
+        with get_db_session() as db:
+            from models.provider_models import Provider
+            
+            provider = db.query(Provider).filter(
+                Provider.provider_key == provider_key
+            ).first()
+            
+            return provider.to_dict() if provider else None
+            
+    except SQLAlchemyError as e:
+        logger.error(f"Error getting provider {provider_key}: {e}")
+        return None
+
+@staticmethod
+def get_providers_by_type(provider_type: str) -> List[Dict[str, Any]]:
+    """Obtiene proveedores por tipo desde base de datos"""
+    try:
+        with get_db_session() as db:
+            from models.provider_models import Provider, ProviderType
+            
+            # Normalizar tipo
+            type_enum = None
+            for pt in ProviderType:
+                if pt.value == provider_type.lower():
+                    type_enum = pt
+                    break
+            
+            if not type_enum:
+                logger.warning(f"Invalid provider type: {provider_type}")
+                return []
+            
+            providers = db.query(Provider).filter(
+                and_(
+                    Provider.provider_type == type_enum,
+                    Provider.enabled == True
+                )
+            ).order_by(Provider.priority.asc()).all()
+            
+            return [provider.to_dict() for provider in providers]
+            
+    except SQLAlchemyError as e:
+        logger.error(f"Error getting providers by type {provider_type}: {e}")
+        return []
+
+@staticmethod
+def get_providers_by_environment(environment: str = 'production') -> List[Dict[str, Any]]:
+    """Obtiene proveedores por ambiente desde base de datos"""
+    try:
+        with get_db_session() as db:
+            from models.provider_models import Provider, ProviderEnvironment
+            
+            # Normalizar ambiente
+            env_enum = None
+            for env in ProviderEnvironment:
+                if env.value == environment.lower():
+                    env_enum = env
+                    break
+            
+            if not env_enum:
+                logger.warning(f"Invalid environment: {environment}")
+                return []
+            
+            providers = db.query(Provider).filter(
+                and_(
+                    Provider.environment == env_enum,
+                    Provider.enabled == True
+                )
+            ).order_by(Provider.priority.asc()).all()
+            
+            return [provider.to_dict() for provider in providers]
+            
+    except SQLAlchemyError as e:
+        logger.error(f"Error getting providers for environment {environment}: {e}")
+        return []
+
+@staticmethod
+def create_provider(provider_data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    """Crea un nuevo proveedor en base de datos"""
+    try:
+        with get_db_session() as db:
+            from models.provider_models import Provider, ProviderType, ProviderEnvironment
+            
+            # Normalizar tipo
+            provider_type = provider_data.get('provider_type', 'smtp')
+            type_enum = None
+            for pt in ProviderType:
+                if pt.value == provider_type.lower():
+                    type_enum = pt
+                    break
+            
+            if not type_enum:
+                logger.error(f"Invalid provider type: {provider_type}")
+                return None
+            
+            # Normalizar ambiente
+            environment = provider_data.get('environment', 'production')
+            env_enum = None
+            for env in ProviderEnvironment:
+                if env.value == environment.lower():
+                    env_enum = env
+                    break
+            
+            if not env_enum:
+                env_enum = ProviderEnvironment.PRODUCTION
+            
+            provider = Provider(
+                provider_key=provider_data['provider_key'],
+                name=provider_data['name'],
+                provider_type=type_enum,
+                config_json=provider_data.get('config_json', {}),
+                credentials_json=provider_data.get('credentials_json', {}),
+                description=provider_data.get('description'),
+                enabled=provider_data.get('enabled', True),
+                priority=provider_data.get('priority', 100),
+                weight=provider_data.get('weight', 10),
+                max_retries=provider_data.get('max_retries', 3),
+                timeout_seconds=provider_data.get('timeout_seconds', 30),
+                rate_limit_per_minute=provider_data.get('rate_limit_per_minute', 60),
+                environment=env_enum,
+                created_by=provider_data.get('created_by', 'system')
+            )
+            
+            db.add(provider)
+            db.commit()
+            db.refresh(provider)
+            
+            # Invalidar cache
+            from services.providers_cache import get_providers_cache
+            cache = get_providers_cache()
+            cache.invalidate_provider(provider.provider_key)
+            
+            logger.info(f"Created provider: {provider.provider_key}")
+            return provider.to_dict()
+            
+    except SQLAlchemyError as e:
+        logger.error(f"Error creating provider: {e}")
+        return None
+
+@staticmethod
+def update_provider(provider_key: str, update_data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    """Actualiza un proveedor existente en base de datos"""
+    try:
+        with get_db_session() as db:
+            from models.provider_models import Provider
+            
+            provider = db.query(Provider).filter(
+                Provider.provider_key == provider_key
+            ).first()
+            
+            if not provider:
+                logger.warning(f"Provider not found: {provider_key}")
+                return None
+            
+            # Actualizar campos permitidos
+            allowed_fields = [
+                'name', 'description', 'enabled', 'priority', 'weight',
+                'max_retries', 'timeout_seconds', 'rate_limit_per_minute',
+                'config_json', 'credentials_json', 'updated_by',
+                'health_check_enabled', 'health_check_url', 'health_check_interval_minutes'
+            ]
+            
+            for field, value in update_data.items():
+                if field in allowed_fields and hasattr(provider, field):
+                    setattr(provider, field, value)
+            
+            provider.updated_at = datetime.utcnow()
+            db.commit()
+            db.refresh(provider)
+            
+            # Invalidar cache
+            from services.providers_cache import get_providers_cache
+            cache = get_providers_cache()
+            cache.invalidate_provider(provider_key)
+            
+            logger.info(f"Updated provider: {provider_key}")
+            return provider.to_dict()
+            
+    except SQLAlchemyError as e:
+        logger.error(f"Error updating provider {provider_key}: {e}")
+        return None
+
+@staticmethod
+def delete_provider(provider_key: str) -> bool:
+    """Elimina un proveedor de base de datos"""
+    try:
+        with get_db_session() as db:
+            from models.provider_models import Provider
+            
+            provider = db.query(Provider).filter(
+                Provider.provider_key == provider_key
+            ).first()
+            
+            if not provider:
+                logger.warning(f"Provider not found: {provider_key}")
+                return False
+            
+            db.delete(provider)
+            db.commit()
+            
+            # Invalidar cache
+            from services.providers_cache import get_providers_cache
+            cache = get_providers_cache()
+            cache.invalidate_provider(provider_key)
+            
+            logger.info(f"Deleted provider: {provider_key}")
+            return True
+            
+    except SQLAlchemyError as e:
+        logger.error(f"Error deleting provider {provider_key}: {e}")
+        return False
+
+@staticmethod
+def enable_provider(provider_key: str, enabled: bool = True) -> bool:
+    """Habilita/deshabilita un proveedor"""
+    try:
+        with get_db_session() as db:
+            from models.provider_models import Provider
+            
+            provider = db.query(Provider).filter(
+                Provider.provider_key == provider_key
+            ).first()
+            
+            if not provider:
+                logger.warning(f"Provider not found: {provider_key}")
+                return False
+            
+            provider.enabled = enabled
+            provider.updated_at = datetime.utcnow()
+            db.commit()
+            
+            # Invalidar cache
+            from services.providers_cache import get_providers_cache
+            cache = get_providers_cache()
+            cache.invalidate_provider(provider_key)
+            
+            action = "enabled" if enabled else "disabled"
+            logger.info(f"Provider {provider_key} {action}")
+            return True
+            
+    except SQLAlchemyError as e:
+        logger.error(f"Error updating provider {provider_key} status: {e}")
+        return False
+
+@staticmethod
+def update_provider_health(provider_key: str, is_healthy: bool, error_message: str = None) -> bool:
+    """Actualiza el estado de salud de un proveedor"""
+    try:
+        with get_db_session() as db:
+            from models.provider_models import Provider
+            
+            provider = db.query(Provider).filter(
+                Provider.provider_key == provider_key
+            ).first()
+            
+            if not provider:
+                logger.warning(f"Provider not found: {provider_key}")
+                return False
+            
+            provider.is_healthy = is_healthy
+            provider.last_health_check = datetime.utcnow()
+            if error_message:
+                provider.last_error_message = error_message
+            elif is_healthy:
+                provider.last_error_message = None
+            
+            db.commit()
+            
+            # Invalidar cache
+            from services.providers_cache import get_providers_cache
+            cache = get_providers_cache()
+            cache.invalidate_provider(provider_key)
+            
+            status = "healthy" if is_healthy else "unhealthy"
+            logger.info(f"Updated provider {provider_key} health: {status}")
+            return True
+            
+    except SQLAlchemyError as e:
+        logger.error(f"Error updating provider health {provider_key}: {e}")
+        return False
+
+@staticmethod
+def get_provider_config(provider_key: str) -> Optional[Dict[str, Any]]:
+    """Obtiene la configuración JSON de un proveedor"""
+    try:
+        provider_dict = DatabaseService.get_provider_by_key(provider_key)
+        if provider_dict and provider_dict.get('config_json'):
+            return provider_dict['config_json']
+        return None
+        
+    except Exception as e:
+        logger.error(f"Error getting provider config {provider_key}: {e}")
+        return None
+
+@staticmethod
+def get_provider_credentials(provider_key: str) -> Optional[Dict[str, Any]]:
+    """Obtiene las credenciales de un proveedor"""
+    try:
+        provider_dict = DatabaseService.get_provider_by_key(provider_key)
+        if provider_dict and provider_dict.get('credentials_json'):
+            return provider_dict['credentials_json']
+        return None
+        
+    except Exception as e:
+        logger.error(f"Error getting provider credentials {provider_key}: {e}")
+        return None
+
+@staticmethod
+def search_providers(
+    search_term: str = None,
+    provider_type: str = None,
+    enabled: bool = None,
+    environment: str = None,
+    limit: int = 100
+) -> List[Dict[str, Any]]:
+    """Búsqueda avanzada de proveedores"""
+    try:
+        with get_db_session() as db:
+            from models.provider_models import Provider, ProviderType, ProviderEnvironment
+            
+            query = db.query(Provider)
+            
+            # Filtros opcionales
+            if search_term:
+                query = query.filter(
+                    or_(
+                        Provider.provider_key.ilike(f"%{search_term}%"),
+                        Provider.name.ilike(f"%{search_term}%"),
+                        Provider.description.ilike(f"%{search_term}%")
+                    )
+                )
+            
+            if provider_type:
+                # Normalizar tipo
+                for pt in ProviderType:
+                    if pt.value == provider_type.lower():
+                        query = query.filter(Provider.provider_type == pt)
+                        break
+            
+            if enabled is not None:
+                query = query.filter(Provider.enabled == enabled)
+            
+            if environment:
+                # Normalizar ambiente
+                for env in ProviderEnvironment:
+                    if env.value == environment.lower():
+                        query = query.filter(Provider.environment == env)
+                        break
+            
+            # Ordenar y limitar
+            providers = query.order_by(
+                Provider.priority.asc(),
+                Provider.name.asc()
+            ).limit(limit).all()
+            
+            return [provider.to_dict() for provider in providers]
+            
+    except SQLAlchemyError as e:
+        logger.error(f"Error searching providers: {e}")
+        return []
+
+@staticmethod
+def get_providers_summary() -> Dict[str, Any]:
+    """Obtiene resumen estadístico de proveedores"""
+    try:
+        with get_db_session() as db:
+            from models.provider_models import Provider
+            
+            # Contadores básicos
+            total = db.query(Provider).count()
+            enabled = db.query(Provider).filter(Provider.enabled == True).count()
+            healthy = db.query(Provider).filter(
+                and_(Provider.enabled == True, Provider.is_healthy == True)
+            ).count()
+            
+            # Por tipo
+            by_type = db.query(
+                Provider.provider_type,
+                func.count(Provider.id).label('count')
+            ).group_by(Provider.provider_type).all()
+            
+            # Por ambiente
+            by_environment = db.query(
+                Provider.environment,
+                func.count(Provider.id).label('count')
+            ).group_by(Provider.environment).all()
+            
+            return {
+                'total_providers': total,
+                'enabled_providers': enabled,
+                'healthy_providers': healthy,
+                'by_type': {row[0].value: row[1] for row in by_type if row[0]},
+                'by_environment': {row[0].value: row[1] for row in by_environment if row[0]}
+            }
+            
+    except SQLAlchemyError as e:
+        logger.error(f"Error getting providers summary: {e}")
+        return {}
+
+@staticmethod
+def validate_provider_config(provider_type: str, config_json: Dict[str, Any]) -> Tuple[bool, List[str]]:
+    """Valida la configuración JSON de un proveedor"""
+    errors = []
+    
+    try:
+        if provider_type == 'smtp':
+            required_fields = ['host', 'port']
+            
+        elif provider_type == 'api':
+            required_fields = ['api_url']
+            
+        elif provider_type == 'twilio':
+            required_fields = ['account_sid', 'from_number']
+            
+        else:
+            errors.append(f"Unsupported provider type: {provider_type}")
+            return False, errors
+        
+        # Validar campos requeridos
+        for field in required_fields:
+            if field not in config_json:
+                errors.append(f"Missing required field: {field}")
+        
+        # Validar tipos de datos básicos
+        if 'port' in config_json and not isinstance(config_json['port'], int):
+            errors.append("Field 'port' must be an integer")
+        
+        if 'timeout' in config_json and not isinstance(config_json['timeout'], (int, float)):
+            errors.append("Field 'timeout' must be a number")
+        
+        return len(errors) == 0, errors
+        
+    except Exception as e:
+        logger.error(f"Error validating provider config: {e}")
+        return False, ["Configuration validation failed"]
+
+@staticmethod
+def get_provider_health_status(provider_key: str) -> Optional[Dict[str, Any]]:
+    """Obtiene estado de salud detallado de un proveedor"""
+    try:
+        with get_db_session() as db:
+            from models.provider_models import Provider, ProviderHealthCheck
+            
+            provider = db.query(Provider).filter(
+                Provider.provider_key == provider_key
+            ).first()
+            
+            if not provider:
+                return None
+            
+            # Último health check
+            last_check = db.query(ProviderHealthCheck).filter(
+                ProviderHealthCheck.provider_id == provider.id
+            ).order_by(ProviderHealthCheck.checked_at.desc()).first()
+            
+            return {
+                'provider_key': provider.provider_key,
+                'is_healthy': provider.is_healthy,
+                'last_health_check': provider.last_health_check.isoformat() if provider.last_health_check else None,
+                'last_error_message': provider.last_error_message,
+                'last_check_details': last_check.to_dict() if last_check else None
+            }
+            
+    except SQLAlchemyError as e:
+        logger.error(f"Error getting provider health status {provider_key}: {e}")
+        return None
+
+@staticmethod
+def create_provider_health_check(
+    provider_key: str,
+    is_healthy: bool,
+    response_time_ms: int = None,
+    status_code: int = None,
+    error_message: str = None,
+    check_type: str = 'automatic'
+) -> bool:
+    """Registra un health check para un proveedor"""
+    try:
+        with get_db_session() as db:
+            from models.provider_models import Provider, ProviderHealthCheck, HealthCheckType
+            
+            # Buscar provider
+            provider = db.query(Provider).filter(
+                Provider.provider_key == provider_key
+            ).first()
+            
+            if not provider:
+                logger.warning(f"Provider not found: {provider_key}")
+                return False
+            
+            # Normalizar tipo de check
+            check_type_enum = None
+            for ct in HealthCheckType:
+                if ct.value == check_type.lower():
+                    check_type_enum = ct
+                    break
+            
+            if not check_type_enum:
+                check_type_enum = HealthCheckType.AUTOMATIC
+            
+            # Crear health check
+            health_check = ProviderHealthCheck(
+                provider_id=provider.id,
+                is_healthy=is_healthy,
+                response_time_ms=response_time_ms,
+                status_code=status_code,
+                error_message=error_message,
+                check_type=check_type_enum
+            )
+            
+            db.add(health_check)
+            
+            # Actualizar estado del provider
+            provider.is_healthy = is_healthy
+            provider.last_health_check = datetime.utcnow()
+            if error_message:
+                provider.last_error_message = error_message
+            elif is_healthy:
+                provider.last_error_message = None
+            
+            db.commit()
+            
+            # Invalidar cache
+            from services.providers_cache import get_providers_cache
+            cache = get_providers_cache()
+            cache.invalidate_provider(provider_key)
+            
+            logger.info(f"Created health check for {provider_key}: {'healthy' if is_healthy else 'unhealthy'}")
+            return True
+            
+    except SQLAlchemyError as e:
+        logger.error(f"Error creating provider health check {provider_key}: {e}")
+        return False

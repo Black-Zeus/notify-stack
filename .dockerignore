@@ -62,3 +62,6 @@ docker-compose*.yml
 *.bak
 .DS_Store
 Thumbs.db
+
+# Variables de entorno
+Config\secrets.env
