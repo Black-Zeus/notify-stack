@@ -157,7 +157,7 @@ class TwilioNotifyRequest(BaseModel):
                 {
                     "description": "WhatsApp con template",
                     "value": {
-                        "to": ["+56952082398"],
+                        "to": ["+56912345678"],
                         "template_id": "alerta-simple/v1",
                         "provider": "twilio_whatsapp",
                         "vars": {
@@ -171,7 +171,7 @@ class TwilioNotifyRequest(BaseModel):
                 {
                     "description": "SMS directo",
                     "value": {
-                        "to": ["+56952082398", "+56987654321"],
+                        "to": ["+56912345678", "+56987654321"],
                         "body_text": "ALERTA: Servidor web-server-01 está CRÍTICO desde las 15:30. Revisar inmediatamente.",
                         "provider": "twilio_sms",
                         "routing_hint": "urgent"
@@ -180,7 +180,7 @@ class TwilioNotifyRequest(BaseModel):
                 {
                     "description": "WhatsApp con múltiples destinatarios",
                     "value": {
-                        "to": ["+56952082398", "+56912345678"],
+                        "to": ["+56987654321", "+56912345678"],
                         "template_id": "system-alert/v1",
                         "provider": "twilio_whatsapp",
                         "routing_hint": "high_priority",

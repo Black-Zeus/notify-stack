@@ -48,18 +48,15 @@ services:
     command: ["celery", "-A", "services.celery_app", "worker", "--loglevel=info", "--concurrency=2"]
 
   bkn_celery_beat:
-    build:
-      context: .
-      dockerfile: ./dockerfile/bkn_celery.Dockerfile
-    image: notify-stack/bkn_celery:1.0.0
+    image: notify-stack/bkn_celery:1.0.0   # 👈 reutiliza la misma imagen ya construida
     container_name: bkn_celery_beat
     env_file:
       - ./Config/secrets.env
     volumes:
-    - ./Config:/app/Config:ro
-    - ./Stacks/bkn_notify/templates:/app/templates:ro
-    - ./Stacks/bkn_notify/logs:/app/logs
-    - celery_beat_data:/app/beat-schedule  # Agregar esta línea
+      - ./Config:/app/Config:ro
+      - ./Stacks/bkn_notify/templates:/app/templates:ro
+      - ./Stacks/bkn_notify/logs:/app/logs
+      - celery_beat_data:/app/beat-schedule
     depends_on:
       - bkn_redis
       - mysql
@@ -131,7 +128,7 @@ services:
       "mysqld",
       "--character-set-server=utf8mb4",
       "--collation-server=utf8mb4_unicode_ci",
-      "--default-authentication-plugin=mysql_native_password",  # 👈 Solución clave
+      "--default-authentication-plugin=mysql_native_password",
       "--innodb-buffer-pool-size=256M",
       "--max-connections=200",
       "--innodb-log-file-size=128M"
@@ -154,8 +151,8 @@ services:
       - backend
       - frontend
     ports:
-      - "8025:8025"  # Web UI
-      - "1025:1025"  # SMTP
+      - "8025:8025"
+      - "1025:1025"
     restart: unless-stopped
     
     command: [

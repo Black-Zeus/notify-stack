@@ -1,6 +1,7 @@
 -- =============================================================================
 -- NOTIFY-STACK - Database Schema Initialization
 -- =============================================================================
+-- Database/init/01_init_tables.sql
 -- Esquema inicial para tracking y auditoría de notificaciones
 -- Ejecutado automáticamente en el primer arranque de MySQL
 
@@ -215,11 +216,25 @@ ORDER BY date DESC, provider;
 -- DATOS INICIALES
 -- =============================================================================
 
--- Insertar providers stats iniciales (opcional)
+-- Insertar todos los providers configurados
 INSERT IGNORE INTO provider_stats (provider, stat_date, total_sent, total_failed, total_rejected) 
 VALUES 
+-- Email providers
+('mailpit', CURRENT_DATE, 0, 0, 0),
 ('smtp_primary', CURRENT_DATE, 0, 0, 0),
-('mailpit', CURRENT_DATE, 0, 0, 0);
+('smtp_secondary', CURRENT_DATE, 0, 0, 0),
+('smtp_bulk', CURRENT_DATE, 0, 0, 0),
+('smtp_test', CURRENT_DATE, 0, 0, 0),
+
+-- API providers
+('api_sendgrid', CURRENT_DATE, 0, 0, 0),
+('api_ses', CURRENT_DATE, 0, 0, 0),
+('api_mailgun', CURRENT_DATE, 0, 0, 0),
+('api_generic', CURRENT_DATE, 0, 0, 0),
+
+-- Twilio providers
+('twilio_sms', CURRENT_DATE, 0, 0, 0),
+('twilio_whatsapp', CURRENT_DATE, 0, 0, 0);
 
 -- =============================================================================
 -- COMENTARIOS PARA REFERENCIA

@@ -149,7 +149,7 @@ def validate_providers_config(providers: Dict[str, Any]) -> Dict[str, Any]:
                 logging.error(f"Provider {name}: invalid config format")
                 continue
             
-            # ✅ VALIDACIÓN CRÍTICA: Verificar enabled flag
+            # VALIDACIÓN CRÍTICA: Verificar enabled flag
             if not config.get("enabled", True):
                 logging.info(f"Provider {name}: disabled, skipping")
                 continue
@@ -161,18 +161,31 @@ def validate_providers_config(providers: Dict[str, Any]) -> Dict[str, Any]:
             
             # Validación específica por tipo
             if provider_type == "smtp":
-                required_fields = ["host", "port", "username", "password"]
+                required_fields = ["host", "port"]
                 if not all(field in config for field in required_fields):
                     logging.error(f"Provider {name}: missing required SMTP fields")
                     continue
             
             elif provider_type == "api":
-                required_fields = ["endpoint", "api_key"]
-                if not all(field in config for field in required_fields):
-                    logging.error(f"Provider {name}: missing required API fields")
-                    continue
+                # Verificar si es un proveedor Twilio
+                twilio_provider_type = config.get("provider_type", "")
+                
+                if twilio_provider_type in ["twilio_sms", "twilio_whatsapp"]:
+                    # Validación específica para Twilio
+                    required_fields = ["account_sid", "auth_token", "from_number"]
+                    if not all(field in config for field in required_fields):
+                        logging.error(f"Provider {name}: missing required Twilio fields")
+                        continue
+                    logging.debug(f"Provider {name}: Twilio provider validated successfully")
+                else:
+                    # Validación para API genéricas (SendGrid, SES, etc.)
+                    required_fields = ["endpoint"]
+                    if not all(field in config for field in required_fields):
+                        logging.error(f"Provider {name}: missing required API fields")
+                        continue
             
             elif provider_type == "twilio":
+                # Mantener para compatibilidad con configuraciones que usen type: "twilio"
                 required_fields = ["account_sid", "auth_token", "from_number"]
                 if not all(field in config for field in required_fields):
                     logging.error(f"Provider {name}: missing required Twilio fields")
@@ -180,7 +193,7 @@ def validate_providers_config(providers: Dict[str, Any]) -> Dict[str, Any]:
                     
                 # Validar provider_type específico de Twilio
                 twilio_provider_type = config.get("provider_type")
-                if twilio_provider_type not in ["sms", "whatsapp"]:
+                if twilio_provider_type not in ["sms", "whatsapp", "twilio_sms", "twilio_whatsapp"]:
                     logging.error(f"Provider {name}: invalid Twilio provider_type '{twilio_provider_type}'")
                     continue
             
