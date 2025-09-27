@@ -4,6 +4,7 @@
 -- =============================================================================
 -- Migración de providers.yml hacia base de datos MySQL
 -- Permite gestión dinámica de proveedores sin redeploy
+-- =============================================================================
 
 -- =============================================================================
 -- CONFIGURACIÓN INICIAL
@@ -25,7 +26,7 @@ CREATE TABLE IF NOT EXISTS providers (
     -- Información básica
     name VARCHAR(100) NOT NULL,
     description TEXT,
-    provider_type ENUM('smtp', 'api', 'webhook', 'twilio') NOT NULL,
+    provider_type ENUM('SMTP','API','WEBHOOK','TWILIO') NOT NULL,
     
     -- Estado y configuración
     enabled BOOLEAN DEFAULT TRUE,
@@ -54,7 +55,7 @@ CREATE TABLE IF NOT EXISTS providers (
     last_error_message TEXT,
     
     -- Metadatos de gestión
-    environment ENUM('development', 'staging', 'production') DEFAULT 'production',
+    environment ENUM('DEVELOPMENT', 'STAGING', 'PRODUCTION') DEFAULT 'PRODUCTION',
     created_by VARCHAR(100),
     updated_by VARCHAR(100),
     
@@ -68,73 +69,6 @@ CREATE TABLE IF NOT EXISTS providers (
     KEY idx_enabled_priority (enabled, priority),
     KEY idx_environment (environment),
     KEY idx_health_status (is_healthy, enabled)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- =============================================================================
--- TABLA: provider_groups
--- =============================================================================
--- Agrupación de proveedores para routing y balanceo
-
-CREATE TABLE IF NOT EXISTS provider_groups (
-    id INT UNSIGNED NOT NULL AUTO_INCREMENT,
-    
-    -- Identificador del grupo
-    group_key VARCHAR(50) NOT NULL UNIQUE,
-    
-    -- Información básica
-    name VARCHAR(100) NOT NULL,
-    description TEXT,
-    
-    -- Configuración de routing
-    routing_strategy ENUM('priority', 'round_robin', 'failover', 'load_balance') DEFAULT 'priority',
-    fallback_enabled BOOLEAN DEFAULT TRUE,
-    
-    -- Estado
-    enabled BOOLEAN DEFAULT TRUE,
-    
-    -- Metadatos
-    environment ENUM('development', 'staging', 'production') DEFAULT 'production',
-    created_by VARCHAR(100),
-    
-    -- Timestamps
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    
-    PRIMARY KEY (id),
-    UNIQUE KEY uk_group_key (group_key),
-    KEY idx_enabled (enabled),
-    KEY idx_environment (environment)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- =============================================================================
--- TABLA: provider_group_members
--- =============================================================================
--- Relación N:N entre grupos y proveedores
-
-CREATE TABLE IF NOT EXISTS provider_group_members (
-    id INT UNSIGNED NOT NULL AUTO_INCREMENT,
-    
-    -- Referencias
-    group_id INT UNSIGNED NOT NULL,
-    provider_id INT UNSIGNED NOT NULL,
-    
-    -- Configuración en el grupo
-    priority INT UNSIGNED DEFAULT 100,
-    weight INT UNSIGNED DEFAULT 10,
-    enabled BOOLEAN DEFAULT TRUE,
-    
-    -- Timestamps
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    
-    PRIMARY KEY (id),
-    UNIQUE KEY uk_group_provider (group_id, provider_id),
-    KEY idx_group_enabled_priority (group_id, enabled, priority),
-    
-    FOREIGN KEY (group_id) REFERENCES provider_groups(id) 
-        ON DELETE CASCADE ON UPDATE CASCADE,
-    FOREIGN KEY (provider_id) REFERENCES providers(id) 
-        ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- =============================================================================
@@ -194,18 +128,6 @@ LEFT JOIN provider_health_checks hc ON (
 )
 WHERE p.enabled = TRUE;
 
--- Vista de grupos con conteo de proveedores
-CREATE OR REPLACE VIEW v_provider_groups_summary AS
-SELECT 
-    pg.*,
-    COUNT(pgm.provider_id) as total_providers,
-    SUM(CASE WHEN pgm.enabled = TRUE THEN 1 ELSE 0 END) as enabled_providers
-FROM provider_groups pg
-LEFT JOIN provider_group_members pgm ON pg.id = pgm.group_id
-GROUP BY pg.id, pg.group_key, pg.name, pg.description, 
-         pg.routing_strategy, pg.fallback_enabled, pg.enabled, 
-         pg.environment, pg.created_by, pg.created_at, pg.updated_at;
-
 -- =============================================================================
 -- DATOS INICIALES - PROVIDERS BÁSICOS
 -- =============================================================================
@@ -234,18 +156,8 @@ INSERT IGNORE INTO providers (provider_key, name, provider_type, config_json, cr
 );
 
 -- =============================================================================
--- DATOS INICIALES - GRUPOS BÁSICOS  
--- =============================================================================
-
-INSERT IGNORE INTO provider_groups (group_key, name, routing_strategy, description) VALUES
-('default_email', 'Default Email Group', 'priority', 'Grupo por defecto para notificaciones email'),
-('high_priority', 'High Priority Group', 'failover', 'Grupo para notificaciones críticas'),
-('bulk_email', 'Bulk Email Group', 'load_balance', 'Grupo para envío masivo');
-
--- =============================================================================
 -- COMENTARIOS PARA REFERENCIA
 -- =============================================================================
-
 /*
 EJEMPLOS DE USO:
 

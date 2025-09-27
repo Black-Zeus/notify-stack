@@ -396,3 +396,51 @@ performance:
   rate_limit:
     requests_per_hour: 1000
     burst_limit: 50
+
+# =============================================================================
+# PROVIDERS DATABASE CONFIGURATION - FASE 2
+# =============================================================================
+
+providers:
+  # Modo de carga de providers
+  use_database: false  # false = YAML (actual), true = Database
+  
+  # Fallback automático si database falla
+  dual_mode: true
+  
+  # Ambiente por defecto para filtrado
+  default_environment: production
+  
+  # Cache configuration
+  cache:
+    enabled: true
+    ttl_providers: 300        # 5 minutos - Lista de providers
+    ttl_config: 600          # 10 minutos - Configuración individual
+    ttl_health: 180          # 3 minutos - Estado de salud
+    ttl_groups: 900          # 15 minutos - Grupos de providers
+  
+  # Performance limits
+  performance:
+    max_load_time_ms: 50
+    max_search_results: 100
+    default_page_size: 20
+    db_timeout_seconds: 5
+  
+  # Feature flags
+  features:
+    groups_enabled: true
+    health_checks_enabled: true
+    load_balancing_enabled: true
+    cost_tracking_enabled: false
+  
+  # Admin endpoints
+  admin:
+    endpoints_enabled: true
+    require_auth: true
+    audit_enabled: true
+  
+  # Debug/Development
+  debug:
+    enabled: false
+    log_provider_calls: false
+    mock_providers: false

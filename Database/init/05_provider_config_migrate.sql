@@ -26,7 +26,7 @@ INSERT IGNORE INTO providers (
     'mailpit', 
     'MailPit Development', 
     'Capturador de correos para desarrollo y testing',
-    'smtp',
+    'SMTP',
     TRUE, 
     10, 
     100, 
@@ -73,7 +73,7 @@ INSERT IGNORE INTO providers (
     'smtp_primary', 
     'Gmail SMTP Primary', 
     'Proveedor principal para emails transaccionales',
-    'smtp',
+    'SMTP',
     TRUE, 
     20, 
     70, 
@@ -108,7 +108,7 @@ INSERT IGNORE INTO providers (
     ),
     TRUE,
     5,
-    'production',
+    'PRODUCTION',
     'migration_script'
 );
 
@@ -123,7 +123,7 @@ INSERT IGNORE INTO providers (
     'smtp_secondary', 
     'Outlook SMTP Secondary', 
     'Proveedor de respaldo para failover',
-    'smtp',
+    'SMTP',
     FALSE, 
     50, 
     50, 
@@ -152,7 +152,7 @@ INSERT IGNORE INTO providers (
     ),
     TRUE,
     10,
-    'production',
+    'PRODUCTION',
     'migration_script'
 );
 
@@ -167,7 +167,7 @@ INSERT IGNORE INTO providers (
     'smtp_bulk', 
     'Custom SMTP Bulk', 
     'Proveedor optimizado para envíos masivos',
-    'smtp',
+    'SMTP',
     FALSE, 
     30, 
     60, 
@@ -196,7 +196,7 @@ INSERT IGNORE INTO providers (
     ),
     TRUE,
     15,
-    'production',
+    'PRODUCTION',
     'migration_script'
 );
 
@@ -211,7 +211,7 @@ INSERT IGNORE INTO providers (
     'smtp_test', 
     'Test SMTP Provider', 
     'Proveedor exclusivo para testing y desarrollo',
-    'smtp',
+    'SMTP',
     FALSE, 
     100, 
     10, 
@@ -259,7 +259,7 @@ INSERT IGNORE INTO providers (
     'api_sendgrid', 
     'SendGrid API', 
     'Proveedor API premium con tracking avanzado',
-    'api',
+    'API',
     FALSE, 
     15, 
     30, 
@@ -298,7 +298,7 @@ INSERT IGNORE INTO providers (
     ),
     TRUE,
     5,
-    'production',
+    'PRODUCTION',
     'migration_script'
 );
 
@@ -313,7 +313,7 @@ INSERT IGNORE INTO providers (
     'api_ses', 
     'Amazon SES', 
     'Proveedor AWS altamente escalable',
-    'api',
+    'API',
     FALSE, 
     25, 
     50, 
@@ -346,7 +346,7 @@ INSERT IGNORE INTO providers (
     ),
     TRUE,
     10,
-    'production',
+    'PRODUCTION',
     'migration_script'
 );
 
@@ -361,7 +361,7 @@ INSERT IGNORE INTO providers (
     'api_mailgun', 
     'Mailgun API', 
     'Proveedor API con excelente deliverability',
-    'api',
+    'API',
     FALSE, 
     30, 
     40, 
@@ -389,7 +389,7 @@ INSERT IGNORE INTO providers (
     ),
     TRUE,
     10,
-    'production',
+    'PRODUCTION',
     'migration_script'
 );
 
@@ -404,7 +404,7 @@ INSERT IGNORE INTO providers (
     'api_generic', 
     'Generic API Provider', 
     'Proveedor API genérico configurable',
-    'api',
+    'API',
     FALSE, 
     100, 
     10, 
@@ -433,7 +433,7 @@ INSERT IGNORE INTO providers (
     ),
     TRUE,
     30,
-    'production',
+    'PRODUCTION',
     'migration_script'
 );
 
@@ -452,7 +452,7 @@ INSERT IGNORE INTO providers (
     'twilio_sms', 
     'Twilio SMS', 
     'Proveedor SMS via Twilio API',
-    'twilio',
+    'TWILIO',
     FALSE, 
     10, 
     100, 
@@ -487,7 +487,7 @@ INSERT IGNORE INTO providers (
     ),
     TRUE,
     10,
-    'production',
+    'PRODUCTION',
     'migration_script'
 );
 
@@ -502,7 +502,7 @@ INSERT IGNORE INTO providers (
     'twilio_whatsapp', 
     'Twilio WhatsApp', 
     'Proveedor WhatsApp Business via Twilio API',
-    'twilio',
+    'TWILIO',
     FALSE, 
     10, 
     100, 
@@ -546,7 +546,7 @@ INSERT IGNORE INTO providers (
     ),
     TRUE,
     15,
-    'production',
+    'PRODUCTION',
     'migration_script'
 );
 
@@ -563,7 +563,7 @@ INSERT IGNORE INTO provider_groups (
     'development', 
     'Development Group', 
     'Grupo principal para desarrollo',
-    'priority',
+    'PRIORITY',
     FALSE,
     0,
     TRUE,
@@ -584,7 +584,7 @@ INSERT IGNORE INTO provider_groups (
     TRUE,
     2,
     TRUE,
-    'production',
+    'PRODUCTION',
     'migration_script'
 );
 
@@ -601,7 +601,7 @@ INSERT IGNORE INTO provider_groups (
     TRUE,
     2,
     TRUE,
-    'production',
+    'PRODUCTION',
     'migration_script'
 );
 
@@ -618,7 +618,7 @@ INSERT IGNORE INTO provider_groups (
     TRUE,
     3,
     TRUE,
-    'production',
+    'PRODUCTION',
     'migration_script'
 );
 
@@ -631,11 +631,11 @@ INSERT IGNORE INTO provider_groups (
     'sms', 
     'SMS Providers Group', 
     'Grupo para notificaciones SMS',
-    'priority',
+    'PRIORITY',
     TRUE,
     2,
     FALSE,
-    'production',
+    'PRODUCTION',
     'migration_script'
 );
 
@@ -648,11 +648,11 @@ INSERT IGNORE INTO provider_groups (
     'whatsapp', 
     'WhatsApp Providers Group', 
     'Grupo para notificaciones WhatsApp',
-    'priority',
+    'PRIORITY',
     TRUE,
     2,
     FALSE,
-    'production',
+    'PRODUCTION',
     'migration_script'
 );
 

@@ -386,3 +386,60 @@ USE_DATABASE_PROVIDERS = False  # YAML por defecto en dev
 # DEBUG_PROVIDERS_ENABLED = False
 # CIRCUIT_BREAKER_ENABLED = True
 # METRICS_PROVIDERS_ENABLED = True
+
+# =============================================================================
+# PROVIDERS DATABASE CONFIGURATION - FASE 2
+# =============================================================================
+
+# Flag principal para habilitar/deshabilitar providers desde base de datos
+USE_DATABASE_PROVIDERS = os.getenv("USE_DATABASE_PROVIDERS", "false").lower() == "true"
+
+# Modo dual: fallback automático YAML -> DB en caso de error
+PROVIDERS_DUAL_MODE = os.getenv("PROVIDERS_DUAL_MODE", "true").lower() == "true"
+
+# Timeout para operaciones de providers en base de datos (segundos)
+PROVIDERS_DB_TIMEOUT = int(os.getenv("PROVIDERS_DB_TIMEOUT", "5"))
+
+# Ambiente de providers por defecto
+PROVIDERS_DEFAULT_ENVIRONMENT = os.getenv("PROVIDERS_DEFAULT_ENVIRONMENT", "production")
+
+# =============================================================================
+# PROVIDERS CACHE CONFIGURATION
+# =============================================================================
+
+# TTL específicos para cache de providers (segundos)
+REDIS_TTL_PROVIDERS = int(os.getenv("REDIS_TTL_PROVIDERS", "300"))              # 5 minutos
+REDIS_TTL_PROVIDERS_CONFIG = int(os.getenv("REDIS_TTL_PROVIDERS_CONFIG", "600")) # 10 minutos  
+REDIS_TTL_PROVIDERS_HEALTH = int(os.getenv("REDIS_TTL_PROVIDERS_HEALTH", "180")) # 3 minutos
+REDIS_TTL_PROVIDER_GROUPS = int(os.getenv("REDIS_TTL_PROVIDER_GROUPS", "900"))   # 15 minutos
+
+# Límites de performance para carga de providers
+PROVIDERS_MAX_LOAD_TIME_MS = int(os.getenv("PROVIDERS_MAX_LOAD_TIME_MS", "50"))
+PROVIDERS_MAX_SEARCH_RESULTS = int(os.getenv("PROVIDERS_MAX_SEARCH_RESULTS", "100"))
+PROVIDERS_DEFAULT_PAGE_SIZE = int(os.getenv("PROVIDERS_DEFAULT_PAGE_SIZE", "20"))
+
+# =============================================================================
+# PROVIDERS FEATURE FLAGS
+# =============================================================================
+
+# Habilitar funcionalidades avanzadas
+FEATURE_PROVIDER_GROUPS_ENABLED = os.getenv("FEATURE_PROVIDER_GROUPS_ENABLED", "true").lower() == "true"
+FEATURE_PROVIDER_HEALTH_CHECKS_ENABLED = os.getenv("FEATURE_PROVIDER_HEALTH_CHECKS_ENABLED", "true").lower() == "true"
+FEATURE_PROVIDER_LOAD_BALANCING_ENABLED = os.getenv("FEATURE_PROVIDER_LOAD_BALANCING_ENABLED", "true").lower() == "true"
+
+# =============================================================================
+# PROVIDERS ADMIN CONFIGURATION
+# =============================================================================
+
+# Endpoints administrativos
+ADMIN_PROVIDERS_ENDPOINT_ENABLED = os.getenv("ADMIN_PROVIDERS_ENDPOINT_ENABLED", "true").lower() == "true"
+ADMIN_PROVIDERS_REQUIRE_AUTH = os.getenv("ADMIN_PROVIDERS_REQUIRE_AUTH", "true").lower() == "true"
+ADMIN_PROVIDERS_AUDIT_ENABLED = os.getenv("ADMIN_PROVIDERS_AUDIT_ENABLED", "true").lower() == "true"
+
+# =============================================================================
+# PROVIDERS DEBUG/DEVELOPMENT
+# =============================================================================
+
+# Debug y desarrollo
+DEBUG_PROVIDERS_ENABLED = os.getenv("DEBUG_PROVIDERS_ENABLED", "false").lower() == "true"
+DEBUG_LOG_PROVIDER_CALLS = os.getenv("DEBUG_LOG_PROVIDER_CALLS", "false").lower() == "true"

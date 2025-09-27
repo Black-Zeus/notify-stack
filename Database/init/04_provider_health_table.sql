@@ -267,7 +267,7 @@ SELECT
     ROUND((m.successful_checks * 100.0 / NULLIF(m.total_checks, 0)), 2) as success_rate_percentage
 FROM providers p
 JOIN provider_health_metrics m ON p.id = m.provider_id
-WHERE m.metric_date >= DATE_SUB(CURRENT_DATE, INTERVAL 7 DAYS)
+WHERE m.metric_date >= DATE_SUB(CURRENT_DATE, INTERVAL 7 DAY)
 ORDER BY p.provider_key, m.metric_date DESC;
 
 -- Vista de incidentes activos

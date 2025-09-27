@@ -90,7 +90,7 @@ def load_config(force_reload: bool = False) -> Dict[str, Any]:
         return default_config
 
 
-def load_providers_config(force_reload: bool = False) -> Dict[str, Any]:
+def load_providers_config_Original(force_reload: bool = False) -> Dict[str, Any]:
     """
     Carga configuración de proveedores (providers.yml) con variables resueltas
     """
@@ -123,6 +123,51 @@ def load_providers_config(force_reload: bool = False) -> Dict[str, Any]:
         _config_cache[cache_key] = {}
         return {}
 
+
+def load_providers_config(force_reload: bool = False) -> Dict[str, Any]:
+    """
+    Carga configuración de proveedores (BD o YAML según flag)
+    FASE 2: Soporte dual mode con fallback automático
+    """
+    cache_key = "providers_config"
+    
+    if not force_reload and cache_key in _config_cache:
+        return _config_cache[cache_key]
+    
+    try:
+        # CHECK: Verificar si debe usar base de datos
+        use_database = os.getenv("USE_DATABASE_PROVIDERS", "false").lower() == "true"
+        
+        if use_database:
+            # Cargar desde base de datos con fallback a YAML
+            providers = load_providers_from_database(
+                use_cache=True,
+                environment=os.getenv("PROVIDERS_DEFAULT_ENVIRONMENT", "production")
+            )
+        else:
+            # Modo YAML tradicional
+            providers = load_yaml_file(PROVIDERS_FILE, resolve_vars=True)
+            # Validar estructura de proveedores YAML
+            providers = validate_providers_config(providers)
+        
+        # Mostrar variables faltantes si hay
+        missing_vars = _resolver.get_missing_vars()
+        if missing_vars:
+            logging.warning(f"Missing environment variables: {sorted(missing_vars)}")
+        
+        # Cache resultado
+        _config_cache[cache_key] = providers
+        mode = "database" if use_database else "yaml"
+        logging.info(f"Providers loaded from {mode}: {len(providers)} providers")
+        
+        return providers
+        
+    except Exception as e:
+        logging.error(f"Failed to load providers config: {e}")
+        # Retornar configuración vacía en caso de error
+        _config_cache[cache_key] = {}
+        return {}
+    
 
 def load_policy_config(force_reload: bool = False) -> Dict[str, Any]:
     """
@@ -381,7 +426,7 @@ def get_enabled_providers() -> Dict[str, Any]:
     return load_providers_config()  # Ya filtrado por enabled=true
 
 
-def reload_all_configs():
+def reload_all_configs_original():
     """
     Recarga todas las configuraciones (limpia cache)
     """
@@ -397,6 +442,25 @@ def reload_all_configs():
     load_policy_config(force_reload=True)
     
     logging.info("All configurations reloaded")
+
+
+def reload_all_configs():
+    """
+    Recarga todas las configuraciones (limpia cache)
+    """
+    global _config_cache
+    _config_cache.clear()
+    
+    # Limpiar variables faltantes del resolver
+    _resolver.clear_missing_vars()
+    
+    # Precargar configuraciones principales (DB o YAML según flag)
+    load_config(force_reload=True)
+    load_providers_config(force_reload=True)
+    load_policy_config(force_reload=True)
+    
+    mode = "database" if os.getenv("USE_DATABASE_PROVIDERS", "false").lower() == "true" else "yaml"
+    logging.info(f"All configurations reloaded (providers mode: {mode})")
 
 
 def get_config_info() -> Dict[str, Any]:
@@ -456,3 +520,55 @@ def validate_critical_vars() -> Dict[str, Any]:
     results["missing_vars"] = sorted(set(results["missing_vars"]))
     
     return results
+
+def load_providers_from_database(
+    use_cache: bool = True,
+    environment: Optional[str] = None
+) -> Dict[str, Any]:
+    """
+    Carga proveedores desde base de datos (FASE 2)
+    Usa ProvidersLoader con fallback automático a YAML
+    """
+    try:
+        from utils.providers_loader import ProvidersLoader
+        import redis
+        
+        # Inicializar Redis client
+        redis_client = None
+        try:
+            redis_url = os.getenv("REDIS_URL", "redis://bkn_redis:6379/0")
+            redis_client = redis.from_url(redis_url, decode_responses=True)
+        except Exception as e:
+            logging.warning(f"Redis not available for cache: {e}")
+        
+        # Flag para usar base de datos
+        use_db = os.getenv("USE_DATABASE_PROVIDERS", "false").lower() == "true"
+        
+        # Inicializar loader
+        loader = ProvidersLoader(
+            redis_client=redis_client,
+            cache_ttl=int(os.getenv("REDIS_TTL_PROVIDERS", "300")),
+            use_database=use_db
+        )
+        
+        # Cargar providers activos
+        providers_list = loader.get_active_providers(
+            use_cache=use_cache,
+            environment=environment
+        )
+        
+        # Convertir lista a diccionario (formato compatible con YAML)
+        providers_dict = {}
+        for provider in providers_list:
+            key = provider.get("provider_key")
+            if key:
+                providers_dict[key] = provider
+        
+        logging.info(f"Loaded {len(providers_dict)} providers from database/YAML")
+        return providers_dict
+        
+    except Exception as e:
+        logging.error(f"Error loading providers from database: {e}")
+        # Fallback a YAML en caso de error
+        logging.warning("Falling back to YAML providers")
+        return load_yaml_file(PROVIDERS_FILE, resolve_vars=True)

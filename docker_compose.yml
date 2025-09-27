@@ -229,18 +229,17 @@ services:
         "mysqld",
         "--character-set-server=utf8mb4",
         "--collation-server=utf8mb4_unicode_ci",
-        "--default-authentication-plugin=mysql_native_password",
+        "--default-authentication-plugin=mysql_native_password", # ⚠️ deprecado, considerar migrar a authentication_policy
         "--innodb-buffer-pool-size=256M",
         "--max-connections=200",
-        "--innodb-log-file-size=128M",
-        # Optimizaciones adicionales para providers
-        "--query-cache-type=1", # Habilitar query cache
-        "--query-cache-size=32M", # Cache para consultas frecuentes de providers
-        "--tmp-table-size=64M", # Tablas temporales más grandes
-        "--max-heap-table-size=64M", # Memory tables para cache
-        "--innodb-lock-wait-timeout=50", # Timeout para locks
-        "--wait-timeout=28800", # 8 horas timeout conexión
-        "--interactive-timeout=28800", # Timeout interactivo
+        # 🚨 parámetros eliminados en MySQL 8: query-cache-type y query-cache-size
+        "--tmp-table-size=64M",
+        "--max-heap-table-size=64M",
+        "--innodb-lock-wait-timeout=50",
+        "--wait-timeout=28800",
+        "--interactive-timeout=28800",
+        # Reemplazo recomendado:
+        "--innodb-redo-log-capacity=268435456" # equivale aprox. a innodb_log_file_size=128M * 2
       ]
 
     healthcheck:
@@ -249,6 +248,7 @@ services:
       timeout: 10s
       retries: 5
       start_period: 30s
+
 
   mailpit:
     image: axllent/mailpit:latest

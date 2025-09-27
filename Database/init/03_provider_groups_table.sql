@@ -4,6 +4,7 @@
 -- =============================================================================
 -- Complemento a providers table para agrupación y balanceo de carga
 -- Permite routing avanzado y failover entre proveedores
+-- =============================================================================
 
 -- =============================================================================
 -- CONFIGURACIÓN INICIAL
@@ -27,7 +28,7 @@ CREATE TABLE IF NOT EXISTS provider_groups (
     description TEXT,
     
     -- Estrategia de routing dentro del grupo
-    routing_strategy ENUM('priority', 'round_robin', 'failover', 'load_balance', 'random') DEFAULT 'priority',
+    routing_strategy ENUM('PRIORITY', 'ROUND_ROBIN', 'FAILOVER', 'LOAD_BALANCE', 'RANDOM') DEFAULT 'PRIORITY',
     
     -- Configuración de failover
     failover_enabled BOOLEAN DEFAULT TRUE,
@@ -41,7 +42,7 @@ CREATE TABLE IF NOT EXISTS provider_groups (
     enabled BOOLEAN DEFAULT TRUE,
     
     -- Metadatos de gestión
-    environment ENUM('development', 'staging', 'production') DEFAULT 'production',
+    environment ENUM('DEVELOPMENT', 'STAGING', 'PRODUCTION') DEFAULT 'PRODUCTION',
     created_by VARCHAR(100),
     updated_by VARCHAR(100),
     
@@ -97,7 +98,7 @@ CREATE TABLE IF NOT EXISTS provider_group_members (
     KEY idx_group_weight (group_id, weight),
     KEY idx_provider_groups (provider_id),
     
-    -- Referencias foráneas a tablas existentes
+    -- Referencias foráneas
     FOREIGN KEY (group_id) REFERENCES provider_groups(id) 
         ON DELETE CASCADE ON UPDATE CASCADE,
     FOREIGN KEY (provider_id) REFERENCES providers(id) 
@@ -224,7 +225,6 @@ ORDER BY pgr.priority ASC;
 -- DATOS INICIALES - GRUPOS BÁSICOS
 -- =============================================================================
 
--- Insertar grupos básicos de proveedores
 INSERT IGNORE INTO provider_groups (group_key, name, routing_strategy, description) VALUES
 ('default_email', 'Default Email Group', 'priority', 'Grupo por defecto para notificaciones email'),
 ('high_priority', 'High Priority Group', 'failover', 'Grupo para notificaciones críticas con failover'),
@@ -237,7 +237,6 @@ INSERT IGNORE INTO provider_groups (group_key, name, routing_strategy, descripti
 -- DATOS INICIALES - ROUTING BÁSICO
 -- =============================================================================
 
--- Insertar reglas básicas de routing a grupos
 INSERT IGNORE INTO provider_group_routing (route_key, name, target_group_id, conditions_json, priority, description) VALUES
 ('bulk_volume', 'Bulk Volume Routing', 
  (SELECT id FROM provider_groups WHERE group_key = 'bulk_email'), 
@@ -257,7 +256,6 @@ INSERT IGNORE INTO provider_group_routing (route_key, name, target_group_id, con
 -- =============================================================================
 -- COMENTARIOS PARA REFERENCIA
 -- =============================================================================
-
 /*
 EJEMPLOS DE USO:
 
