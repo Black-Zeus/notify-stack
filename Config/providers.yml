@@ -1,114 +1,92 @@
 # =============================================================================
-# NOTIFY-STACK - Email Providers Configuration
+# NOTIFY-STACK - Email Providers Configuration (Fase 3)
 # =============================================================================
-# Configuración de proveedores de email (SMTP y API)
-# Las credenciales sensibles se obtienen de variables de entorno
+# Proveedores SMTP + API (SES, SendGrid, Mailgun)
+# Credenciales sensibles en secrets.env
 
 # =============================================================================
 # DEVELOPMENT PROVIDERS
 # =============================================================================
 
-# MailPit - Proveedor principal para desarrollo
 mailpit:
   type: "smtp"
   name: "MailPit Development"
   description: "Capturador de correos para desarrollo y testing"
   
-  # Configuración de conexión
   host: "mailpit"
   port: 1025
   username: ""
   password: ""
   
-  # Configuración de seguridad (sin TLS en desarrollo)
   use_tls: false
   use_ssl: false
   verify_certificate: false
   
-  # Configuración de headers
   from_email: "dev@notify-system.local"
   from_name: "Notify Dev System"
   reply_to: "dev@notify-system.local"
   return_path: "dev@notify-system.local"
   
-  # Límites y timeouts
   timeout: 15
   max_recipients_per_message: 100
   max_messages_per_hour: 1000
-  max_attachment_size: 25165824  # 24MB
+  max_attachment_size: 25165824
   
-  # Configuración operacional
   priority: "high"
   category: "development"
   enabled: true
   
-  # Características soportadas
   features:
     html_support: true
     attachments: true
     tracking: false
-    analytics: false
-    templates: false
     
-  # Configuración de reintentos
   retry:
-    max_attempts: 1  # Sin reintentos en desarrollo
+    max_attempts: 1
     backoff_factor: 1
-    initial_delay: 0
 
 # =============================================================================
 # SMTP PROVIDERS
 # =============================================================================
 
-# Proveedor SMTP principal (Gmail)
 smtp_primary:
   type: "smtp"
   name: "Gmail SMTP Primary"
-  description: "Proveedor principal para emails transaccionales"
+  description: "Proveedor principal SMTP"
   
-  # Configuración de conexión
   host: "${SMTP_GMAIL_HOST}"
   port: "${SMTP_GMAIL_PORT}"
   username: "${SMTP_GMAIL_USERNAME}"
   password: "${SMTP_GMAIL_PASSWORD}"
   
-  # Configuración de seguridad
   use_tls: true
   use_ssl: false
   verify_certificate: true
   
-  # Configuración de headers
   from_email: "${SMTP_GMAIL_USERNAME}"
   from_name: "${SMTP_GMAIL_FROM_NAME}"
   reply_to: "${SMTP_GMAIL_USERNAME}"
   return_path: "${SMTP_GMAIL_USERNAME}"
   
-  # Límites y timeouts
   timeout: 30
   max_recipients_per_message: 100
   max_messages_per_hour: 500
-  max_attachment_size: 25165824  # 24MB (Gmail limit)
+  max_attachment_size: 25165824
   
-  # Configuración operacional
   priority: "high"
   category: "transactional"
-  enabled: true  # Disabled en desarrollo
+  enabled: false
   
-  # Características soportadas
   features:
     html_support: true
     attachments: true
     tracking: false
-    analytics: false
-    templates: false
     
-  # Configuración de reintentos
   retry:
     max_attempts: 3
     backoff_factor: 2
     initial_delay: 60
 
-# Proveedor SMTP secundario (Outlook)
 smtp_secondary:
   type: "smtp"
   name: "Outlook SMTP Secondary"
@@ -131,14 +109,17 @@ smtp_secondary:
   
   priority: "medium"
   category: "backup"
-  enabled: true  # Disabled en desarrollo
+  enabled: false
   
   features:
     html_support: true
     attachments: true
     tracking: false
+    
+  retry:
+    max_attempts: 3
+    backoff_factor: 2
 
-# Proveedor SMTP para bulk/marketing
 smtp_bulk:
   type: "smtp"
   name: "Custom SMTP Bulk"
@@ -161,125 +142,86 @@ smtp_bulk:
   
   priority: "medium"
   category: "bulk"
-  enabled: true  # Disabled en desarrollo
+  enabled: false
   
   features:
     html_support: true
-    attachments: false  # No attachments en bulk
+    attachments: false
     tracking: false
-
-# Proveedor SMTP para testing
-smtp_test:
-  type: "smtp"
-  name: "Test SMTP Provider"
-  description: "Proveedor exclusivo para testing y desarrollo"
-  
-  host: "smtp.mailtrap.io"  # Servicio de testing
-  port: 587
-  username: "${SMTP_TEST_USERNAME}"
-  password: "${SMTP_TEST_PASSWORD}"
-  
-  use_tls: true
-  use_ssl: false
-  
-  from_email: "test@notify-system.local"
-  from_name: "Notify Test System"
-  
-  timeout: 15
-  max_recipients_per_message: 10
-  max_messages_per_hour: 100
-  
-  priority: "low"
-  category: "testing"
-  enabled: true  # Usar MailPit en su lugar
-  
-  features:
-    html_support: true
-    attachments: true
-    tracking: true    # Mailtrap soporta tracking
-
-# =============================================================================
-# API PROVIDERS
-# =============================================================================
-
-# SendGrid API
-api_sendgrid:
-  type: "api"
-  provider_type: "sendgrid"
-  name: "SendGrid API"
-  description: "Proveedor API premium con tracking avanzado"
-  
-  # Configuración de API
-  endpoint: "https://api.sendgrid.com"
-  api_key: "${SENDGRID_API_KEY}"
-  
-  # Configuración de headers
-  from_email: "${SENDGRID_FROM_EMAIL}"
-  from_name: "${SENDGRID_FROM_NAME}"
-  reply_to: "${SENDGRID_FROM_EMAIL}"
-  
-  # Límites API
-  timeout: 30
-  max_recipients_per_message: 1000
-  max_messages_per_hour: 10000
-  max_attachment_size: 10485760  # 10MB
-  
-  # Configuración operacional
-  priority: "high"
-  category: "premium"
-  enabled: true  # Disabled en desarrollo
-  
-  # Características avanzadas
-  features:
-    html_support: true
-    attachments: true
-    tracking: true
-    analytics: true
-    templates: true
-    webhooks: true
-    
-  # Configuración específica de SendGrid
-  sendgrid:
-    # Tracking settings
-    tracking:
-      click_tracking: true
-      open_tracking: true
-      subscription_tracking: false
-      
-    # Configuración de templates
-    template_engine: true
-    dynamic_templates: true
-    
-    # Configuración de IP
-    ip_pool_name: "default"
     
   retry:
     max_attempts: 3
-    backoff_factor: 1.5
-    initial_delay: 30
+    backoff_factor: 2
 
-# Amazon SES API
+# =============================================================================
+# API PROVIDERS - NUEVO FASE 3
+# =============================================================================
+
+# Amazon SES
 api_ses:
   type: "api"
   provider_type: "ses"
   name: "Amazon SES"
-  description: "Proveedor AWS altamente escalable"
+  description: "AWS Simple Email Service - Alta capacidad"
   
-  endpoint: "https://email.${AWS_SES_REGION}.amazonaws.com"
-  api_key: "${AWS_SES_ACCESS_KEY_ID}"
-  secret_key: "${AWS_SES_SECRET_ACCESS_KEY}"
-  region: "${AWS_SES_REGION}"
+  endpoint: "https://email.${AWS_REGION}.amazonaws.com"
+  api_version: "2010-12-01"
+  aws_region: "${AWS_REGION}"
   
-  from_email: "${AWS_SES_FROM_EMAIL}"
-  from_name: "AWS Notifications"
+  access_key_id: "${AWS_SES_ACCESS_KEY}"
+  secret_access_key: "${AWS_SES_SECRET_KEY}"
+  
+  from_email: "${SES_FROM_EMAIL}"
+  from_name: "${SES_FROM_NAME}"
+  configuration_set: "${SES_CONFIG_SET}"
   
   timeout: 30
   max_recipients_per_message: 50
-  max_messages_per_hour: 14000  # SES limit in sandbox
+  max_messages_per_second: 14
+  max_attachment_size: 10485760
   
   priority: "high"
-  category: "scalable"
-  enabled: true  # Disabled by default
+  category: "transactional"
+  enabled: false
+  
+  features:
+    html_support: true
+    attachments: true
+    tracking: true
+    analytics: true
+    bounce_handling: true
+    
+  retry:
+    max_attempts: 3
+    backoff_factor: 2
+    initial_delay: 30
+  
+  cost:
+    per_1000_emails: 0.10
+    per_gb_attachment: 0.12
+
+# SendGrid
+api_sendgrid:
+  type: "api"
+  provider_type: "sendgrid"
+  name: "SendGrid API"
+  description: "SendGrid - Marketing y transaccional"
+  
+  endpoint: "https://api.sendgrid.com/v3/mail/send"
+  api_key: "${SENDGRID_API_KEY}"
+  
+  from_email: "${SENDGRID_FROM_EMAIL}"
+  from_name: "${SENDGRID_FROM_NAME}"
+  reply_to: "${SENDGRID_REPLY_TO}"
+  
+  timeout: 30
+  max_recipients_per_message: 1000
+  max_messages_per_second: 100
+  max_attachment_size: 30720000
+  
+  priority: "medium"
+  category: "bulk"
+  enabled: false
   
   features:
     html_support: true
@@ -288,203 +230,91 @@ api_ses:
     analytics: true
     templates: true
     
-  # Configuración específica de SES
-  ses:
-    configuration_set: "default"
+  tracking_settings:
+    click_tracking: true
+    open_tracking: true
+    subscription_tracking: false
+    
+  retry:
+    max_attempts: 3
+    backoff_factor: 2
+    initial_delay: 60
+  
+  cost:
+    per_1000_emails: 0.80
+
+# Mailgun
+api_mailgun:
+  type: "api"
+  provider_type: "mailgun"
+  name: "Mailgun API"
+  description: "Mailgun - Transaccional confiable"
+  
+  endpoint: "https://api.mailgun.net/v3"
+  api_key: "${MAILGUN_API_KEY}"
+  domain: "${MAILGUN_DOMAIN}"
+  
+  from_email: "noreply@${MAILGUN_DOMAIN}"
+  from_name: "${MAILGUN_FROM_NAME}"
+  
+  timeout: 30
+  max_recipients_per_message: 1000
+  max_messages_per_hour: 10000
+  max_attachment_size: 25165824
+  
+  priority: "medium"
+  category: "transactional"
+  enabled: false
+  
+  features:
+    html_support: true
+    attachments: true
+    tracking: true
+    analytics: true
+    templates: true
     
   retry:
     max_attempts: 3
     backoff_factor: 2
     initial_delay: 45
+  
+  cost:
+    per_1000_emails: 0.80
 
-# Mailgun API
-api_mailgun:
-  type: "api"
-  provider_type: "mailgun"
-  name: "Mailgun API"
-  description: "Proveedor API con excelente deliverability"
-  
-  endpoint: "https://api.mailgun.net/v3/${MAILGUN_DOMAIN}"
-  api_key: "${MAILGUN_API_KEY}"
-  domain: "${MAILGUN_DOMAIN}"
-  
-  from_email: "${MAILGUN_FROM_EMAIL}"
-  from_name: "Mailgun Notifications"
-  
-  timeout: 30
-  max_recipients_per_message: 1000
-  max_messages_per_hour: 5000
-  
-  priority: "medium"
-  category: "marketing"
-  enabled: true
-  
-  features:
-    html_support: true
-    attachments: true
-    tracking: true
-    analytics: true
-    
-  retry:
-    max_attempts: 3
-    backoff_factor: 2
-    initial_delay: 30
-
-# Proveedor API genérico (para futuras integraciones)
+# API Genérico
 api_generic:
   type: "api"
   provider_type: "generic"
-  name: "Generic API Provider"
-  description: "Proveedor API genérico configurable"
+  name: "Generic HTTP API"
+  description: "Adaptador para APIs personalizadas"
   
-  endpoint: "${GENERIC_API_ENDPOINT}"
-  api_key: "${GENERIC_API_KEY}"
+  endpoint: "${CUSTOM_API_ENDPOINT}"
+  api_key: "${CUSTOM_API_KEY}"
+  method: "POST"
   
-  from_email: "${GENERIC_FROM_EMAIL}"
-  from_name: "Generic Provider"
+  headers:
+    Content-Type: "application/json"
+    X-API-Key: "${CUSTOM_API_KEY}"
+  
+  field_mapping:
+    to: "recipient"
+    subject: "email_subject"
+    body_html: "html_body"
+    body_text: "text_body"
   
   timeout: 30
-  max_recipients_per_message: 100
-  max_messages_per_hour: 1000
-  
   priority: "low"
-  category: "experimental"
-  enabled: true
+  enabled: false
   
-  # Headers personalizados
-  headers:
-    "User-Agent": "NotifyAPI/1.0"
-    "X-Custom-Header": "notify-stack"
-    
-  features:
-    html_support: true
-    attachments: false
-    
   retry:
     max_attempts: 2
     backoff_factor: 1
-    initial_delay: 60
 
 # =============================================================================
-# TWILIO PROVIDERS - ACTUALIZACIONES SEGURAS
+# PROVIDER GROUPS - FASE 3
 # =============================================================================
 
-# Twilio SMS - Configuración mejorada pero conservadora
-twilio_sms:
-  type: "twilio"
-  provider_type: "twilio_sms"
-  name: "Twilio SMS"
-  description: "Proveedor SMS via Twilio API"
-  
-  # Configuración de API
-  account_sid: "${TWILIO_ACCOUNT_SID}"
-  auth_token: "${TWILIO_AUTH_TOKEN}"
-  from_number: "${TWILIO_SMS_FROM}"
-  
-  # Límites SMS conservadores
-  timeout: 30
-  max_recipients_per_message: 10  # Límite conservador para no sobrecargar
-  max_message_length: 1600
-  max_messages_per_hour: 100      # Límite conservador inicialmente
-  
-  # Configuración operacional
-  priority: "high"
-  category: "sms"
-  enabled: true  # DISABLED por defecto para no romper nada
-  
-  # Características soportadas
-  features:
-    html_support: false
-    attachments: false
-    tracking: true
-    delivery_reports: true
-    status_callbacks: true
-    
-  # Configuración específica SMS
-  sms_config:
-    # Webhook URL para status callbacks
-    webhook_url: "${TWILIO_SMS_WEBHOOK_URL}"
-    
-    # Configuración de entrega
-    validity_period: 86400  # 24 horas
-    
-    # Configuración de encoding
-    encoding: "UTF-8"
-    smart_encoding: true
-    
-  # Configuración de reintentos
-  retry:
-    max_attempts: 2  # Menos reintentos para SMS
-    backoff_factor: 1.5
-    initial_delay: 30
-
-# Twilio WhatsApp - Configuración mejorada pero conservadora  
-twilio_whatsapp:
-  type: "twilio"
-  provider_type: "twilio_whatsapp"
-  name: "Twilio WhatsApp"
-  description: "Proveedor WhatsApp Business via Twilio API"
-  
-  # Configuración de API
-  account_sid: "${TWILIO_ACCOUNT_SID}"
-  auth_token: "${TWILIO_AUTH_TOKEN}"
-  from_number: "${TWILIO_WHATSAPP_FROM}"  # Formato: whatsapp:+14155238886
-  
-  # Límites WhatsApp conservadores
-  timeout: 45
-  max_recipients_per_message: 5   # Muy conservador para WhatsApp
-  max_message_length: 4096
-  max_media_count: 5              # Límite conservador de medios
-  max_media_size: 16777216        # 16MB
-  max_messages_per_hour: 50       # Límite muy conservador
-  
-  # Configuración operacional
-  priority: "high"
-  category: "whatsapp"
-  enabled: true  # DISABLED por defecto para no romper nada
-  
-  # Características soportadas
-  features:
-    html_support: false
-    attachments: true
-    media_support: true
-    tracking: true
-    delivery_reports: true
-    read_receipts: true
-    templates: true               # WhatsApp Business Templates
-    
-  # Tipos de media soportados (lista conservadora)
-  supported_media_types:
-    - "image/jpeg"
-    - "image/png" 
-    - "application/pdf"
-    - "text/plain"
-    
-  # Configuración específica WhatsApp
-  whatsapp_config:
-    # Webhook URL para status callbacks
-    webhook_url: "${TWILIO_WHATSAPP_WEBHOOK_URL}"
-    
-    # Configuración de templates
-    use_templates: true
-    fallback_language: "en"
-    
-    # Configuración de medios
-    media_upload_timeout: 60
-    
-  # Configuración de reintentos
-  retry:
-    max_attempts: 2  # Menos reintentos para WhatsApp
-    backoff_factor: 2
-    initial_delay: 60
-
-# =============================================================================
-# PROVIDER GROUPS & LOAD BALANCING - ACTUALIZACIÓN CONSERVADORA
-# =============================================================================
-
-# Grupos de proveedores para load balancing
 provider_groups:
-  # Grupo principal para desarrollo (SIN CAMBIOS)
   development:
     providers:
       - name: "mailpit"
@@ -492,7 +322,6 @@ provider_groups:
     load_balancing: "single"
     health_check: false
     
-  # Grupo principal para emails transaccionales (SIN CAMBIOS)
   transactional:
     providers:
       - name: "smtp_primary"
@@ -502,7 +331,6 @@ provider_groups:
     load_balancing: "weighted_round_robin"
     health_check: true
     
-  # Grupo para envíos masivos (SIN CAMBIOS)
   bulk:
     providers:
       - name: "smtp_bulk"
@@ -512,7 +340,6 @@ provider_groups:
     load_balancing: "round_robin"
     health_check: true
     
-  # Grupo de backup/failover (SIN CAMBIOS)
   backup:
     providers:
       - name: "smtp_secondary"
@@ -521,177 +348,155 @@ provider_groups:
         weight: 50
     load_balancing: "failover"
     health_check: true
-    
-  # NUEVO: Grupo para SMS (opcional, deshabilitado por defecto)
-  sms:
-    providers:
-      - name: "twilio_sms"
-        weight: 100
-    load_balancing: "single"
-    health_check: true
-    enabled: true  # Disabled por defecto
-    
-  # NUEVO: Grupo para WhatsApp (opcional, deshabilitado por defecto)  
-  whatsapp:
-    providers:
-      - name: "twilio_whatsapp"
-        weight: 100
-    load_balancing: "single"
-    health_check: true
-    enabled: true  # Disabled por defecto
 
 # =============================================================================
-# HEALTH MONITORING - ACTUALIZACIÓN SEGURA
+# ROUTING Y FALLBACK - FASE 3
 # =============================================================================
 
-# Configuración de monitoreo de salud
+routing:
+  default_strategy: "priority"
+  enable_fallback: true
+  
+  fallback_chain:
+    - "api_ses"
+    - "api_sendgrid"
+    - "api_mailgun"
+    - "smtp_primary"
+  
+  by_category:
+    transactional:
+      preferred: ["api_ses", "smtp_primary"]
+      max_cost_per_1000: 0.50
+    
+    bulk:
+      preferred: ["api_sendgrid", "api_mailgun"]
+      max_cost_per_1000: 1.00
+    
+    development:
+      preferred: ["mailpit"]
+      force_provider: true
+  
+  intelligent_routing:
+    enabled: true
+    factors:
+      cost_weight: 0.3
+      speed_weight: 0.4
+      reliability_weight: 0.3
+
+# =============================================================================
+# HEALTH MONITORING - FASE 3
+# =============================================================================
+
 health_monitoring:
-  # Intervalos de verificación (SIN CAMBIOS)
   check_intervals:
-    fast_check: 60      # segundos
-    full_check: 300     # segundos
+    fast_check: 60
+    full_check: 300
     
-  # Criterios de salud (SIN CAMBIOS)
   health_criteria:
-    max_response_time: 5.0      # segundos
-    max_error_rate: 5.0         # porcentaje
-    min_success_rate: 95.0      # porcentaje
+    max_response_time: 5.0
+    max_error_rate: 5.0
+    min_success_rate: 95.0
     
-  # Criterios específicos para SMS/WhatsApp (NUEVO)
-  sms_health_criteria:
-    max_response_time: 10.0     # SMS puede ser más lento
-    max_error_rate: 10.0        # Más tolerante a errores
-    min_success_rate: 90.0      # Estándar más bajo
-    
-  whatsapp_health_criteria:
-    max_response_time: 15.0     # WhatsApp puede ser más lento
-    max_error_rate: 15.0        # Más tolerante a errores  
-    min_success_rate: 85.0      # Estándar más bajo
-    
-  # Acciones automáticas (SIN CAMBIOS)
   auto_actions:
     disable_unhealthy: true
     alert_on_failure: true
     
-  # Configuración de alertas (SIN CAMBIOS)
   alerts:
     webhook_url: "${ALERT_WEBHOOK_URL}"
     email_alerts: ["admin@yourcompany.com"]
 
 # =============================================================================
-# COST OPTIMIZATION - ACTUALIZACIÓN CONSERVADORA  
+# COST OPTIMIZATION - FASE 3
 # =============================================================================
 
-# Configuración de optimización de costos
 cost_optimization:
-  # Routing por costo (SIN CAMBIOS)
   cost_aware_routing: true
   
-  # Costos relativos por proveedor (ACTUALIZADO con SMS/WhatsApp)
   provider_costs:
-    mailpit: 0          # Gratis en desarrollo
+    mailpit: 0
     smtp_primary: 2
     smtp_secondary: 2
     smtp_bulk: 1
     api_sendgrid: 4
     api_ses: 3
     api_mailgun: 4
-    twilio_sms: 8       # SMS tiene costo por mensaje (más alto)
-    twilio_whatsapp: 10 # WhatsApp más caro que SMS (más alto)
     
-  # Límites de costo (CONSERVADORES para incluir SMS/WhatsApp)
   cost_limits:
-    max_daily_cost: 50.0        # USD - Límite más bajo para ser conservador
-    alert_threshold: 30.0       # USD - Alerta temprana
+    max_daily_cost: 50.0
+    alert_threshold: 30.0
     
-  # Optimizaciones automáticas (SIN CAMBIOS)
   auto_optimizations:
     prefer_cheaper_for_bulk: true
     route_off_hours_to_cheaper: true
 
 # =============================================================================
-# COMPLIANCE & REGION SETTINGS (SIN CAMBIOS)
+# REGIONAL SETTINGS - FASE 3
 # =============================================================================
 
-# Configuración por región geográfica
 regional_settings:
-  # Estados Unidos
   us:
     preferred_providers: ["api_sendgrid", "smtp_primary"]
     compliance_requirements: ["can_spam"]
     
-  # Unión Europea  
   eu:
     preferred_providers: ["api_mailgun", "smtp_secondary"]
     compliance_requirements: ["gdpr"]
     data_residency: "eu"
     
-  # Asia-Pacífico
   apac:
     preferred_providers: ["api_ses", "smtp_primary"]
     compliance_requirements: ["local_privacy_laws"]
 
 # =============================================================================
-# DEVELOPMENT & TESTING - ACTUALIZACIÓN CONSERVADORA
+# DEVELOPMENT & TESTING - FASE 3
 # =============================================================================
 
-# Configuración para desarrollo
 development:
-  # Proveedor por defecto en desarrollo (SIN CAMBIOS)
   default_provider: "mailpit"
   
-  # Interceptar emails en desarrollo (SIN CAMBIOS)
   email_interception:
-    enabled: true  # MailPit ya intercepta todo
+    enabled: true
     redirect_to: ["dev@yourcompany.com"]
     
-  # NUEVO: Configuración para SMS/WhatsApp en desarrollo
-  sms_testing:
-    mock_enabled: true          # Mock SMS en desarrollo
-    test_numbers: ["+1234567890"] # Números de prueba
-    
-  whatsapp_testing:
-    mock_enabled: true          # Mock WhatsApp en desarrollo
-    test_numbers: ["whatsapp:+1234567890"] # Números de prueba
-    
-  # Simulación de fallos para testing (SIN CAMBIOS)
   failure_simulation:
     enabled: true
-    failure_rate: 0.1  # 10% de fallos simulados
+    failure_rate: 0.1
     
-  # Logging detallado (SIN CAMBIOS)
   debug_logging: true
 
 # =============================================================================
-# PROVIDER STATISTICS - ACTUALIZACIÓN SEGURA
+# STATISTICS - FASE 3
 # =============================================================================
 
-# Métricas y estadísticas
 statistics:
-  # Métricas a trackear (ACTUALIZADO con SMS/WhatsApp)
   tracked_metrics:
     - "messages_sent"
     - "messages_failed"
     - "response_time"
     - "cost_per_message"
     - "delivery_rate"
-    - "sms_segments"      # NUEVO: Segmentos SMS
-    - "whatsapp_reads"    # NUEVO: Lecturas WhatsApp
     
-  # Retención de métricas (SIN CAMBIOS)
   retention:
-    hourly_data: 48     # horas
-    daily_data: 90      # días
-    monthly_data: 24    # meses
+    hourly_data: 48
+    daily_data: 90
+    monthly_data: 24
     
-  # Alertas basadas en métricas (ACTUALIZADO)
   metric_alerts:
     high_failure_rate:
-      threshold: 10.0   # porcentaje
-      window: 300       # segundos
+      threshold: 10.0
+      window: 300
     slow_response:
-      threshold: 10.0   # segundos  
-      window: 600       # segundos
-    high_sms_cost:      # NUEVO
-      threshold: 20.0   # USD por hora
-      window: 3600      # 1 hora
+      threshold: 10.0
+      window: 600
+
+# =============================================================================
+# GLOBAL SETTINGS
+# =============================================================================
+
+global:
+  default_max_retries: 3
+  default_retry_backoff: 2
+  default_timeout: 30
+  connection_timeout: 10
+  max_recipients_global: 100
+  max_attachment_size_global: 25165824

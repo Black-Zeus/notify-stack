@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Vass-Home · Recurso No Disponible</title>
+    <link rel="icon"
+        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='90' font-size='90'%3E🛡️%3C/text%3E%3C/svg%3E">
+
+    <style>
+        /* ========================================
+       Variables CSS
+       ======================================== */
+        :root {
+            /* Colores modo oscuro */
+            --color-bg-primary: #0b0d12;
+            --color-bg-secondary: #10131a;
+            --color-surface: #131824;
+            --color-text-primary: #e9eef5;
+            --color-text-secondary: #a7b1c2;
+            --color-accent: #4da3ff;
+            --color-accent-weak: #1b2a3f;
+            --color-border: #20283a;
+
+            /* Efectos */
+            --shadow-primary: 0 10px 25px rgba(0, 0, 0, 0.35);
+            --shadow-soft: 0 4px 12px rgba(0, 0, 0, 0.2);
+            --radius-sm: 10px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+
+            /* Transiciones */
+            --transition-fast: 0.18s ease;
+            --transition-medium: 0.3s ease;
+        }
+
+        @media (prefers-color-scheme: light) {
+            :root {
+                --color-bg-primary: #f5f7fb;
+                --color-bg-secondary: #f0f3f9;
+                --color-surface: #ffffff;
+                --color-text-primary: #0f172a;
+                --color-text-secondary: #475569;
+                --color-accent: #0d6efd;
+                --color-accent-weak: #e7f0ff;
+                --color-border: #e2e8f0;
+                --shadow-primary: 0 8px 20px rgba(15, 23, 42, 0.08);
+                --shadow-soft: 0 2px 8px rgba(15, 23, 42, 0.06);
+            }
+        }
+
+        /* ========================================
+       Reset & Base
+       ======================================== */
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            height: 100%;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        body {
+            min-height: 100%;
+            margin: 0;
+            padding: 2rem;
+            background: linear-gradient(180deg, var(--color-bg-primary) 0%, var(--color-bg-secondary) 100%);
+            color: var(--color-text-primary);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            font-size: 16px;
+            line-height: 1.6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* ========================================
+       Layout Principal
+       ======================================== */
+        .container {
+            width: 100%;
+            max-width: 1024px;
+            display: grid;
+            gap: 1.75rem;
+        }
+
+        /* ========================================
+       Header
+       ======================================== */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .brand__logo {
+            width: 40px;
+            height: 40px;
+            display: grid;
+            place-items: center;
+            border-radius: var(--radius-md);
+            background: radial-gradient(120% 120% at 20% 20%, var(--color-accent) 0%, transparent 60%),
+                var(--color-accent-weak);
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+            font-size: 1.375rem;
+            user-select: none;
+        }
+
+        .brand__title {
+            font-size: 1rem;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+        }
+
+        .badge {
+            font-size: 0.875rem;
+            color: var(--color-text-secondary);
+            font-weight: 500;
+        }
+
+        /* ========================================
+       Hero Section
+       ======================================== */
+        .hero {
+            background: linear-gradient(180deg, transparent, rgba(255, 255, 255, 0.02));
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-primary);
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .hero__title {
+            font-size: clamp(1.625rem, 3.2vw, 2.25rem);
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 0.75rem;
+        }
+
+        .hero__description {
+            color: var(--color-text-secondary);
+            font-size: clamp(0.9375rem, 2.5vw, 1.125rem);
+            margin-bottom: 0.5rem;
+        }
+
+        .hero__code {
+            display: inline-block;
+            margin: 0.5rem 0 1rem;
+            padding: 0.375rem 0.625rem;
+            border-radius: var(--radius-sm);
+            background: var(--color-surface);
+            border: 1px dashed var(--color-border);
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Courier New", monospace;
+            font-size: 0.9375rem;
+            color: var(--color-text-primary);
+            word-break: break-all;
+        }
+
+        .hero__actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.625rem;
+            justify-content: center;
+            margin-top: 1rem;
+        }
+
+        /* ========================================
+       Botones
+       ======================================== */
+        .btn {
+            appearance: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.625rem 1rem;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+            background: var(--color-surface);
+            color: var(--color-text-primary);
+            font-size: 0.9375rem;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            white-space: nowrap;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-soft);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn--primary {
+            background: var(--color-accent);
+            border-color: transparent;
+            color: #ffffff;
+        }
+
+        .btn--primary:hover {
+            background: #3d92ed;
+        }
+
+        .btn--small {
+            padding: 0.5rem 0.75rem;
+            font-size: 0.875rem;
+        }
+
+        .btn--full {
+            width: 100%;
+        }
+
+        /* ========================================
+       Grid de Tarjetas
+       ======================================== */
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.25rem;
+        }
+
+        @media (min-width: 860px) {
+            .grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        /* ========================================
+       Tarjetas
+       ======================================== */
+        .card {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-primary);
+            padding: 1.5rem;
+        }
+
+        .card__title {
+            font-size: 1.125rem;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+            margin-bottom: 1rem;
+        }
+
+        /* ========================================
+       Listas
+       ======================================== */
+        .info-list {
+            list-style: none;
+            display: grid;
+            gap: 0.625rem;
+            margin-bottom: 1rem;
+        }
+
+        .info-list__item {
+            display: flex;
+            gap: 0.75rem;
+            align-items: flex-start;
+            padding: 0.75rem;
+            border-radius: var(--radius-md);
+            border: 1px dashed var(--color-border);
+            background: rgba(255, 255, 255, 0.01);
+        }
+
+        .info-list__label {
+            min-width: 180px;
+            font-weight: 650;
+            flex-shrink: 0;
+        }
+
+        .info-list__value {
+            color: var(--color-text-secondary);
+            word-break: break-word;
+        }
+
+        .steps-list {
+            list-style: none;
+            counter-reset: step-counter;
+            display: grid;
+            gap: 0.75rem;
+        }
+
+        .steps-list__item {
+            display: flex;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            border-radius: var(--radius-md);
+            border: 1px dashed var(--color-border);
+            background: rgba(255, 255, 255, 0.01);
+            counter-increment: step-counter;
+        }
+
+        .steps-list__item::before {
+            content: counter(step-counter) ".";
+            font-weight: 700;
+            color: var(--color-accent);
+            flex-shrink: 0;
+        }
+
+        .steps-list__title {
+            font-weight: 650;
+            margin-right: 0.375rem;
+        }
+
+        /* ========================================
+       Área de Diagnóstico - MEJORADA
+       ======================================== */
+        .diagnostic-section {
+            margin-bottom: 1rem;
+        }
+
+        .diagnostic-list {
+            list-style: none;
+            display: grid;
+            gap: 0.5rem;
+            padding: 0.875rem;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--color-border);
+            background: var(--color-bg-secondary);
+            margin-bottom: 0.75rem;
+        }
+
+        .diagnostic-list__item {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 0.5rem;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Courier New", monospace;
+            font-size: 0.8125rem;
+            line-height: 1.5;
+        }
+
+        .diagnostic-list__key {
+            color: var(--color-accent);
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .diagnostic-list__separator {
+            color: var(--color-text-secondary);
+        }
+
+        .diagnostic-list__value {
+            color: var(--color-text-secondary);
+            word-break: break-all;
+            overflow-wrap: break-word;
+        }
+
+        /* ========================================
+       Utilidades
+       ======================================== */
+        .text-muted {
+            color: var(--color-text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .kbd {
+            display: inline-block;
+            padding: 0.125rem 0.375rem;
+            border-radius: 0.375rem;
+            background: var(--color-accent-weak);
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Courier New", monospace;
+            font-size: 0.875rem;
+            border: 1px solid var(--color-border);
+        }
+
+        /* ========================================
+       Footer
+       ======================================== */
+        .footer {
+            text-align: center;
+            color: var(--color-text-secondary);
+            font-size: 0.875rem;
+            padding-top: 0.5rem;
+        }
+
+        .footer a {
+            color: var(--color-accent);
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* ========================================
+       Animaciones
+       ======================================== */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .container {
+            animation: fadeIn 0.5s var(--transition-medium);
+        }
+    </style>
+</head>
+
+<body>
+    <main class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="brand">
+                <div class="brand__logo" aria-hidden="true">🛡️</div>
+                <h1 class="brand__title">Vass-Home · Proxy</h1>
+            </div>
+            <span class="badge">Nginx Proxy Manager</span>
+        </header>
+
+        <!-- Hero Section -->
+        <section class="hero" role="alert" aria-live="polite">
+            <h2 class="hero__title">Recurso No Disponible</h2>
+            <p class="hero__description">
+                El host <span class="hero__code" id="hostDisplay">—</span> no está configurado o el servicio aún no se
+                publica en la red interna <strong>Vass-Home</strong>.
+            </p>
+            <div class="hero__actions">
+                <a class="btn btn--primary" href="/admin" rel="nofollow">Ir al Panel Admin</a>
+                <button class="btn" id="retryButton" type="button">Reintentar</button>
+                <a class="btn" href="mailto:vassnotify@gmail.com">Contactar Soporte</a>
+            </div>
+        </section>
+
+        <!-- Grid de Información -->
+        <section class="grid" aria-label="Diagnóstico y pasos a seguir">
+            <!-- Tarjeta de Diagnóstico -->
+            <article class="card">
+                <h3 class="card__title">Diagnóstico Rápido</h3>
+                <ul class="info-list">
+                    <li class="info-list__item">
+                        <span class="info-list__label">Host solicitado</span>
+                        <span class="info-list__value" id="hostInfo">—</span>
+                    </li>
+                    <li class="info-list__item">
+                        <span class="info-list__label">URL completa</span>
+                        <span class="info-list__value" id="urlInfo">—</span>
+                    </li>
+                    <li class="info-list__item">
+                        <span class="info-list__label">Fecha/Hora</span>
+                        <span class="info-list__value" id="dateInfo">—</span>
+                    </li>
+                    <li class="info-list__item">
+                        <span class="info-list__label">Agente de cliente</span>
+                        <span class="info-list__value" id="userAgentInfo">—</span>
+                    </li>
+                    <li class="info-list__item">
+                        <span class="info-list__label">ID de solicitud</span>
+                        <span class="info-list__value" id="requestIdInfo">—</span>
+                    </li>
+                </ul>
+
+                <!-- Área de diagnóstico mejorada -->
+                <div class="diagnostic-section">
+                    <ul class="diagnostic-list" id="diagnosticList" aria-label="Datos técnicos completos"></ul>
+                    <button class="btn btn--small btn--full" id="copyButton" type="button"
+                        title="Copiar diagnóstico completo">
+                        Copiar Diagnóstico Completo
+                    </button>
+                </div>
+
+                <p class="text-muted">Usa estos datos para validar en NPM y en el backend.</p>
+            </article>
+
+            <!-- Tarjeta de Pasos -->
+            <article class="card">
+                <h3 class="card__title">Siguientes Pasos</h3>
+                <ol class="steps-list">
+                    <li class="steps-list__item">
+                        <div>
+                            <span class="steps-list__title">Proxy Host</span>
+                            Crea o verifica el host en NPM (dominio/subdominio correcto).
+                        </div>
+                    </li>
+                    <li class="steps-list__item">
+                        <div>
+                            <span class="steps-list__title">Backend</span>
+                            Confirma IP/puerto y que el servicio responde desde NPM.
+                        </div>
+                    </li>
+                    <li class="steps-list__item">
+                        <div>
+                            <span class="steps-list__title">SSL</span>
+                            Certificado emitido y vigente si usas HTTPS.
+                        </div>
+                    </li>
+                    <li class="steps-list__item">
+                        <div>
+                            <span class="steps-list__title">DNS</span>
+                            Registros A/AAAA/CNAME apuntando al proxy.
+                        </div>
+                    </li>
+                    <li class="steps-list__item">
+                        <div>
+                            <span class="steps-list__title">Caché</span>
+                            Limpia caché del navegador y recarga <span class="kbd">Ctrl</span> + <span
+                                class="kbd">F5</span>.
+                        </div>
+                    </li>
+                </ol>
+
+                <br />
+
+                <ul >
+                    <li >
+                        <p class="text-muted">
+                            ¿Tienes dudas? Escribe a <a href="mailto:vassnotify@gmail.com">vassnotify@gmail.com</a>.
+                        </p>
+                    </li>
+                </ul>
+            </article>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+            © <span id="currentYear"></span> Vass-Home · Página por defecto para hosts no configurados.
+        </footer>
+    </main>
+
+    <script>
+        (function () {
+            'use strict';
+
+            // ========================================
+            // Constantes y Variables
+            // ========================================
+            const COPY_SUCCESS_MESSAGE = 'Copiado ✔';
+            const COPY_SUCCESS_DURATION = 1200;
+            const UNKNOWN_VALUE = '(desconocido)';
+
+            // ========================================
+            // Elementos del DOM
+            // ========================================
+            const elements = {
+                hostDisplay: document.getElementById('hostDisplay'),
+                hostInfo: document.getElementById('hostInfo'),
+                urlInfo: document.getElementById('urlInfo'),
+                dateInfo: document.getElementById('dateInfo'),
+                userAgentInfo: document.getElementById('userAgentInfo'),
+                requestIdInfo: document.getElementById('requestIdInfo'),
+                diagnosticList: document.getElementById('diagnosticList'),
+                currentYear: document.getElementById('currentYear'),
+                retryButton: document.getElementById('retryButton'),
+                copyButton: document.getElementById('copyButton')
+            };
+
+            // ========================================
+            // Funciones de Utilidad
+            // ========================================
+
+            /**
+             * Genera un ID de solicitud único
+             * @returns {string} ID hexadecimal de 16 caracteres
+             */
+            function generateRequestId() {
+                const randomBytes = crypto.getRandomValues(new Uint8Array(8));
+                return Array.from(randomBytes)
+                    .map(byte => byte.toString(16).padStart(2, '0'))
+                    .join('');
+            }
+
+            /**
+             * Formatea la fecha actual
+             * @returns {string} Fecha formateada según el idioma del navegador
+             */
+            function formatCurrentDate() {
+                const formatter = new Intl.DateTimeFormat(navigator.language || 'es-CL', {
+                    dateStyle: 'full',
+                    timeStyle: 'long'
+                });
+                return formatter.format(new Date());
+            }
+
+            /**
+             * Actualiza el texto de un elemento del DOM
+             * @param {HTMLElement} element - Elemento a actualizar
+             * @param {string} value - Valor a establecer
+             */
+            function setElementText(element, value) {
+                if (element) {
+                    element.textContent = value;
+                }
+            }
+
+            /**
+             * Crea un item de la lista de diagnóstico
+             * @param {string} key - Clave del dato
+             * @param {string} value - Valor del dato
+             * @returns {HTMLElement} Elemento <li> con el dato formateado
+             */
+            function createDiagnosticItem(key, value) {
+                const li = document.createElement('li');
+                li.className = 'diagnostic-list__item';
+
+                const keySpan = document.createElement('span');
+                keySpan.className = 'diagnostic-list__key';
+                keySpan.textContent = key;
+
+                const separator = document.createElement('span');
+                separator.className = 'diagnostic-list__separator';
+                separator.textContent = '=';
+
+                const valueSpan = document.createElement('span');
+                valueSpan.className = 'diagnostic-list__value';
+                valueSpan.textContent = value;
+
+                li.appendChild(keySpan);
+                li.appendChild(separator);
+                li.appendChild(valueSpan);
+
+                return li;
+            }
+
+            /**
+             * Copia texto al portapapeles
+             * @param {string} text - Texto a copiar
+             * @returns {Promise<boolean>} - True si se copió exitosamente
+             */
+            async function copyToClipboard(text) {
+                try {
+                    await navigator.clipboard.writeText(text);
+                    return true;
+                } catch (error) {
+                    console.error('Error al copiar al portapapeles:', error);
+                    return false;
+                }
+            }
+
+            /**
+             * Muestra feedback temporal en un botón
+             * @param {HTMLButtonElement} button - Botón a actualizar
+             * @param {string} message - Mensaje temporal
+             * @param {number} duration - Duración en milisegundos
+             */
+            function showButtonFeedback(button, message, duration) {
+                const originalText = button.textContent;
+                button.textContent = message;
+                button.disabled = true;
+
+                setTimeout(() => {
+                    button.textContent = originalText;
+                    button.disabled = false;
+                }, duration);
+            }
+
+            // ========================================
+            // Inicialización
+            // ========================================
+
+            /**
+             * Recopila información del sistema
+             * @returns {Object} Objeto con información del sistema
+             */
+            function gatherSystemInfo() {
+                const now = new Date();
+                return {
+                    host: location.host || UNKNOWN_VALUE,
+                    url: location.href || UNKNOWN_VALUE,
+                    userAgent: navigator.userAgent,
+                    requestId: generateRequestId(),
+                    timestamp: now.toISOString(),
+                    formattedDate: formatCurrentDate(),
+                    year: now.getFullYear()
+                };
+            }
+
+            /**
+             * Genera la cadena de diagnóstico completa
+             * @param {Object} info - Información del sistema
+             * @returns {string} Cadena de diagnóstico
+             */
+            function generateDiagnosticString(info) {
+                return `host=${info.host} | url=${info.url} | when=${info.timestamp} | ua=${info.userAgent} | rid=${info.requestId}`;
+            }
+
+            /**
+             * Actualiza la lista de diagnóstico con formato vertical
+             * @param {Object} info - Información del sistema
+             */
+            function updateDiagnosticList(info) {
+                if (!elements.diagnosticList) return;
+
+                // Limpiar lista existente
+                elements.diagnosticList.innerHTML = '';
+
+                // Datos a mostrar en formato lista
+                const diagnosticData = [
+                    { key: 'host', value: info.host },
+                    { key: 'url', value: info.url },
+                    { key: 'when', value: info.timestamp },
+                    { key: 'ua', value: info.userAgent },
+                    { key: 'rid', value: info.requestId }
+                ];
+
+                // Crear y agregar cada item
+                diagnosticData.forEach(data => {
+                    const item = createDiagnosticItem(data.key, data.value);
+                    elements.diagnosticList.appendChild(item);
+                });
+            }
+
+            /**
+             * Actualiza la interfaz con la información del sistema
+             * @param {Object} info - Información del sistema
+             */
+            function updateUI(info) {
+                // Actualizar displays de host
+                setElementText(elements.hostDisplay, info.host);
+                setElementText(elements.hostInfo, info.host);
+
+                // Actualizar información de diagnóstico
+                setElementText(elements.urlInfo, info.url);
+                setElementText(elements.dateInfo, info.formattedDate);
+                setElementText(elements.userAgentInfo, info.userAgent);
+                setElementText(elements.requestIdInfo, info.requestId);
+
+                // Actualizar lista de diagnóstico
+                updateDiagnosticList(info);
+
+                // Actualizar año
+                setElementText(elements.currentYear, info.year.toString());
+            }
+
+            /**
+             * Configura los event listeners
+             * @param {string} diagnosticString - Cadena de diagnóstico para copiar
+             */
+            function setupEventListeners(diagnosticString) {
+                // Botón de reintentar
+                if (elements.retryButton) {
+                    elements.retryButton.addEventListener('click', () => {
+                        location.reload();
+                    });
+                }
+
+                // Botón de copiar
+                if (elements.copyButton) {
+                    elements.copyButton.addEventListener('click', async () => {
+                        const success = await copyToClipboard(diagnosticString);
+                        if (success) {
+                            showButtonFeedback(
+                                elements.copyButton,
+                                COPY_SUCCESS_MESSAGE,
+                                COPY_SUCCESS_DURATION
+                            );
+                        }
+                    });
+                }
+            }
+
+            /**
+             * Función principal de inicialización
+             */
+            function init() {
+                try {
+                    const systemInfo = gatherSystemInfo();
+                    const diagnosticString = generateDiagnosticString(systemInfo);
+
+                    updateUI(systemInfo);
+                    setupEventListeners(diagnosticString);
+                } catch (error) {
+                    console.error('Error durante la inicialización:', error);
+                }
+            }
+
+            // ========================================
+            // Ejecutar inicialización
+            // ========================================
+            init();
+        })();
+    </script>
+</body>
+
+</html>
